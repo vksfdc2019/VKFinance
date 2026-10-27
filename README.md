@@ -8,8 +8,9 @@ family can see another family's data. The full design is in
 **Status:** Phases 0-3 are built and deployed to the `VKFinance` org: React on Experience Cloud,
 custom identity and security, member management, the core ledger (accounts, categories,
 transactions, transfers, credit cards, budgets, dashboard) and commitments with automation (bills,
-loans and EMIs, card statements, recurring entries, in-app notifications and a daily dues job).
-Reports and insights come in Phase 4.
+loans and EMIs, card statements, recurring entries, in-app notifications and a daily dues job) and
+insights (13 reports with CSV, print and saved filters, monthly snapshots, a customisable overview).
+Hardening and go-live come in Phase 5.
 
 ## How it fits together
 
@@ -22,6 +23,7 @@ Reports and insights come in Phase 4.
 | Ledger | `Financial_Account__c`, `Category__c`, `Transaction__c` (one row per money movement; a transfer is two linked rows), `Budget__c` / `Budget_Line__c`. `TransactionTrigger` → `LedgerBalances` keeps balances current incrementally, locking accounts `FOR UPDATE` |
 | Commitments | `Bill__c` → `Bill_Instance__c`, `Loan__c` → `EMI_Installment__c` (only the next 12 stored; the full schedule is computed by `EmiCalculator`), `Card_Statement__c`, `Recurring_Rule__c`. Paying posts normal ledger entries, so budgets and balances just work; voiding a payment re-opens what it paid |
 | Automation | `DailyDuesBatch` (06:00, "VKF Daily Dues") runs `DuesProcessor` once per family in its own transaction: bill/EMI statuses, card statements, recurring posts, auto-pay, reminders and budget alerts as `Notification__c` (deduplicated, read ones purged after 60 days) |
+| Insights | `ReportService` returns every report in one shape (KPIs, one chart, tables), so the portal renders all 13 with one component. `InsightService`: saved reports (filters only - data is always re-read with the viewer's scope), per-person overview layout (`Portal_User__c.Dashboard_Layout__c`), and `Monthly_Summary__c` snapshots written by the daily job and used for months older than three in the trend |
 | Who sees what | `LedgerScope`: admins see the family; Members their own and shared accounts; Children their own (editable for 24 hours); Viewers read only |
 | Config | `Security_Policy__mdt` (timeouts, lockout, password rules, hash iterations), `Role_Permission__mdt` (role × feature × action) and `Default_Category__mdt` (the category template each family starts with) |
 | Audit | `Audit_Event__e` (publish immediately) → `AuditEventTrigger` → `Audit_Log__b` big object |

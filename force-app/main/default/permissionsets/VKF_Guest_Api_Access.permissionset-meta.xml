@@ -49,6 +49,10 @@
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
+        <apexClass>VkfReportsResource</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>VkfTransactionsResource</apexClass>
         <enabled>true</enabled>
     </classAccesses>

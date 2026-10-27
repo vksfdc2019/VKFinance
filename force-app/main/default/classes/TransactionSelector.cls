@@ -76,6 +76,16 @@ public without sharing class TransactionSelector extends FamilyScopedSelector {
         );
     }
 
+    /** One account's non-void rows in date order, for running balances. */
+    public List<Transaction__c> forAccount(Id accountId, Date fromDate, Date toDate, Integer max) {
+        return (List<Transaction__c>) Database.queryWithBinds(
+            'SELECT ' + FIELDS + ' FROM Transaction__c WHERE Family__c = :fid AND Account__c = :aid AND Status__c != \'Void\'' +
+                ' AND Txn_Date__c >= :fromDate AND Txn_Date__c <= :toDate ORDER BY Txn_Date__c, Name LIMIT ' + Math.max(1, Math.min(max, 5000)),
+            new Map<String, Object>{ 'fid' => familyId, 'aid' => accountId, 'fromDate' => fromDate, 'toDate' => toDate },
+            AccessLevel.SYSTEM_MODE
+        );
+    }
+
     public List<Transaction__c> page(Filter f, Integer pageSize) {
         Map<String, Object> binds = new Map<String, Object>();
         String soql = 'SELECT ' + FIELDS + ' FROM Transaction__c WHERE ' + whereClause(f, binds, true) +

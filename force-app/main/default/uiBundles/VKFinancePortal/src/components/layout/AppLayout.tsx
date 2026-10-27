@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import {
 	ArrowLeftRight,
+	BarChart3,
 	Landmark,
 	LayoutDashboard,
 	LogOut,
@@ -64,6 +65,7 @@ function Shell() {
 		{ to: "/bills", label: "Bills", icon: ReceiptText, show: can("BILLS:READ") },
 		{ to: "/loans", label: "Loans & EMIs", icon: Landmark, show: can("LOANS:READ") },
 		{ to: "/recurring", label: "Recurring", icon: Repeat, show: can("RECURRING:READ") },
+		{ to: "/reports", label: "Reports", icon: BarChart3, show: can("REPORTS:READ") },
 		{ to: "/categories", label: "Categories", icon: Tags, show: can("CATEGORIES:CREATE") },
 		{ to: "/family", label: "Family", icon: Users, show: can("MEMBERS:CREATE") },
 		{ to: "/profile", label: "Profile & security", icon: ShieldCheck, show: true },
@@ -72,7 +74,7 @@ function Shell() {
 
 	return (
 		<div className="min-h-svh bg-slate-50 bg-[radial-gradient(60rem_30rem_at_100%_-10%,rgba(20,184,166,0.08),transparent),radial-gradient(40rem_20rem_at_-10%_0%,rgba(56,189,248,0.06),transparent)]">
-			<aside className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/85 backdrop-blur-md lg:fixed lg:inset-y-0 lg:left-0 lg:flex lg:w-64 lg:flex-col lg:border-r lg:border-b-0">
+			<aside className="no-print sticky top-0 z-30 border-b border-slate-200/70 bg-white/85 backdrop-blur-md lg:fixed lg:inset-y-0 lg:left-0 lg:flex lg:w-64 lg:flex-col lg:border-r lg:border-b-0">
 				<div className="flex items-center justify-between gap-3 px-4 py-3 lg:px-5 lg:pt-6 lg:pb-5">
 					<BrandMark />
 					<div className="flex items-center gap-1">
@@ -163,7 +165,7 @@ function Shell() {
 				</div>
 			</aside>
 
-			<main className="lg:pl-64">
+			<main className="lg:pl-64 print:pl-0">
 				<div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
 					<Suspense fallback={<PageLoading />}>
 						<div key={location.pathname} className="vk-rise">

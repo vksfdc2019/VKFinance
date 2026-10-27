@@ -191,3 +191,12 @@
   .vk-draw { animation: none; stroke-dashoffset: 0; }
   .vk-lift:hover { transform: none; }
 }
+
+/* Print: just the report - no navigation, buttons or floating actions. */
+@media print {
+  .no-print, aside, [aria-label="Add transaction"] { display: none !important; }
+  body { background: white !important; }
+  main { padding-left: 0 !important; }
+  .vk-rise, .vk-pop { animation: none !important; }
+  section, table { break-inside: avoid; }
+}

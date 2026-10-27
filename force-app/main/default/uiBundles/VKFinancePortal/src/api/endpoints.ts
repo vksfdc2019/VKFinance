@@ -28,6 +28,7 @@ import type {
 	RuleInput,
 	Statement,
 } from "./commitmentTypes";
+import type { LayoutWidget, Report, ReportFilters, ReportType, SavedReport } from "./reportTypes";
 
 type Message = { message: string };
 
@@ -126,4 +127,14 @@ export const commitmentApi = {
 
 	notifications: () => vkf<{ items: AppNotification[]; unread: number }>("GET", "/notifications"),
 	markRead: (ids: string[] = []) => vkf<{ marked: number }>("POST", "/notifications/read", { ids }),
+};
+
+export const reportApi = {
+	run: (type: ReportType, filters: ReportFilters) =>
+		vkf<Report>("GET", `/reports/${id(type)}${queryString({ from: filters.from, to: filters.to, memberId: filters.memberId, accountId: filters.accountId, categoryId: filters.categoryId })}`),
+	saved: () => vkf<SavedReport[]>("GET", "/reports/saved"),
+	save: (input: { name: string; reportType: ReportType; filters: ReportFilters; shared: boolean }) => vkf<SavedReport>("POST", "/reports/saved", input),
+	remove: (reportId: string) => vkf<void>("DELETE", `/reports/saved/${id(reportId)}`),
+	layout: () => vkf<{ widgets: LayoutWidget[] }>("GET", "/reports/layout"),
+	saveLayout: (widgets: LayoutWidget[]) => vkf<{ widgets: LayoutWidget[] }>("PUT", "/reports/layout", { widgets }),
 };

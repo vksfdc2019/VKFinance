@@ -32,6 +32,7 @@ public without sharing class DuesProcessor {
 
     public static Summary run(Id familyId, Date today) {
         Summary s = new Summary();
+        InsightService.ensurePreviousMonth(familyId, today);
         BillService.refresh(familyId, today);
         LoanService.refresh(familyId, today);
         s.statements = CardStatementService.generate(familyId, today);

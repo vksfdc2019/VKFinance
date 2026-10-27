@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { Link, useSearchParams } from "react-router";
-import { ArrowDownLeft, ArrowRight, ArrowUpRight, Landmark, PiggyBank, Plus, Target, Wallet } from "lucide-react";
+import { ArrowDownLeft, ArrowRight, ArrowUpRight, Landmark, PiggyBank, Plus, SlidersHorizontal, Target, Wallet } from "lucide-react";
+import { CustomiseDialog, useDashboardLayout, Widget } from "./DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -39,6 +40,8 @@ export default function HomePage() {
 	const { profile, can } = useAuth();
 	const { version, openEntry, canAdd, refresh } = useLedger();
 	const [paying, setPaying] = useState<DueItem | null>(null);
+	const [customising, setCustomising] = useState(false);
+	const { layout, saveLayout } = useDashboardLayout();
 	const [params, setParams] = useSearchParams();
 	const month = params.get("month") ?? monthKey();
 	const memberId = params.get("member") ?? undefined;
@@ -74,6 +77,10 @@ export default function HomePage() {
 						</Select>
 					)}
 					<MonthSwitcher value={month} onChange={(m) => setParam("month", m === monthKey() ? undefined : m)} />
+					<Button variant="outline" size="icon" className="rounded-xl bg-white" aria-label="Customise dashboard" onClick={() => setCustomising(true)}>
+						<SlidersHorizontal />
+					</Button>
+					{customising && <CustomiseDialog layout={layout} onClose={() => setCustomising(false)} onSave={saveLayout} />}
 				</>
 			}
 		/>
@@ -142,8 +149,9 @@ export default function HomePage() {
 				/>
 			</div>
 
+			<div className="mt-4 grid gap-4 xl:grid-cols-3">
 			{data.upcoming.length > 0 && (
-				<Reveal index={4} className="mt-4">
+				<Widget id="upcoming" layout={layout} className="xl:col-span-3">
 					<Panel
 						title="Coming up"
 						description="Bills, EMIs and card bills in the next 30 days"
@@ -185,7 +193,7 @@ export default function HomePage() {
 							))}
 						</ul>
 					</Panel>
-				</Reveal>
+				</Widget>
 			)}
 			{paying && (
 				<PayBillDialog
@@ -199,11 +207,14 @@ export default function HomePage() {
 				/>
 			)}
 
-			<div className="mt-4 grid gap-4 xl:grid-cols-3">
-				<Panel title="Cash flow" description="Income and spending over the last six months" className="xl:col-span-2">
+				<Widget id="cashflow" layout={layout} className="xl:col-span-2">
+				<Panel title="Cash flow" description="Income and spending over the last six months" className="h-full">
 					<CashFlowChart data={data.trend} currency={currency} highlight={month} />
 				</Panel>
+				</Widget>
+				<Widget id="categories" layout={layout}>
 				<Panel
+					className="h-full"
 					title="Where it went"
 					description={`Spending by category · ${monthLabel(month)}`}
 					action={
@@ -220,10 +231,11 @@ export default function HomePage() {
 						<p className="py-10 text-center text-sm text-slate-500">No spending recorded in {monthLabel(month)}.</p>
 					)}
 				</Panel>
-			</div>
+				</Widget>
 
-			<div className="mt-4 grid gap-4 lg:grid-cols-3">
+				<Widget id="budget" layout={layout}>
 				<Panel
+					className="h-full"
 					title="Budget"
 					description={monthLabel(month)}
 					action={
@@ -267,8 +279,11 @@ export default function HomePage() {
 						<NeedsWantsBar needs={kpis.essential} wants={kpis.discretionary} currency={currency} />
 					</div>
 				</Panel>
+				</Widget>
 
+				<Widget id="accounts" layout={layout}>
 				<Panel
+					className="h-full"
 					title="Accounts"
 					description={`${data.accounts.length} active`}
 					action={
@@ -310,8 +325,11 @@ export default function HomePage() {
 						))}
 					</ul>
 				</Panel>
+				</Widget>
 
+				<Widget id="recent" layout={layout}>
 				<Panel
+					className="h-full"
 					title="Recent activity"
 					action={
 						<Link to={txnLink("")} className="text-xs font-medium text-teal-700 hover:underline">
@@ -330,6 +348,7 @@ export default function HomePage() {
 						<p className="py-10 text-center text-sm text-slate-500">Nothing recorded yet.</p>
 					)}
 				</Panel>
+				</Widget>
 			</div>
 		</>
 	);

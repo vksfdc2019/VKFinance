@@ -97,3 +97,33 @@ describe("commitments", async () => {
 		expect(dueText(9)).toBe("In 9 days");
 	});
 });
+
+describe("reports", async () => {
+	const { presetRange, formatCell, toCsv } = await import("@/features/reports/ReportView");
+	const { normalise } = await import("@/pages/DashboardLayout");
+
+	it("turns period presets into dates, with an April-March financial year", () => {
+		const today = new Date(2026, 9, 27);
+		expect(presetRange("this-month", today)).toEqual({ from: "2026-10-01", to: "2026-10-31" });
+		expect(presetRange("last-month", today)).toEqual({ from: "2026-09-01", to: "2026-09-30" });
+		expect(presetRange("fy", today)).toEqual({ from: "2026-04-01", to: "2027-03-31" });
+		expect(presetRange("fy", new Date(2027, 1, 10))).toEqual({ from: "2026-04-01", to: "2027-03-31" });
+		expect(presetRange("last-12", today)).toEqual({ from: "2025-11-01", to: "2026-10-31" });
+		expect(presetRange("custom", today)).toBeNull();
+	});
+
+	it("formats cells by type and escapes CSV", () => {
+		expect(formatCell(1234.5, "money", "INR")).toBe("₹1,234.50");
+		expect(formatCell(12.34, "percent", "INR")).toBe("12.3%");
+		expect(formatCell(null, "money", "INR")).toBe("—");
+		expect(formatCell("2026-10", "month", "INR")).toBe("October 2026");
+		const csv = toCsv([{ title: "T", columns: [{ key: "a", label: "Name", format: "text" }], rows: [{ a: 'He said "hi"' }] }]);
+		expect(csv).toBe('"T"\r\n"Name"\r\n"He said ""hi"""\r\n');
+	});
+
+	it("keeps a saved layout's order and adds new widgets at the end", () => {
+		const layout = normalise([{ key: "recent" }, { key: "bogus" }, { key: "upcoming", hidden: true }]);
+		expect(layout.map((w) => w.key)).toEqual(["recent", "upcoming", "cashflow", "categories", "budget", "accounts"]);
+		expect(layout[1].hidden).toBe(true);
+	});
+});

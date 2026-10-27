@@ -48,6 +48,13 @@ spending and payments, SIPs and Arjun's pocket money, plus budgets for this mont
 - **Recurring:** salary, rent, SIP and pocket money repeat on their own (Auto-post) or ask first
   (Suggest). **Record now** posts the next one immediately.
 - **Card statements:** Accounts → the card's **⋮** menu → **Statements**.
+- **Reports:** 13 reports - monthly summary (click a category to drill into sub-categories, then
+  entries), trend, budget vs actual, cash-flow forecast, account statement, cards, loans with this
+  year's interest, bills paid on time, payment modes, annual tax summary, member spending and
+  security activity. Each one exports to CSV, prints cleanly, and can be saved (and shared with the
+  family). Arjun sees only the reports and money he's allowed to.
+- **Customise the overview:** the sliders button next to the month switcher shows, hides and
+  reorders the panels - saved to your login.
 - **Family Admin view:** sign in as `demo.admin.a` and open **Family**. You see only Family A's
   members, and you can add, edit, unlock, reset passwords, sign out, disable and remove members.
   Role and status changes ask for your own password again.
