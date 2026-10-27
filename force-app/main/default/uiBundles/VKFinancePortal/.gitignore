@@ -1,0 +1,12 @@
+node_modules
+dist
+dist-ssr
+build
+*.local
+logs
+*.log
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+*.tsbuildinfo

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
+    <label>VKF Guest API Access</label>
+    <description>Assigned to the VK Finance site guest user. Grants API access and the VK portal REST resources only - no object permissions.</description>
+    <hasActivationRequired>false</hasActivationRequired>
+    <classAccesses>
+        <apexClass>VkfPingResource</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <userPermissions>
+        <enabled>true</enabled>
+        <name>ApiEnabled</name>
+    </userPermissions>
+</PermissionSet>
