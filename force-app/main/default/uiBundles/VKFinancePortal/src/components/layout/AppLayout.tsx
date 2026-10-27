@@ -1,58 +1,185 @@
-import { NavLink, Outlet } from "react-router";
-import { LogOut } from "lucide-react";
+import { Suspense } from "react";
+import { NavLink, Outlet, useNavigate } from "react-router";
+import {
+	ArrowLeftRight,
+	LayoutDashboard,
+	LogOut,
+	Plus,
+	ShieldCheck,
+	Tags,
+	Target,
+	UserRound,
+	Users,
+	Wallet,
+	type LucideIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/features/auth/AuthContext";
 import { SessionTimeout } from "@/features/auth/SessionTimeout";
+import { LedgerProvider, useLedger } from "@/features/ledger/LedgerContext";
 import { BrandMark } from "./BrandMark";
 
+interface NavItem {
+	to: string;
+	label: string;
+	icon: LucideIcon;
+	show: boolean;
+}
+
+function initials(first?: string, last?: string) {
+	return `${first?.[0] ?? ""}${last?.[0] ?? ""}`.toUpperCase() || "?";
+}
+
 export default function AppLayout() {
+	return (
+		<LedgerProvider>
+			<Shell />
+		</LedgerProvider>
+	);
+}
+
+function Shell() {
 	const { profile, can, logout } = useAuth();
-	const links = [
-		{ to: "/", label: "Home", show: true },
-		{ to: "/family", label: "Family", show: can("MEMBERS:CREATE") },
-		{ to: "/profile", label: "Profile & security", show: true },
+	const { openEntry, canAdd } = useLedger();
+	const navigate = useNavigate();
+	const links: NavItem[] = [
+		{ to: "/", label: "Overview", icon: LayoutDashboard, show: can("DASHBOARD:READ") },
+		{ to: "/transactions", label: "Transactions", icon: ArrowLeftRight, show: can("TRANSACTIONS:READ") },
+		{ to: "/accounts", label: "Accounts", icon: Wallet, show: can("ACCOUNTS:READ") },
+		{ to: "/budgets", label: "Budgets", icon: Target, show: can("BUDGETS:READ") },
+		{ to: "/categories", label: "Categories", icon: Tags, show: can("CATEGORIES:CREATE") },
+		{ to: "/family", label: "Family", icon: Users, show: can("MEMBERS:CREATE") },
+		{ to: "/profile", label: "Profile & security", icon: ShieldCheck, show: true },
 	].filter((link) => link.show);
+	const avatar = initials(profile?.firstName, profile?.lastName);
 
 	return (
-		<div className="min-h-svh bg-slate-50">
-			<header className="border-b bg-white">
-				<div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
+		<div className="min-h-svh bg-slate-50 bg-[radial-gradient(60rem_30rem_at_100%_-10%,rgba(20,184,166,0.08),transparent),radial-gradient(40rem_20rem_at_-10%_0%,rgba(56,189,248,0.06),transparent)]">
+			<aside className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/85 backdrop-blur-md lg:fixed lg:inset-y-0 lg:left-0 lg:flex lg:w-64 lg:flex-col lg:border-r lg:border-b-0">
+				<div className="flex items-center justify-between gap-3 px-4 py-3 lg:px-5 lg:pt-6 lg:pb-5">
 					<BrandMark />
-					<nav className="flex flex-1 flex-wrap gap-1" aria-label="Main">
-						{links.map((link) => (
-							<NavLink
-								key={link.to}
-								to={link.to}
-								end={link.to === "/"}
-								className={({ isActive }) =>
-									cn(
-										"rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-										isActive ? "bg-teal-50 text-teal-900" : "text-slate-600 hover:bg-slate-100",
-									)
-								}
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<button
+								type="button"
+								aria-label="Account menu"
+								className="flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-teal-600 to-emerald-700 text-xs font-semibold text-white lg:hidden"
 							>
-								{link.label}
-							</NavLink>
-						))}
-					</nav>
-					<div className="flex items-center gap-3">
-						<span className="hidden text-sm text-slate-700 sm:inline">
-							{profile?.firstName} {profile?.lastName}
-						</span>
-						<Badge variant="secondary">{profile?.role}</Badge>
-						<Button variant="ghost" size="sm" onClick={() => void logout("user")}>
-							<LogOut aria-hidden="true" />
-							Sign out
+								{avatar}
+							</button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end" className="w-56">
+							<DropdownMenuLabel>
+								<p className="font-medium">
+									{profile?.firstName} {profile?.lastName}
+								</p>
+								<p className="text-xs font-normal text-muted-foreground">
+									{profile?.role} · {profile?.familyName}
+								</p>
+							</DropdownMenuLabel>
+							<DropdownMenuSeparator />
+							<DropdownMenuItem onSelect={() => navigate("/profile")}>
+								<UserRound />
+								Profile &amp; security
+							</DropdownMenuItem>
+							<DropdownMenuItem onSelect={() => void logout("user")}>
+								<LogOut />
+								Sign out
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				</div>
+
+				{canAdd && (
+					<div className="hidden px-4 pb-4 lg:block">
+						<Button className="h-10 w-full rounded-xl shadow-sm shadow-teal-900/20" onClick={() => openEntry()}>
+							<Plus />
+							Add transaction
+							<kbd className="ml-auto rounded bg-white/15 px-1.5 text-[10px] font-medium">N</kbd>
 						</Button>
 					</div>
+				)}
+
+				<nav aria-label="Main" className="flex gap-1 overflow-x-auto px-3 pb-2.5 lg:flex-1 lg:flex-col lg:overflow-visible lg:px-4 lg:pb-0">
+					{links.map(({ to, label, icon: Icon }) => (
+						<NavLink
+							key={to}
+							to={to}
+							end={to === "/"}
+							className={({ isActive }) =>
+								cn(
+									"flex shrink-0 items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors",
+									isActive
+										? "bg-teal-50 text-teal-900 ring-1 ring-teal-600/15"
+										: "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+								)
+							}
+						>
+							<Icon className="size-4" aria-hidden="true" />
+							{label}
+						</NavLink>
+					))}
+				</nav>
+
+				<div className="hidden border-t border-slate-200/70 p-4 lg:block">
+					<div className="flex items-center gap-3">
+						<span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-teal-600 to-emerald-700 text-xs font-semibold text-white">
+							{avatar}
+						</span>
+						<div className="min-w-0 flex-1">
+							<p className="truncate text-sm font-medium text-slate-900">
+								{profile?.firstName} {profile?.lastName}
+							</p>
+							<p className="truncate text-xs text-slate-500">{profile?.role}</p>
+						</div>
+					</div>
+					<p className="mt-3 truncate text-xs text-slate-400">
+						{profile?.familyName} · {profile?.familyCode}
+					</p>
+					<Button variant="ghost" size="sm" className="mt-2 w-full justify-start text-slate-600" onClick={() => void logout("user")}>
+						<LogOut aria-hidden="true" />
+						Sign out
+					</Button>
 				</div>
-			</header>
-			<main className="mx-auto max-w-6xl px-4 py-8">
-				<Outlet />
+			</aside>
+
+			<main className="lg:pl-64">
+				<div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+					<Suspense fallback={<PageLoading />}>
+						<Outlet />
+					</Suspense>
+				</div>
 			</main>
+
+			{canAdd && (
+				<Button
+					size="icon-lg"
+					aria-label="Add transaction"
+					className="fixed right-5 bottom-5 z-30 size-14 rounded-2xl shadow-lg shadow-teal-900/25 lg:hidden [&_svg]:size-6"
+					onClick={() => openEntry()}
+				>
+					<Plus />
+				</Button>
+			)}
 			<SessionTimeout />
+		</div>
+	);
+}
+
+function PageLoading() {
+	return (
+		<div className="space-y-4" aria-busy="true" aria-label="Loading">
+			<div className="h-9 w-56 animate-pulse rounded-xl bg-slate-200/70" />
+			<div className="h-64 animate-pulse rounded-2xl bg-slate-200/50" />
 		</div>
 	);
 }

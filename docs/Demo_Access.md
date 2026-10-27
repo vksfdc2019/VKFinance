@@ -19,12 +19,32 @@ the `VKFinance` Developer Edition org.
 
 ### What to try
 
+Demo Family A has about four months of sample money: salary, rent, groceries, bills, credit-card
+spending and payments, SIPs and Arjun's pocket money, plus budgets for this month and last.
+
+- **Overview:** sign in as `demo.admin.a`. You land on the family's net worth, this month's income,
+  spending and savings, a six-month cash-flow chart (hover a month; **Table** shows the numbers),
+  spending by category, budget progress, accounts and recent activity. Switch months with the
+  arrows, or pick one family member in **Whole family**.
+- **Add a transaction:** press **N** anywhere (or **Add transaction**). Choose Expense, Income or
+  Transfer, type the amount, pick an account and search for a category. Transferring to the credit
+  card records a card payment, which isn't counted as spending twice.
+- **Transactions:** filter by month, type, account, category or person, search payees and notes,
+  open any row to edit or void it, and export what you see to CSV.
+- **Accounts:** each account is a card with its live balance. The credit card shows how much of
+  the limit is used and the next statement and due dates. Use the **⋮** menu to add an expense
+  there, pay the card, match the balance to a bank statement, or close the account.
+- **Budgets:** see each category's progress. Amber means spending is running ahead of the month,
+  red means over plan. **Edit plan** changes amounts and **Copy last month** starts a new month.
+- **Categories:** rename, recolour, hide or add categories (Family Admin only).
 - **Family Admin view:** sign in as `demo.admin.a` and open **Family**. You see only Family A's
   members, and you can add, edit, unlock, reset passwords, sign out, disable and remove members.
   Role and status changes ask for your own password again.
-- **Member view:** sign in as `demo.son.a`. There is no **Family** link, and going to `/family`
-  directly sends you back to Home.
-- **Family isolation:** sign in as `demo.admin.b`. You see only Family B, never Family A.
+- **Member view:** sign in as `demo.son.a`. Arjun sees his own pocket-money wallet and the shared
+  household account, but not the salary account, the card or the investments. There is no
+  **Family** or **Categories** link, and going to `/family` directly sends him back to Home.
+- **Family isolation:** sign in as `demo.admin.b`. Family B starts empty with a setup guide and
+  never sees Family A's money or members.
 - **Your sessions:** open **Profile & security** to see your signed-in devices and sign them out.
 
 ### Getting `demo.daughter.a` working
@@ -74,7 +94,11 @@ If the demo data is deleted, run:
 
 ```bash
 sf apex run --target-org VKFinance --file scripts/apex/seed-demo-families.apex
+sf apex run --target-org VKFinance --file scripts/apex/seed-demo-finance.apex
 ```
+
+The second script adds the sample accounts, transactions and budgets to Demo Family A. It runs as
+you, so you need the `VKF_Platform_Admin` permission set.
 
 The script prints the new temporary passwords to the debug log (look for lines starting with
 `VKF_SEED`). They will differ from the passwords above, and each user must set their own

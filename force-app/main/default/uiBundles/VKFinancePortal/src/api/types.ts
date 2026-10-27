@@ -28,6 +28,7 @@ export interface Profile {
 	familyId: string;
 	familyName: string;
 	familyCode: string;
+	currencyCode?: string;
 	mustChangePassword: boolean;
 	sessionScope: "FULL" | "CHANGE_PASSWORD";
 	idleTimeoutMinutes: number;

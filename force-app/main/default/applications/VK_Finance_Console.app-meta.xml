@@ -14,5 +14,9 @@
     <tabs>Family__c</tabs>
     <tabs>Portal_User__c</tabs>
     <tabs>Portal_Session__c</tabs>
+    <tabs>Financial_Account__c</tabs>
+    <tabs>Transaction__c</tabs>
+    <tabs>Category__c</tabs>
+    <tabs>Budget__c</tabs>
     <uiType>Lightning</uiType>
 </CustomApplication>

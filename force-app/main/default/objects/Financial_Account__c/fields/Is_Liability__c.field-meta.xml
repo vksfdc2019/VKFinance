@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Is_Liability__c</fullName>
+    <description>Credit cards and loans: the balance is money owed.</description>
+    <formula>OR(ISPICKVAL(Type__c, 'Credit Card'), ISPICKVAL(Type__c, 'Loan'))</formula>
+    <formulaTreatBlanksAs>BlankAsZero</formulaTreatBlanksAs>
+    <label>Is Liability</label>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

@@ -19,6 +19,7 @@ public without sharing class UserContext {
     public Boolean mustChangePassword;
     public String familyName;
     public String familyCode;
+    public String currencyCode;
     private Set<Id> visibleMembers;
 
     public UserContext(Portal_User__c user, Id sessionId, String scope) {
@@ -38,6 +39,7 @@ public without sharing class UserContext {
         this.mustChangePassword = user.Must_Change_Password__c;
         this.familyName = user.Family__r?.Name;
         this.familyCode = user.Family__r?.Family_Code__c;
+        this.currencyCode = String.isBlank(user.Family__r?.Base_Currency__c) ? 'INR' : user.Family__r.Base_Currency__c;
     }
 
     public Boolean isFamilyAdmin() {

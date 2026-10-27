@@ -5,7 +5,8 @@
  */
 public without sharing class IdentitySelector {
     private static final String FIELDS =
-        'Id, Name, Family__c, Family__r.Name, Family__r.Family_Code__c, Family__r.Status__c, First_Name__c, ' +
+        'Id, Name, Family__c, Family__r.Name, Family__r.Family_Code__c, Family__r.Status__c, Family__r.Base_Currency__c, ' +
+        'First_Name__c, ' +
         'Last_Name__c, Username__c, Email__c, Mobile__c, Relationship__c, Role__c, Status__c, Viewer_Scope__c, ' +
         'Password_Hash__c, Password_Salt__c, Hash_Iterations__c, Password_Changed_At__c, Must_Change_Password__c, ' +
         'Temp_Password_Expires_At__c, Failed_Login_Count__c, Lockout_Count__c, Locked_Until__c, ' +

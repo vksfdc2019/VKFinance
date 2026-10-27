@@ -35,6 +35,7 @@ public without sharing class FamilyOnboardingService {
             Max_Members__c = maxMembers == null ? 10 : maxMembers
         );
         insert as system family;
+        CategoryService.seedDefaults(family.Id);
 
         admin.role = 'Family Admin';
         if (String.isBlank(admin.relationship)) {

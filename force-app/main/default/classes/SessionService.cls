@@ -65,7 +65,8 @@ public without sharing class SessionService {
             SELECT
                 Id, Family__c, Scope__c, Status__c, Last_Activity__c, Expires_At__c, User_Agent_Hash__c, Portal_User__c,
                 Portal_User__r.Id, Portal_User__r.Family__c, Portal_User__r.Family__r.Name,
-                Portal_User__r.Family__r.Family_Code__c, Portal_User__r.Family__r.Status__c, Portal_User__r.Role__c,
+                Portal_User__r.Family__r.Family_Code__c, Portal_User__r.Family__r.Status__c,
+                Portal_User__r.Family__r.Base_Currency__c, Portal_User__r.Role__c,
                 Portal_User__r.Status__c, Portal_User__r.First_Name__c, Portal_User__r.Last_Name__c,
                 Portal_User__r.Username__c, Portal_User__r.Email__c, Portal_User__r.Mobile__c,
                 Portal_User__r.Relationship__c, Portal_User__r.Viewer_Scope__c, Portal_User__r.Must_Change_Password__c

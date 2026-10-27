@@ -1,7 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
     <classAccesses>
+        <apexClass>VkfAccountsResource</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
         <apexClass>VkfAuthResource</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>VkfBudgetsResource</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>VkfCategoriesResource</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>VkfDashboardResource</apexClass>
         <enabled>true</enabled>
     </classAccesses>
     <classAccesses>
@@ -14,6 +30,14 @@
     </classAccesses>
     <classAccesses>
         <apexClass>VkfProfileResource</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>VkfTransactionsResource</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>VkfTransfersResource</apexClass>
         <enabled>true</enabled>
     </classAccesses>
     <description>Assigned to the VK Finance site guest user. Grants API access and the VK portal REST resources only - no object permissions.</description>

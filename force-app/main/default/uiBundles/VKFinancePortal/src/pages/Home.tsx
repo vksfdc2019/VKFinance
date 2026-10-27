@@ -1,79 +1,386 @@
-import { Link } from "react-router";
-import { ShieldCheck, Users, Wallet } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import type { ReactNode } from "react";
+import { Link, useSearchParams } from "react-router";
+import { ArrowDownLeft, ArrowRight, ArrowUpRight, Landmark, PiggyBank, Plus, Target, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FormErrors } from "@/components/forms";
+import { CashFlowChart } from "@/components/charts/CashFlowChart";
+import { CategoryBars, NeedsWantsBar } from "@/components/charts/CategoryBars";
+import { AccountChip } from "@/components/finance/icons";
+import { DeltaPill, EmptyState, MonthSwitcher, PageHeader, Panel, StatusMeter, budgetStatus, utilisationStatus } from "@/components/finance/ui";
+import { financeApi } from "@/api/endpoints";
+import type { Dashboard } from "@/api/financeTypes";
+import { formatMoney, formatPercent, monthKey, monthLabel, percentChange } from "@/lib/format";
+import { useAsync } from "@/lib/useAsync";
+import { cn } from "@/lib/utils";
 import { useAuth } from "@/features/auth/AuthContext";
+import { useLedger } from "@/features/ledger/LedgerContext";
+import { TxnRow } from "@/features/ledger/TxnRow";
 
-const COMING_NEXT = [
-	"Bank, cash, UPI wallet and credit-card accounts",
-	"Income, expenses, transfers and card payments",
-	"Bills, loans and EMI schedules with reminders",
-	"Monthly budgets, dashboards and reports",
-];
+function greeting() {
+	const hour = new Date().getHours();
+	return hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+}
+
+/** How far through the month we are: 1 for past months, 0 for future ones. */
+function monthProgress(month: string) {
+	const now = new Date();
+	const current = monthKey(now);
+	if (month < current) return 1;
+	if (month > current) return 0;
+	return now.getDate() / new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+}
 
 export default function HomePage() {
 	const { profile, can } = useAuth();
-	if (!profile) return null;
-	const isAdmin = can("MEMBERS:CREATE");
+	const { version, openEntry, canAdd } = useLedger();
+	const [params, setParams] = useSearchParams();
+	const month = params.get("month") ?? monthKey();
+	const memberId = params.get("member") ?? undefined;
+	const { data, errors } = useAsync(() => financeApi.dashboard(month, memberId), [month, memberId, version]);
+	const currency = data?.currencyCode ?? profile?.currencyCode ?? "INR";
+
+	function setParam(key: string, value?: string) {
+		const next = new URLSearchParams(params);
+		if (value) next.set(key, value);
+		else next.delete(key);
+		setParams(next, { replace: true });
+	}
+
+	const header = (
+		<PageHeader
+			title={`${greeting()}, ${profile?.firstName ?? ""}`}
+			description={`${profile?.familyName} · ${profile?.familyCode}`}
+			actions={
+				<>
+					{data && data.members.length > 1 && (
+						<Select value={memberId ?? "all"} onValueChange={(v) => setParam("member", v === "all" ? undefined : v)}>
+							<SelectTrigger className="h-9 w-44 rounded-xl bg-white" aria-label="Whose money">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="all">Whole family</SelectItem>
+								{data.members.map((m) => (
+									<SelectItem key={m.id} value={m.id}>
+										{m.name}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+					)}
+					<MonthSwitcher value={month} onChange={(m) => setParam("month", m === monthKey() ? undefined : m)} />
+				</>
+			}
+		/>
+	);
+
+	if (!data) {
+		return (
+			<>
+				{header}
+				<FormErrors errors={errors} />
+				{errors.length === 0 && <OverviewSkeleton />}
+			</>
+		);
+	}
+
+	const isNewFamily = data.accounts.length === 0 && data.recent.length === 0 && !memberId;
+	if (isNewFamily) {
+		return (
+			<>
+				{header}
+				<GettingStarted canAddAccounts={can("ACCOUNTS:CREATE")} canAdd={canAdd} onAdd={() => openEntry()} />
+			</>
+		);
+	}
+
+	const { kpis } = data;
+	const progress = monthProgress(month);
+	const txnLink = (extra: string) => `/transactions?month=${month}${memberId ? `&member=${memberId}` : ""}${extra}`;
 
 	return (
-		<div className="grid gap-6">
-			<title>Home · VK Finance</title>
-			<div>
-				<h1 className="text-2xl font-semibold text-slate-900">Hello, {profile.firstName}</h1>
-				<p className="text-slate-600">
-					{profile.familyName} · {profile.familyCode}
-				</p>
+		<>
+			{header}
+			<FormErrors errors={errors} />
+
+			<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+				<NetWorthCard data={data} currency={currency} className="md:col-span-2 xl:col-span-1" />
+				<KpiCard
+					label="Income"
+					icon={<ArrowDownLeft />}
+					tint="bg-emerald-50 text-emerald-700"
+					value={formatMoney(kpis.income, currency)}
+					footer={<DeltaPill change={percentChange(kpis.income, kpis.prevIncome)} goodWhenUp />}
+				/>
+				<KpiCard
+					label="Spending"
+					icon={<ArrowUpRight />}
+					tint="bg-orange-50 text-orange-700"
+					value={formatMoney(kpis.expenses, currency)}
+					footer={<DeltaPill change={percentChange(kpis.expenses, kpis.prevExpenses)} goodWhenUp={false} />}
+				/>
+				<KpiCard
+					label="Saved"
+					icon={<PiggyBank />}
+					tint="bg-sky-50 text-sky-700"
+					value={formatMoney(kpis.net, currency)}
+					footer={
+						<span className="text-xs text-slate-500">
+							{kpis.savingsRate !== undefined ? `${formatPercent(kpis.savingsRate)} of income` : "No income recorded yet"}
+						</span>
+					}
+				/>
 			</div>
-			<div className="grid gap-4 md:grid-cols-3">
-				<Card>
-					<CardHeader>
-						<CardTitle className="flex items-center gap-2 text-base">
-							<Users className="size-4 text-teal-800" aria-hidden="true" />
-							Your family
-						</CardTitle>
-						<CardDescription>You're signed in as {profile.role}.</CardDescription>
-					</CardHeader>
-					<CardContent>
-						{isAdmin ? (
-							<Button asChild variant="outline" size="sm">
-								<Link to="/family">Manage family members</Link>
-							</Button>
-						) : (
-							<p className="text-sm text-slate-600">Your Family Admin manages who can sign in.</p>
-						)}
-					</CardContent>
-				</Card>
-				<Card>
-					<CardHeader>
-						<CardTitle className="flex items-center gap-2 text-base">
-							<ShieldCheck className="size-4 text-teal-800" aria-hidden="true" />
-							Security
-						</CardTitle>
-						<CardDescription>Change your password and see where you're signed in.</CardDescription>
-					</CardHeader>
-					<CardContent>
-						<Button asChild variant="outline" size="sm">
-							<Link to="/profile">Profile & security</Link>
-						</Button>
-					</CardContent>
-				</Card>
-				<Card>
-					<CardHeader>
-						<CardTitle className="flex items-center gap-2 text-base">
-							<Wallet className="size-4 text-teal-800" aria-hidden="true" />
-							Coming next
-						</CardTitle>
-						<CardDescription>The money features arrive in the next phase.</CardDescription>
-					</CardHeader>
-					<CardContent>
-						<ul className="list-disc space-y-1 pl-4 text-sm text-slate-600">
-							{COMING_NEXT.map((item) => (
-								<li key={item}>{item}</li>
+
+			<div className="mt-4 grid gap-4 xl:grid-cols-3">
+				<Panel title="Cash flow" description="Income and spending over the last six months" className="xl:col-span-2">
+					<CashFlowChart data={data.trend} currency={currency} highlight={month} />
+				</Panel>
+				<Panel
+					title="Where it went"
+					description={`Spending by category · ${monthLabel(month)}`}
+					action={
+						data.byCategory.length > 0 && (
+							<Link to={txnLink("&type=Expense")} className="text-xs font-medium text-teal-700 hover:underline">
+								Details
+							</Link>
+						)
+					}
+				>
+					{data.byCategory.length ? (
+						<CategoryBars items={data.byCategory} currency={currency} linkTo={(id) => txnLink(`&category=${id}`)} />
+					) : (
+						<p className="py-10 text-center text-sm text-slate-500">No spending recorded in {monthLabel(month)}.</p>
+					)}
+				</Panel>
+			</div>
+
+			<div className="mt-4 grid gap-4 lg:grid-cols-3">
+				<Panel
+					title="Budget"
+					description={monthLabel(month)}
+					action={
+						can("BUDGETS:READ") && (
+							<Link to={`/budgets?month=${month}`} className="text-xs font-medium text-teal-700 hover:underline">
+								{data.budget ? "Open" : can("BUDGETS:EDIT") ? "Plan" : "View"}
+							</Link>
+						)
+					}
+				>
+					{data.budget ? (
+						<div>
+							<p className="text-2xl font-semibold tabular-nums text-slate-900">
+								{formatMoney(data.budget.spent, currency)}
+								<span className="text-sm font-normal text-slate-500"> of {formatMoney(data.budget.planned, currency)}</span>
+							</p>
+							<StatusMeter
+								className="mt-3"
+								value={data.budget.spent}
+								max={data.budget.planned}
+								status={budgetStatus(data.budget.spent, data.budget.planned, progress)}
+								label={
+									data.budget.overCount > 0
+										? `${data.budget.overCount} ${data.budget.overCount === 1 ? "category is" : "categories are"} over plan`
+										: data.budget.spent > data.budget.planned
+											? "Over budget"
+											: `${formatMoney(data.budget.planned - data.budget.spent, currency)} left to spend`
+								}
+							/>
+						</div>
+					) : (
+						<div className="flex items-center gap-3 rounded-xl bg-slate-50 p-3">
+							<Target className="size-5 shrink-0 text-teal-700" aria-hidden="true" />
+							<p className="text-sm text-slate-600">
+								{data.wholeFamily && !memberId ? "No budget for this month yet." : "The family budget shows in the whole-family view."}
+							</p>
+						</div>
+					)}
+					<div className="mt-6">
+						<p className="mb-2 text-sm font-medium text-slate-800">Needs vs wants</p>
+						<NeedsWantsBar needs={kpis.essential} wants={kpis.discretionary} currency={currency} />
+					</div>
+				</Panel>
+
+				<Panel
+					title="Accounts"
+					description={`${data.accounts.length} active`}
+					action={
+						<Link to="/accounts" className="text-xs font-medium text-teal-700 hover:underline">
+							Manage
+						</Link>
+					}
+					bodyClassName="px-3 pb-3"
+				>
+					<ul className="space-y-0.5">
+						{data.accounts.slice(0, 6).map((a) => (
+							<li key={a.id}>
+								<Link to={`/transactions?account=${a.id}`} className="flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-slate-50">
+									<AccountChip account={a} />
+									<div className="min-w-0 flex-1">
+										<p className="truncate text-sm font-medium text-slate-900">{a.name}</p>
+										{a.card?.utilisationPct !== undefined ? (
+											<div className="mt-1 h-1 w-full max-w-32 overflow-hidden rounded-full bg-slate-100">
+												<div
+													className="h-full rounded-full"
+													style={{
+														width: `${Math.min(100, Math.max(0, a.card.utilisationPct))}%`,
+														backgroundColor: `var(--status-${utilisationStatus(a.card.utilisationPct)})`,
+													}}
+												/>
+											</div>
+										) : (
+											<p className="truncate text-xs text-slate-500">{a.ownerName ? `${a.type} · ${a.ownerName}` : a.type}</p>
+										)}
+									</div>
+									<div className="text-right">
+										<p className={cn("text-sm font-semibold tabular-nums", a.isLiability ? "text-slate-700" : "text-slate-900")}>
+											{formatMoney(a.balance, currency)}
+										</p>
+										{a.isLiability && <p className="text-[11px] text-slate-400">owed</p>}
+									</div>
+								</Link>
+							</li>
+						))}
+					</ul>
+				</Panel>
+
+				<Panel
+					title="Recent activity"
+					action={
+						<Link to={txnLink("")} className="text-xs font-medium text-teal-700 hover:underline">
+							See all
+						</Link>
+					}
+					bodyClassName="px-2 pb-3"
+				>
+					{data.recent.length ? (
+						<div className="space-y-0.5">
+							{data.recent.slice(0, 7).map((t) => (
+								<TxnRow key={t.id} txn={t} currency={currency} compact onOpen={(txn) => openEntry({ txn })} />
 							))}
-						</ul>
-					</CardContent>
-				</Card>
+						</div>
+					) : (
+						<p className="py-10 text-center text-sm text-slate-500">Nothing recorded yet.</p>
+					)}
+				</Panel>
+			</div>
+		</>
+	);
+}
+
+function NetWorthCard({ data, currency, className }: { data: Dashboard; currency: string; className?: string }) {
+	return (
+		<div
+			className={cn(
+				"relative overflow-hidden rounded-2xl bg-gradient-to-br from-teal-800 via-teal-900 to-slate-900 p-5 text-white shadow-lg shadow-teal-900/20",
+				className,
+			)}
+		>
+			<div className="pointer-events-none absolute -top-16 -right-10 size-48 rounded-full bg-teal-400/20 blur-2xl" />
+			<div className="pointer-events-none absolute -bottom-20 -left-10 size-48 rounded-full bg-sky-400/10 blur-2xl" />
+			<div className="relative">
+				<p className="flex items-center gap-2 text-sm text-teal-100/80">
+					<Landmark className="size-4" aria-hidden="true" />
+					{data.wholeFamily && !data.memberId ? "Family net worth" : "Net worth"}
+				</p>
+				<p className="mt-2 text-3xl font-semibold tracking-tight tabular-nums">{formatMoney(data.netWorth.net, currency)}</p>
+				<dl className="mt-4 grid grid-cols-2 gap-3 text-xs">
+					<div className="rounded-xl bg-white/10 px-3 py-2">
+						<dt className="text-teal-100/70">You have</dt>
+						<dd className="mt-0.5 text-sm font-semibold tabular-nums">{formatMoney(data.netWorth.assets, currency)}</dd>
+					</div>
+					<div className="rounded-xl bg-white/10 px-3 py-2">
+						<dt className="text-teal-100/70">You owe</dt>
+						<dd className="mt-0.5 text-sm font-semibold tabular-nums">{formatMoney(data.netWorth.liabilities, currency)}</dd>
+					</div>
+				</dl>
+			</div>
+		</div>
+	);
+}
+
+function KpiCard({ label, value, icon, tint, footer }: { label: string; value: string; icon: ReactNode; tint: string; footer: ReactNode }) {
+	return (
+		<div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-900/5">
+			<div className="flex items-center justify-between">
+				<p className="text-sm font-medium text-slate-500">{label}</p>
+				<span className={cn("flex size-8 items-center justify-center rounded-xl [&_svg]:size-4", tint)} aria-hidden="true">
+					{icon}
+				</span>
+			</div>
+			<p className="mt-3 text-2xl font-semibold tracking-tight tabular-nums text-slate-900">{value}</p>
+			<div className="mt-2">{footer}</div>
+		</div>
+	);
+}
+
+function GettingStarted({ canAddAccounts, canAdd, onAdd }: { canAddAccounts: boolean; canAdd: boolean; onAdd: () => void }) {
+	const steps = [
+		{
+			title: "Add your accounts",
+			text: "Bank accounts, cash, UPI wallets and credit cards - with today's balances.",
+			action: canAddAccounts && (
+				<Button asChild size="sm">
+					<Link to="/accounts?new=1">
+						<Plus />
+						Add an account
+					</Link>
+				</Button>
+			),
+		},
+		{
+			title: "Record what you spend",
+			text: "Press N anywhere to add an expense in seconds. Categories are ready for you.",
+			action: canAdd && (
+				<Button size="sm" variant="outline" onClick={onAdd}>
+					Add a transaction
+				</Button>
+			),
+		},
+		{
+			title: "Plan the month",
+			text: "Set a budget per category and watch it fill up as the month goes.",
+			action: (
+				<Button asChild size="sm" variant="outline">
+					<Link to="/budgets">
+						Open budgets
+						<ArrowRight />
+					</Link>
+				</Button>
+			),
+		},
+	];
+	return (
+		<Panel>
+			<EmptyState icon={<Wallet />} title="Let's set up your family's money">
+				Three quick steps and your dashboard comes alive.
+			</EmptyState>
+			<ol className="mx-auto grid max-w-4xl gap-4 pb-6 md:grid-cols-3">
+				{steps.map((step, i) => (
+					<li key={step.title} className="rounded-2xl bg-slate-50 p-5 ring-1 ring-slate-900/5">
+						<span className="flex size-7 items-center justify-center rounded-full bg-teal-700 text-xs font-semibold text-white">{i + 1}</span>
+						<h3 className="mt-3 font-semibold text-slate-900">{step.title}</h3>
+						<p className="mt-1 text-sm text-slate-500">{step.text}</p>
+						{step.action && <div className="mt-4">{step.action}</div>}
+					</li>
+				))}
+			</ol>
+		</Panel>
+	);
+}
+
+function OverviewSkeleton() {
+	return (
+		<div className="space-y-4" aria-busy="true" aria-label="Loading overview">
+			<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+				{[0, 1, 2, 3].map((i) => (
+					<Skeleton key={i} className="h-36 rounded-2xl" />
+				))}
+			</div>
+			<div className="grid gap-4 xl:grid-cols-3">
+				<Skeleton className="h-80 rounded-2xl xl:col-span-2" />
+				<Skeleton className="h-80 rounded-2xl" />
 			</div>
 		</div>
 	);

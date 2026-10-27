@@ -16,6 +16,7 @@ public inherited sharing class PortalDtos {
         public Id familyId;
         public String familyName;
         public String familyCode;
+        public String currencyCode;
         public Boolean mustChangePassword;
         public String sessionScope;
         public Integer idleTimeoutMinutes;
@@ -64,6 +65,7 @@ public inherited sharing class PortalDtos {
         p.familyId = ctx.familyId;
         p.familyName = ctx.familyName;
         p.familyCode = ctx.familyCode;
+        p.currencyCode = ctx.currencyCode;
         p.mustChangePassword = ctx.mustChangePassword == true;
         p.sessionScope = ctx.scope;
         p.idleTimeoutMinutes = SecurityPolicy.idleMinutes();
