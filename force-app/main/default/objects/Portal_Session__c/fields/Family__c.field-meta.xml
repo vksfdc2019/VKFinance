@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Family__c</fullName>
+    <label>Family</label>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <referenceTo>Family__c</referenceTo>
+    <relationshipLabel>Portal Sessions</relationshipLabel>
+    <relationshipName>Portal_Sessions</relationshipName>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

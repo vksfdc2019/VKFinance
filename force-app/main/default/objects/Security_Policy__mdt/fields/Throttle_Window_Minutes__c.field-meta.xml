@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Throttle_Window_Minutes__c</fullName>
+    <label>Throttle Window (minutes)</label>
+    <precision>18</precision>
+    <scale>0</scale>
+    <type>Number</type>
+    <fieldManageability>DeveloperControlled</fieldManageability>
+</CustomField>

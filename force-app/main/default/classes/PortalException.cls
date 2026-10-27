@@ -9,14 +9,24 @@ public class PortalException extends Exception {
         'INVALID_CREDENTIALS' => 401,
         'SESSION_EXPIRED' => 401,
         'NOT_AUTHORIZED' => 403,
+        'PASSWORD_CHANGE_REQUIRED' => 403,
         'NOT_FOUND' => 404,
         'CONFLICT' => 409,
         'VALIDATION' => 422,
-        'LOCKED' => 423,
+        // Apex REST rejects 423, so a locked account is a 403 with code LOCKED.
+        'LOCKED' => 403,
         'THROTTLED' => 429
     };
 
     public List<String> errors = new List<String>();
+
+    /** When true the REST layer keeps this transaction's DML (e.g. failed-login counters). */
+    public Boolean keepChanges = false;
+
+    public PortalException keep() {
+        keepChanges = true;
+        return this;
+    }
 
     public String code() {
         return getMessage();

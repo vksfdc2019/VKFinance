@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
+    <brand>
+        <headerColor>#0F4C5C</headerColor>
+        <shouldOverrideOrgTheme>false</shouldOverrideOrgTheme>
+    </brand>
+    <description>Platform owner console for VK Finance: families, portal users and sessions.</description>
+    <formFactors>Large</formFactors>
+    <isNavAutoTempTabsDisabled>false</isNavAutoTempTabsDisabled>
+    <isNavPersonalizationDisabled>false</isNavPersonalizationDisabled>
+    <label>VK Finance Console</label>
+    <navType>Standard</navType>
+    <tabs>VKF_Onboarding</tabs>
+    <tabs>Family__c</tabs>
+    <tabs>Portal_User__c</tabs>
+    <tabs>Portal_Session__c</tabs>
+    <uiType>Lightning</uiType>
+</CustomApplication>

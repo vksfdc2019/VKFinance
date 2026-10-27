@@ -1,0 +1,81 @@
+<template>
+    <div class="slds-grid slds-wrap slds-gutters slds-p-around_medium">
+        <div class="slds-col slds-size_1-of-1 slds-large-size_2-of-3">
+            <lightning-card title="Onboard a family" icon-name="standard:household">
+                <div class="slds-p-horizontal_medium">
+                    <h3 class="slds-text-heading_small slds-m-bottom_x-small">Family</h3>
+                    <div class="slds-grid slds-wrap slds-gutters_x-small">
+                        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2">
+                            <lightning-input data-form="onboard" label="Family name" name="familyName" value={form.familyName} max-length="80" required onchange={handleChange}></lightning-input>
+                        </div>
+                        <div class="slds-col slds-size_1-of-3 slds-medium-size_1-of-6">
+                            <lightning-input data-form="onboard" label="Currency" name="currencyCode" value={form.currencyCode} max-length="3" required onchange={handleChange}></lightning-input>
+                        </div>
+                        <div class="slds-col slds-size_1-of-3 slds-medium-size_1-of-6">
+                            <lightning-input data-form="onboard" label="Max members" name="maxMembers" type="number" min="1" max="50" value={form.maxMembers} required onchange={handleChange}></lightning-input>
+                        </div>
+                        <div class="slds-col slds-size_1-of-3 slds-medium-size_1-of-6">
+                            <lightning-input data-form="onboard" label="Time zone" name="timeZone" value={form.timeZone} required onchange={handleChange}></lightning-input>
+                        </div>
+                    </div>
+                    <h3 class="slds-text-heading_small slds-m-top_medium slds-m-bottom_x-small">First Family Admin</h3>
+                    <div class="slds-grid slds-wrap slds-gutters_x-small">
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning-input data-form="onboard" label="First name" name="firstName" value={form.firstName} max-length="40" required onchange={handleChange}></lightning-input>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning-input data-form="onboard" label="Last name" name="lastName" value={form.lastName} max-length="80" required onchange={handleChange}></lightning-input>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning-input
+                                data-form="onboard"
+                                label="Username"
+                                name="username"
+                                value={form.username}
+                                min-length="4"
+                                max-length="40"
+                                pattern="[A-Za-z0-9._\-]+"
+                                message-when-pattern-mismatch="Use letters, digits, dot, dash or underscore."
+                                field-level-help="Globally unique. Used to sign in to the portal."
+                                required
+                                onchange={handleChange}
+                            ></lightning-input>
+                        </div>
+                        <div class="slds-col slds-size_1-of-2">
+                            <lightning-input data-form="onboard" label="Email" name="email" type="email" value={form.email} field-level-help="Used for password reset links." onchange={handleChange}></lightning-input>
+                        </div>
+                    </div>
+                    <div class="slds-m-top_medium">
+                        <lightning-button variant="brand" label="Create family" onclick={handleOnboard} disabled={busy}></lightning-button>
+                    </div>
+                    <template lwc:if={result}>
+                        <div class="slds-box slds-theme_success slds-m-top_medium">
+                            <p class="slds-text-heading_small">{result.familyName} ({result.familyCode})</p>
+                            <p class="slds-m-top_x-small">Portal: {result.portalUrl}</p>
+                            <p>Username: <strong>{result.username}</strong></p>
+                            <p>Temporary password (shown once, valid 24 hours): <strong class="slds-text-font_monospace">{result.temporaryPassword}</strong></p>
+                            <p class="slds-m-top_x-small">Share these privately. The admin sets their own password at first sign-in.</p>
+                        </div>
+                    </template>
+                </div>
+            </lightning-card>
+        </div>
+        <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-3">
+            <lightning-card title="Reset a portal password" icon-name="standard:password">
+                <div class="slds-p-horizontal_medium">
+                    <p class="slds-m-bottom_small">For any family member, for example a Family Admin who is locked out. Signs them out everywhere.</p>
+                    <lightning-input data-form="reset" label="Username" name="resetUsername" value={resetUsername} required onchange={handleResetChange}></lightning-input>
+                    <div class="slds-m-top_small">
+                        <lightning-button label="Issue temporary password" onclick={handleReset} disabled={busy}></lightning-button>
+                    </div>
+                    <template lwc:if={resetResult}>
+                        <div class="slds-box slds-theme_shade slds-m-top_small">
+                            Temporary password for <strong>{resetResult.username}</strong>:
+                            <strong class="slds-text-font_monospace">{resetResult.password}</strong>
+                        </div>
+                    </template>
+                </div>
+            </lightning-card>
+        </div>
+    </div>
+</template>

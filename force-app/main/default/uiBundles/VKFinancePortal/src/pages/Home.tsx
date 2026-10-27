@@ -1,48 +1,80 @@
-import { useEffect, useState } from "react";
-import { createDataSDK } from "@salesforce/platform-sdk";
+import { Link } from "react-router";
+import { ShieldCheck, Users, Wallet } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/features/auth/AuthContext";
 
-type PingResult = {
-	status: string;
-	serverTime: string;
-	sessionHeaderReceived: boolean;
-	userType: string;
-};
+const COMING_NEXT = [
+	"Bank, cash, UPI wallet and credit-card accounts",
+	"Income, expenses, transfers and card payments",
+	"Bills, loans and EMI schedules with reminders",
+	"Monthly budgets, dashboards and reports",
+];
 
-// Phase 0 spike: proves a guest visitor can call VK Finance Apex REST through the site
-// and that the custom session header reaches Apex. Replaced by the dashboard in Phase 1.
 export default function HomePage() {
-	const [result, setResult] = useState<PingResult | null>(null);
-	const [error, setError] = useState<string | null>(null);
-
-	useEffect(() => {
-		(async () => {
-			try {
-				const sdk = await createDataSDK();
-				const response = await sdk.fetch!("/services/apexrest/vkf/v1/ping", {
-					method: "GET",
-					headers: { Accept: "application/json", "X-VKF-Session": "phase0-spike" },
-				});
-				if (!response.ok) {
-					throw new Error(`HTTP ${response.status}`);
-				}
-				setResult((await response.json()) as PingResult);
-			} catch (err) {
-				setError(err instanceof Error ? err.message : String(err));
-			}
-		})();
-	}, []);
+	const { profile, can } = useAuth();
+	if (!profile) return null;
+	const isAdmin = can("MEMBERS:CREATE");
 
 	return (
-		<div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-			<h1 className="text-2xl font-bold mb-2">VK Finance</h1>
-			<p className="text-gray-600 mb-6">Phase 0 connectivity check</p>
-			{!result && !error && <p>Calling /vkf/v1/ping…</p>}
-			{error && <p className="text-red-700">Ping failed: {error}</p>}
-			{result && (
-				<pre className="bg-gray-100 rounded p-4 text-sm" data-testid="ping-result">
-					{JSON.stringify(result, null, 2)}
-				</pre>
-			)}
+		<div className="grid gap-6">
+			<title>Home · VK Finance</title>
+			<div>
+				<h1 className="text-2xl font-semibold text-slate-900">Hello, {profile.firstName}</h1>
+				<p className="text-slate-600">
+					{profile.familyName} · {profile.familyCode}
+				</p>
+			</div>
+			<div className="grid gap-4 md:grid-cols-3">
+				<Card>
+					<CardHeader>
+						<CardTitle className="flex items-center gap-2 text-base">
+							<Users className="size-4 text-teal-800" aria-hidden="true" />
+							Your family
+						</CardTitle>
+						<CardDescription>You're signed in as {profile.role}.</CardDescription>
+					</CardHeader>
+					<CardContent>
+						{isAdmin ? (
+							<Button asChild variant="outline" size="sm">
+								<Link to="/family">Manage family members</Link>
+							</Button>
+						) : (
+							<p className="text-sm text-slate-600">Your Family Admin manages who can sign in.</p>
+						)}
+					</CardContent>
+				</Card>
+				<Card>
+					<CardHeader>
+						<CardTitle className="flex items-center gap-2 text-base">
+							<ShieldCheck className="size-4 text-teal-800" aria-hidden="true" />
+							Security
+						</CardTitle>
+						<CardDescription>Change your password and see where you're signed in.</CardDescription>
+					</CardHeader>
+					<CardContent>
+						<Button asChild variant="outline" size="sm">
+							<Link to="/profile">Profile & security</Link>
+						</Button>
+					</CardContent>
+				</Card>
+				<Card>
+					<CardHeader>
+						<CardTitle className="flex items-center gap-2 text-base">
+							<Wallet className="size-4 text-teal-800" aria-hidden="true" />
+							Coming next
+						</CardTitle>
+						<CardDescription>The money features arrive in the next phase.</CardDescription>
+					</CardHeader>
+					<CardContent>
+						<ul className="list-disc space-y-1 pl-4 text-sm text-slate-600">
+							{COMING_NEXT.map((item) => (
+								<li key={item}>{item}</li>
+							))}
+						</ul>
+					</CardContent>
+				</Card>
+			</div>
 		</div>
 	);
 }

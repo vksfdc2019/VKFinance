@@ -1,58 +1,72 @@
-# Salesforce DX Project
+# VK Finance
 
-Salesforce DX is a development approach that brings source-driven development, team collaboration, and continuous integration to the Salesforce Platform. Instead of working directly in an org through a web browser, you work with metadata as source files in a local DX project, track changes in version control, and deploy through automated processes.
+A multi-family budget management platform on Salesforce. Each family has its own Family Admin and
+members (spouse, children, parents) who sign in to a React portal hosted on Experience Cloud. No
+family can see another family's data. The full design is in
+[docs/VKFinance_Solution_Blueprint.pdf](docs/VKFinance_Solution_Blueprint.pdf).
 
-This project template gets you started with the tools and structure you need to build Salesforce applications using source control, scratch orgs, and the Salesforce CLI.
+**Status:** Phase 0 (React on Experience Cloud) and Phase 1 (identity, sessions, security core,
+member management) are built and deployed to the `VKFinance` org. Finance features start in Phase 2.
 
-## Prerequisites
+## How it fits together
 
-Before you start, make sure you have:
+| Layer | What it is |
+| --- | --- |
+| Portal | React 19 UI bundle (`force-app/main/default/uiBundles/VKFinancePortal`) on the Experience Cloud site `VKFinancePortal`, served at `/VKFinancePortal` |
+| API | Apex REST under `/services/apexrest/vkf/v1/*` (`Vkf*Resource` classes), called as the site guest user with the VK session token in the `X-VKF-Session` header |
+| Identity | Custom `Portal_User__c` / `Portal_Session__c` - not Salesforce users. Passwords are salted, iterated HMAC-SHA256; only token hashes are stored |
+| Security gateway | `SessionService.require` → `AccessGuard.require` → `FamilyScopedSelector` on every endpoint. Other families' records return 404 |
+| Config | `Security_Policy__mdt` (timeouts, lockout, password rules, hash iterations) and `Role_Permission__mdt` (role × feature × action) |
+| Audit | `Audit_Event__e` (publish immediately) → `AuditEventTrigger` → `Audit_Log__b` big object |
+| Console | Lightning app **VK Finance Console** for the platform owner (needs the `VKF_Platform_Admin` permission set) |
 
-- **Salesforce CLI** - Download from [developer.salesforce.com/tools/salesforcecli](https://developer.salesforce.com/tools/salesforcecli). See [Install Salesforce CLI](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_install_cli.htm) for details.
-- **VS Code with Salesforce Extension Pack** - See [Installation Instructions](https://developer.salesforce.com/docs/platform/sfvscode-extensions/guide/install.html) for details. Includes the Agentforce Vibes extension.
-- **A development org** - Sign up for a free Developer Edition org [here](https://developer.salesforce.com/signup).
-- **Dev Hub enabled** (optional, required to create scratch orgs) - You can enable Dev Hub in your development org under Setup > Dev Hub.  See [Provide Developers Access to Salesforce DX Tools](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_setup_dx_tools.htm).
+## Day-to-day commands
 
-## Project Structure
+Run from the project root. Everything targets the `VKFinance` org only.
 
-Your DX project follows this structure:
+```bash
+# Build the React portal (needed before deploying the UI bundle)
+cd force-app/main/default/uiBundles/VKFinancePortal && npm install && npm run build && cd -
 
-- **`force-app/main/default/`** - Your metadata source files live in this default package directory. You can configure additional package directories in the `sfdx-project.json` file.
-- **`config/`** - Scratch org definitions and project settings
-- **`scripts/`** - Automation scripts for common tasks
-- **`sfdx-project.json`** - Project manifest that defines package directories, namespace, API version, and other project-level settings
+# Deploy. Classes used by scheduled jobs can't deploy while the job is scheduled, so:
+sf apex run --target-org VKFinance --file scripts/apex/unschedule-jobs.apex
+sf project deploy start --target-org VKFinance --source-dir force-app
+sf apex run --target-org VKFinance --file scripts/apex/schedule-jobs.apex
+sf community publish --name VKFinancePortal --target-org VKFinance
 
-See [Salesforce DX Project Configuration](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_ws_config.htm).
+# Apex tests (55 tests, ~96% coverage of VK classes)
+sf apex run test --target-org VKFinance --test-level RunLocalTests --code-coverage --wait 20
 
-## Get Started
+# React unit tests
+cd force-app/main/default/uiBundles/VKFinancePortal && npx vitest run
+```
 
-Ready to start developing? The [Get Started with Salesforce DX](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/sfdx_dev_get_started_dx.htm) guide walks you through your first project, from creating a scratch org to creating a simple Apex class or LWC to deploying your code to a sandbox.
+The unschedule/reschedule step can be skipped by enabling **Setup → Deployment Settings → Allow
+deployments of components when corresponding Apex jobs are pending or in progress**.
 
-## Common Salesforce CLI Commands
+## Onboarding a family
 
-Here are common CLI commands that you'll use the most:
+1. In Salesforce, open the **VK Finance Console** app → **Onboard Family**.
+2. Enter the family and its first Family Admin. Share the username and one-time temporary password
+   privately.
+3. The admin signs in at the portal, sets their own password, and adds family members from
+   **Family**.
 
-- `sf org login web`: Authorize an org
-- `sf org open`: Open your org in a browser
-- `sf org create scratch`: Create a scratch org
-- `sf project deploy start`: Deploy metadata to your org
-- `sf project retrieve start`: Retrieve metadata from your org
-- `sf template generate <artifact>`: Scaffold new components, such as Apex classes and triggers, LWC components, Lightning apps, and more
-- `sf apex <command>`: Run Apex tests, run anonymous Apex blocks, and view logs
-- `sf data <command>`: Work with test data
-- `sf alias <command>`: Manage org aliases
-- `sf config <command>`: Configure CLI settings
+`scripts/apex/seed-demo-families.apex` creates two demo families (`demo.admin.a`, `demo.admin.b`)
+for trying the portal and checking isolation. Delete them from the console when you're done.
 
-## Use Agentforce Vibes to Build Lightning Apps
+## Things that will bite you
 
-Transform your ideas into custom Lightning apps that extend CRM workflows directly in Lightning Experience. Through natural conversations with Agentforce Vibes, implement custom objects and fields, complex business logic, and dynamic UI components. See [Build a Lightning App Using Agentforce Vibes](https://developer.salesforce.com/docs/platform/einstein-for-devs/guide/lexapp-overview.html).
-
-## Additional Resources
-
-- [Agentforce Vibes Developer Guide](https://developer.salesforce.com/docs/platform/einstein-for-devs/guide/einstein-overview.html)
-- [Salesforce CLI Installation Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_setup.meta/sfdx_setup/sfdx_setup_intro.htm)
-- [Salesforce DX Developer Guide](https://developer.salesforce.com/docs/atlas.en-us.sfdx_dev.meta/sfdx_dev/)
-- [Salesforce CLI Command Reference](https://developer.salesforce.com/docs/atlas.en-us.sfdx_cli_reference.meta/sfdx_cli_reference/)
-- [Salesforce CLI Plugin Development Guide](https://developer.salesforce.com/docs/platform/salesforce-cli-plugin/guide/conceptual-overview.html)
-- [Salesforce VS Code Extensions Documentation](https://developer.salesforce.com/tools/vscode/)
-
+- **Apex runs in user mode by default from API 67.0.** The portal runs as the site guest user, who
+  has no object or field access by design. So every query in the service/selector layer says
+  `WITH SYSTEM_MODE`, and every DML says `as system`. That elevation only happens behind the session
+  and role checks. Keep it that way for new code.
+- **`AuditService` is pinned to API 66.0** on purpose: the guest user can't be granted platform-event
+  access, so publishing audit events needs the pre-67 system-mode default. Don't bump its version.
+- **Apex REST rejects some HTTP status codes** (e.g. 423). Stick to the codes in `PortalException`.
+- **Never use GraphQL / UI API from the portal for family data.** The guest user can't read it, and
+  granting access would expose every family.
+- The Data SDK makes two background calls as the guest (`ui-api/session/csrf`, `ui-telemetry`) that
+  return 401. They're harmless platform noise.
+- Developer Edition limits: 5 MB data storage, 15 emails/day. Sessions are deleted after 7 days by
+  the hourly `VKF Session Cleanup` job; audit lives in a big object.

@@ -1,18 +1,15 @@
-import { Link } from 'react-router';
+import { Link } from "react-router";
+import { Button } from "@/components/ui/button";
 
 export default function NotFound() {
-  return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">404</h1>
-        <p className="text-lg text-gray-600 mb-8">Page not found</p>
-        <Link
-          to="/"
-          className="inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-        >
-          Go to Home
-        </Link>
-      </div>
-    </div>
-  );
+	return (
+		<div className="mx-auto max-w-md py-16 text-center">
+			<title>Not found · VK Finance</title>
+			<h1 className="mb-2 text-3xl font-semibold text-slate-900">Page not found</h1>
+			<p className="mb-6 text-slate-600">That page doesn't exist or has moved.</p>
+			<Button asChild>
+				<Link to="/">Go to Home</Link>
+			</Button>
+		</div>
+	);
 }

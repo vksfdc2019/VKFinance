@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Session, lockout and password settings for the VK Finance portal. The record named Default is used.</description>
+    <label>Security Policy</label>
+    <pluralLabel>Security Policies</pluralLabel>
+    <visibility>Public</visibility>
+</CustomObject>

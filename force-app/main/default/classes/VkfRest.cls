@@ -77,6 +77,38 @@ public inherited sharing class VkfRest {
         res.responseBody = payload == null ? null : Blob.valueOf(JSON.serialize(payload, true));
     }
 
+    /** Rolls back the request's DML unless the exception asks to keep it, then writes the error. */
+    public static void fail(Exception e, Savepoint sp) {
+        Boolean keep = e instanceof PortalException && ((PortalException) e).keepChanges;
+        if (sp != null && !keep) {
+            Database.rollback(sp);
+        }
+        fail(e);
+    }
+
+    /** Path segments after a marker, e.g. ('/vkf/v1/family/members/x/unlock', 'family') -> [members, x, unlock]. */
+    public static List<String> segmentsAfter(RestRequest req, String marker) {
+        List<String> result = new List<String>();
+        Boolean found = false;
+        for (String part : req.requestURI.split('/')) {
+            if (found && String.isNotBlank(part)) {
+                result.add(part);
+            }
+            if (part == marker) {
+                found = true;
+            }
+        }
+        return result;
+    }
+
+    public static Id toId(String value) {
+        try {
+            return String.isBlank(value) ? null : Id.valueOf(value);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public static void fail(Exception e) {
         if (e instanceof PortalException) {
             PortalException pe = (PortalException) e;

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomMetadata xmlns="http://soap.sforce.com/2006/04/metadata" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+    <label>Default</label>
+    <protected>false</protected>
+    <values>
+        <field>Idle_Timeout_Minutes__c</field>
+        <value xsi:type="xsd:double">30</value>
+    </values>
+    <values>
+        <field>Absolute_Timeout_Hours__c</field>
+        <value xsi:type="xsd:double">12</value>
+    </values>
+    <values>
+        <field>Max_Sessions_Per_User__c</field>
+        <value xsi:type="xsd:double">3</value>
+    </values>
+    <values>
+        <field>Max_Failed_Logins__c</field>
+        <value xsi:type="xsd:double">5</value>
+    </values>
+    <values>
+        <field>Lockout_Minutes__c</field>
+        <value xsi:type="xsd:double">30</value>
+    </values>
+    <values>
+        <field>Throttle_Window_Minutes__c</field>
+        <value xsi:type="xsd:double">15</value>
+    </values>
+    <values>
+        <field>Throttle_Max_Attempts__c</field>
+        <value xsi:type="xsd:double">10</value>
+    </values>
+    <values>
+        <field>Min_Password_Length__c</field>
+        <value xsi:type="xsd:double">10</value>
+    </values>
+    <values>
+        <field>Min_Admin_Password_Length__c</field>
+        <value xsi:type="xsd:double">12</value>
+    </values>
+    <values>
+        <field>Password_History_Count__c</field>
+        <value xsi:type="xsd:double">5</value>
+    </values>
+    <values>
+        <field>Hash_Iterations__c</field>
+        <value xsi:type="xsd:double">3000</value>
+    </values>
+    <values>
+        <field>Reset_Token_Minutes__c</field>
+        <value xsi:type="xsd:double">30</value>
+    </values>
+    <values>
+        <field>Temp_Password_Hours__c</field>
+        <value xsi:type="xsd:double">24</value>
+    </values>
+    <values>
+        <field>Session_Retention_Days__c</field>
+        <value xsi:type="xsd:double">7</value>
+    </values>
+    <values>
+        <field>Portal_Base_Url__c</field>
+        <value xsi:type="xsd:string">https://orgfarm-db588f31ab-dev-ed.develop.my.site.com/VKFinancePortal</value>
+    </values>
+</CustomMetadata>

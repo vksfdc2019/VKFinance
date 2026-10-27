@@ -1,17 +1,18 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('base-react-app', () => {
-  test('home page loads and shows welcome content', async ({ page }) => {
+// Runs against the built dist/ with no Salesforce backend: a signed-out visitor
+// must always land on the sign-in page.
+test.describe('VK Finance portal (signed out)', () => {
+  test('home redirects to sign in', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: 'Home' })).toBeVisible();
-    await expect(
-      page.getByText('Welcome to your React application.')
-    ).toBeVisible();
+    await expect(page.getByText('Sign in', { exact: true }).first()).toBeVisible();
+    await expect(page.getByLabel('Username')).toBeVisible();
+    await expect(page.getByLabel('Password')).toBeVisible();
   });
 
-  test('not found route shows 404', async ({ page }) => {
-    await page.goto('/non-existent-route');
-    await expect(page.getByRole('heading', { name: '404' })).toBeVisible();
-    await expect(page.getByText('Page not found')).toBeVisible();
+  test('forgot password page is reachable', async ({ page }) => {
+    await page.goto('/login');
+    await page.getByRole('link', { name: 'Forgot your password?' }).click();
+    await expect(page.getByLabel('Username or email')).toBeVisible();
   });
 });
