@@ -1,10 +1,13 @@
 import { Suspense } from "react";
-import { NavLink, Outlet, useNavigate } from "react-router";
+import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import {
 	ArrowLeftRight,
+	Landmark,
 	LayoutDashboard,
 	LogOut,
 	Plus,
+	ReceiptText,
+	Repeat,
 	ShieldCheck,
 	Tags,
 	Target,
@@ -27,6 +30,7 @@ import { useAuth } from "@/features/auth/AuthContext";
 import { SessionTimeout } from "@/features/auth/SessionTimeout";
 import { LedgerProvider, useLedger } from "@/features/ledger/LedgerContext";
 import { BrandMark } from "./BrandMark";
+import { NotificationBell } from "./NotificationBell";
 
 interface NavItem {
 	to: string;
@@ -51,11 +55,15 @@ function Shell() {
 	const { profile, can, logout } = useAuth();
 	const { openEntry, canAdd } = useLedger();
 	const navigate = useNavigate();
+	const location = useLocation();
 	const links: NavItem[] = [
 		{ to: "/", label: "Overview", icon: LayoutDashboard, show: can("DASHBOARD:READ") },
 		{ to: "/transactions", label: "Transactions", icon: ArrowLeftRight, show: can("TRANSACTIONS:READ") },
 		{ to: "/accounts", label: "Accounts", icon: Wallet, show: can("ACCOUNTS:READ") },
 		{ to: "/budgets", label: "Budgets", icon: Target, show: can("BUDGETS:READ") },
+		{ to: "/bills", label: "Bills", icon: ReceiptText, show: can("BILLS:READ") },
+		{ to: "/loans", label: "Loans & EMIs", icon: Landmark, show: can("LOANS:READ") },
+		{ to: "/recurring", label: "Recurring", icon: Repeat, show: can("RECURRING:READ") },
 		{ to: "/categories", label: "Categories", icon: Tags, show: can("CATEGORIES:CREATE") },
 		{ to: "/family", label: "Family", icon: Users, show: can("MEMBERS:CREATE") },
 		{ to: "/profile", label: "Profile & security", icon: ShieldCheck, show: true },
@@ -67,6 +75,8 @@ function Shell() {
 			<aside className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/85 backdrop-blur-md lg:fixed lg:inset-y-0 lg:left-0 lg:flex lg:w-64 lg:flex-col lg:border-r lg:border-b-0">
 				<div className="flex items-center justify-between gap-3 px-4 py-3 lg:px-5 lg:pt-6 lg:pb-5">
 					<BrandMark />
+					<div className="flex items-center gap-1">
+					<NotificationBell />
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
 							<button
@@ -97,6 +107,7 @@ function Shell() {
 							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
+					</div>
 				</div>
 
 				{canAdd && (
@@ -155,7 +166,9 @@ function Shell() {
 			<main className="lg:pl-64">
 				<div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
 					<Suspense fallback={<PageLoading />}>
-						<Outlet />
+						<div key={location.pathname} className="vk-rise">
+							<Outlet />
+						</div>
 					</Suspense>
 				</div>
 			</main>

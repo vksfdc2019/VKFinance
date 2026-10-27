@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Recurring_Rule__c</fullName>
+    <label>Recurring Rule</label>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <referenceTo>Recurring_Rule__c</referenceTo>
+    <relationshipLabel>Postings</relationshipLabel>
+    <relationshipName>Postings</relationshipName>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

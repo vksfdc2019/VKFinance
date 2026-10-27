@@ -15,6 +15,19 @@ import type {
 	TxnPage,
 	TxnQuery,
 } from "./financeTypes";
+import type {
+	AppNotification,
+	Bill,
+	BillInput,
+	BillInstance,
+	BillsView,
+	Loan,
+	LoanInput,
+	LoanSchedule,
+	RecurringRule,
+	RuleInput,
+	Statement,
+} from "./commitmentTypes";
 
 type Message = { message: string };
 
@@ -86,4 +99,31 @@ export const financeApi = {
 	copyBudget: (month: string) => vkf<BudgetView>("POST", `/budgets/${id(month)}/copy-previous`, {}),
 
 	dashboard: (month: string, memberId?: string) => vkf<Dashboard>("GET", `/dashboard${queryString({ month, memberId })}`),
+};
+
+export const commitmentApi = {
+	bills: () => vkf<BillsView>("GET", "/bills"),
+	createBill: (input: BillInput) => vkf<Bill>("POST", "/bills", input),
+	updateBill: (billId: string, input: BillInput) => vkf<Bill>("PATCH", `/bills/${id(billId)}`, input),
+	payBill: (instanceId: string, input: { amount?: number; accountId?: string; date?: string; paymentMode?: string }) =>
+		vkf<BillInstance>("POST", `/bills/instances/${id(instanceId)}/pay`, input),
+	skipBill: (instanceId: string) => vkf<void>("POST", `/bills/instances/${id(instanceId)}/skip`, {}),
+
+	loans: () => vkf<Loan[]>("GET", "/loans"),
+	schedule: (loanId: string) => vkf<LoanSchedule>("GET", `/loans/${id(loanId)}/schedule`),
+	createLoan: (input: LoanInput) => vkf<Loan>("POST", "/loans", input),
+	updateLoan: (loanId: string, input: Partial<LoanInput>) => vkf<Loan>("PATCH", `/loans/${id(loanId)}`, input),
+	payEmi: (loanId: string, input: { accountId?: string; date?: string }) => vkf<Loan>("POST", `/loans/${id(loanId)}/pay`, input),
+	prepay: (loanId: string, input: { amount: number; accountId?: string; date?: string }) =>
+		vkf<Loan>("POST", `/loans/${id(loanId)}/prepay`, input),
+
+	statements: (accountId: string) => vkf<Statement[]>("GET", `/accounts/${id(accountId)}/statements`),
+
+	rules: () => vkf<RecurringRule[]>("GET", "/recurring"),
+	createRule: (input: RuleInput) => vkf<RecurringRule>("POST", "/recurring", input),
+	updateRule: (ruleId: string, input: RuleInput) => vkf<RecurringRule>("PATCH", `/recurring/${id(ruleId)}`, input),
+	postRule: (ruleId: string, skip = false) => vkf<RecurringRule>("POST", `/recurring/${id(ruleId)}/${skip ? "skip" : "post"}`, {}),
+
+	notifications: () => vkf<{ items: AppNotification[]; unread: number }>("GET", "/notifications"),
+	markRead: (ids: string[] = []) => vkf<{ marked: number }>("POST", "/notifications/read", { ids }),
 };

@@ -82,6 +82,7 @@ public inherited sharing class FinanceDtos {
         public String counterAccountName;
         public String source;
         public Boolean canEdit;
+        public Boolean isPayment;
         public Datetime createdAt;
     }
 
@@ -139,6 +140,7 @@ public inherited sharing class FinanceDtos {
         public List<Account> accounts = new List<Account>();
         public List<Txn> recent = new List<Txn>();
         public List<MemberOption> members = new List<MemberOption>();
+        public List<CommitmentDtos.DueItem> upcoming = new List<CommitmentDtos.DueItem>();
     }
 
     public class Kpis {
@@ -272,6 +274,7 @@ public inherited sharing class FinanceDtos {
         d.counterAccountName = t.Counter_Transaction__r?.Account__r?.Name;
         d.source = t.Source__c;
         d.canEdit = scope.canEditTransaction(t);
+        d.isPayment = TransactionService.isPayment(t);
         d.createdAt = t.CreatedDate;
         return d;
     }

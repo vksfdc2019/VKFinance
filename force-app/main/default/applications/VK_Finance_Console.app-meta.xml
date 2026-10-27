@@ -18,5 +18,8 @@
     <tabs>Transaction__c</tabs>
     <tabs>Category__c</tabs>
     <tabs>Budget__c</tabs>
+    <tabs>Bill__c</tabs>
+    <tabs>Loan__c</tabs>
+    <tabs>Recurring_Rule__c</tabs>
     <uiType>Lightning</uiType>
 </CustomApplication>

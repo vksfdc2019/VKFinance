@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Link, useSearchParams } from "react-router";
 import { ArrowDownLeft, ArrowRight, ArrowUpRight, Landmark, PiggyBank, Plus, Target, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { FormErrors } from "@/components/forms";
 import { CashFlowChart } from "@/components/charts/CashFlowChart";
 import { CategoryBars, NeedsWantsBar } from "@/components/charts/CategoryBars";
-import { AccountChip } from "@/components/finance/icons";
+import { AccountChip, CategoryChip } from "@/components/finance/icons";
+import { AnimatedMoney, Reveal } from "@/components/finance/motion";
+import { DueBadge, PayBillDialog } from "@/features/commitments/shared";
+import type { DueItem } from "@/api/commitmentTypes";
 import { DeltaPill, EmptyState, MonthSwitcher, PageHeader, Panel, StatusMeter, budgetStatus, utilisationStatus } from "@/components/finance/ui";
 import { financeApi } from "@/api/endpoints";
 import type { Dashboard } from "@/api/financeTypes";
@@ -34,7 +37,8 @@ function monthProgress(month: string) {
 
 export default function HomePage() {
 	const { profile, can } = useAuth();
-	const { version, openEntry, canAdd } = useLedger();
+	const { version, openEntry, canAdd, refresh } = useLedger();
+	const [paying, setPaying] = useState<DueItem | null>(null);
 	const [params, setParams] = useSearchParams();
 	const month = params.get("month") ?? monthKey();
 	const memberId = params.get("member") ?? undefined;
@@ -105,26 +109,31 @@ export default function HomePage() {
 			<FormErrors errors={errors} />
 
 			<div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-				<NetWorthCard data={data} currency={currency} className="md:col-span-2 xl:col-span-1" />
+				<Reveal index={0} className="md:col-span-2 xl:col-span-1">
+					<NetWorthCard data={data} currency={currency} />
+				</Reveal>
 				<KpiCard
+					index={1}
 					label="Income"
 					icon={<ArrowDownLeft />}
 					tint="bg-emerald-50 text-emerald-700"
-					value={formatMoney(kpis.income, currency)}
+					value={<AnimatedMoney value={kpis.income} currency={currency} />}
 					footer={<DeltaPill change={percentChange(kpis.income, kpis.prevIncome)} goodWhenUp />}
 				/>
 				<KpiCard
+					index={2}
 					label="Spending"
 					icon={<ArrowUpRight />}
 					tint="bg-orange-50 text-orange-700"
-					value={formatMoney(kpis.expenses, currency)}
+					value={<AnimatedMoney value={kpis.expenses} currency={currency} />}
 					footer={<DeltaPill change={percentChange(kpis.expenses, kpis.prevExpenses)} goodWhenUp={false} />}
 				/>
 				<KpiCard
+					index={3}
 					label="Saved"
 					icon={<PiggyBank />}
 					tint="bg-sky-50 text-sky-700"
-					value={formatMoney(kpis.net, currency)}
+					value={<AnimatedMoney value={kpis.net} currency={currency} />}
 					footer={
 						<span className="text-xs text-slate-500">
 							{kpis.savingsRate !== undefined ? `${formatPercent(kpis.savingsRate)} of income` : "No income recorded yet"}
@@ -132,6 +141,63 @@ export default function HomePage() {
 					}
 				/>
 			</div>
+
+			{data.upcoming.length > 0 && (
+				<Reveal index={4} className="mt-4">
+					<Panel
+						title="Coming up"
+						description="Bills, EMIs and card bills in the next 30 days"
+						action={
+							<span className="text-xs font-medium tabular-nums text-slate-600">
+								{formatMoney(data.upcoming.reduce((s, d) => s + d.amount, 0), currency)} in total
+							</span>
+						}
+						bodyClassName="px-3 pb-4 pt-3"
+					>
+						<ul className="flex snap-x gap-3 overflow-x-auto px-2 pb-1">
+							{data.upcoming.map((d, i) => (
+								<li key={d.id} className="vk-rise w-60 shrink-0 snap-start" style={{ animationDelay: `${200 + i * 50}ms` }}>
+									<div className="vk-lift flex h-full flex-col rounded-2xl bg-slate-50 p-3.5 ring-1 ring-slate-900/5">
+										<div className="flex items-center gap-2.5">
+											<CategoryChip icon={d.icon} color={d.color} size="sm" />
+											<div className="min-w-0 flex-1">
+												<p className="truncate text-sm font-semibold text-slate-900">{d.title}</p>
+												<p className="truncate text-[11px] text-slate-500">{d.subtitle}</p>
+											</div>
+										</div>
+										<div className="mt-3 flex items-end justify-between gap-2">
+											<div>
+												<p className="text-lg font-semibold tabular-nums text-slate-900">{formatMoney(d.amount, currency)}</p>
+												<DueBadge status={d.status} daysLeft={d.daysLeft} />
+											</div>
+											{d.kind === "bill" && can("BILLS:PAY") ? (
+												<Button size="xs" onClick={() => setPaying(d)}>
+													Pay
+												</Button>
+											) : (
+												<Button asChild size="xs" variant="outline">
+													<Link to={d.link}>Open</Link>
+												</Button>
+											)}
+										</div>
+									</div>
+								</li>
+							))}
+						</ul>
+					</Panel>
+				</Reveal>
+			)}
+			{paying && (
+				<PayBillDialog
+					instance={{ id: paying.id, billName: paying.title, dueDate: paying.dueDate, amountDue: paying.amount, amountPaid: 0 }}
+					currency={currency}
+					onClose={() => setPaying(null)}
+					onPaid={() => {
+						setPaying(null);
+						refresh();
+					}}
+				/>
+			)}
 
 			<div className="mt-4 grid gap-4 xl:grid-cols-3">
 				<Panel title="Cash flow" description="Income and spending over the last six months" className="xl:col-span-2">
@@ -284,7 +350,9 @@ function NetWorthCard({ data, currency, className }: { data: Dashboard; currency
 					<Landmark className="size-4" aria-hidden="true" />
 					{data.wholeFamily && !data.memberId ? "Family net worth" : "Net worth"}
 				</p>
-				<p className="mt-2 text-3xl font-semibold tracking-tight tabular-nums">{formatMoney(data.netWorth.net, currency)}</p>
+				<p className="mt-2 text-3xl font-semibold tracking-tight tabular-nums">
+					<AnimatedMoney value={data.netWorth.net} currency={currency} />
+				</p>
 				<dl className="mt-4 grid grid-cols-2 gap-3 text-xs">
 					<div className="rounded-xl bg-white/10 px-3 py-2">
 						<dt className="text-teal-100/70">You have</dt>
@@ -300,9 +368,23 @@ function NetWorthCard({ data, currency, className }: { data: Dashboard; currency
 	);
 }
 
-function KpiCard({ label, value, icon, tint, footer }: { label: string; value: string; icon: ReactNode; tint: string; footer: ReactNode }) {
+function KpiCard({
+	label,
+	value,
+	icon,
+	tint,
+	footer,
+	index,
+}: {
+	label: string;
+	value: ReactNode;
+	icon: ReactNode;
+	tint: string;
+	footer: ReactNode;
+	index: number;
+}) {
 	return (
-		<div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-900/5">
+		<div className="vk-rise vk-lift rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-900/5" style={{ animationDelay: `${index * 60}ms` }}>
 			<div className="flex items-center justify-between">
 				<p className="text-sm font-medium text-slate-500">{label}</p>
 				<span className={cn("flex size-8 items-center justify-center rounded-xl [&_svg]:size-4", tint)} aria-hidden="true">

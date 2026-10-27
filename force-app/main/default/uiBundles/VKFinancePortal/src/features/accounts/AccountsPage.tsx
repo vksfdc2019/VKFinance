@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
-import { ArrowLeftRight, CreditCard, ListOrdered, MoreVertical, Pencil, Plus, Power, Receipt, Scale, Wallet } from "lucide-react";
+import { ArrowLeftRight, CreditCard, FileText, ListOrdered, MoreVertical, Pencil, Plus, Power, Receipt, Scale, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -23,6 +23,7 @@ import { useAuth } from "@/features/auth/AuthContext";
 import { useLedger } from "@/features/ledger/LedgerContext";
 import { AccountCard } from "./AccountCard";
 import { AccountDialog, ReconcileDialog } from "./AccountDialogs";
+import { StatementsDialog } from "./StatementsDialog";
 
 const GROUPS: { title: string; types: AccountType[] }[] = [
 	{ title: "Bank & cash", types: ["Savings", "Current", "Cash", "UPI Wallet"] },
@@ -39,6 +40,7 @@ export default function AccountsPage() {
 	const [showClosed, setShowClosed] = useState(false);
 	const [editing, setEditing] = useState<Account | "new" | null>(params.get("new") === "1" ? "new" : null);
 	const [reconciling, setReconciling] = useState<Account | null>(null);
+	const [statementsFor, setStatementsFor] = useState<Account | null>(null);
 	const { data: accounts, errors, loading } = useAsync(() => financeApi.accounts(showClosed), [showClosed, version]);
 	const canCreate = can("ACCOUNTS:CREATE");
 
@@ -93,6 +95,12 @@ export default function AccountsPage() {
 						<ListOrdered />
 						View transactions
 					</DropdownMenuItem>
+					{a.type === "Credit Card" && a.statementDay && (
+						<DropdownMenuItem onSelect={() => setStatementsFor(a)}>
+							<FileText />
+							Statements
+						</DropdownMenuItem>
+					)}
 					{a.canManage && (
 						<>
 							<DropdownMenuSeparator />
@@ -207,6 +215,7 @@ export default function AccountsPage() {
 					}}
 				/>
 			)}
+			{statementsFor && <StatementsDialog account={statementsFor} currency={currency} onClose={() => setStatementsFor(null)} />}
 			{reconciling && (
 				<ReconcileDialog
 					account={reconciling}

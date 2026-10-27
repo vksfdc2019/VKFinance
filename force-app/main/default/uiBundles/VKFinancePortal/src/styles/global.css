@@ -153,3 +153,41 @@
     font-feature-settings: "cv11", "ss01";
   }
 }
+
+/* VK Finance motion. Short, eased and purposeful; all off when the device asks for reduced motion. */
+@keyframes vk-rise {
+  from { opacity: 0; transform: translateY(10px) scale(0.995); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes vk-pop {
+  0% { opacity: 0; transform: scale(0.6); }
+  60% { opacity: 1; transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+@keyframes vk-draw {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes vk-wiggle {
+  0%, 100% { transform: rotate(0); }
+  20% { transform: rotate(14deg); }
+  40% { transform: rotate(-12deg); }
+  60% { transform: rotate(8deg); }
+  80% { transform: rotate(-4deg); }
+}
+@keyframes vk-pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgb(220 38 38 / 0.45); }
+  100% { box-shadow: 0 0 0 8px rgb(220 38 38 / 0); }
+}
+.vk-rise { animation: vk-rise 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.vk-pop { animation: vk-pop 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.vk-draw { stroke-dasharray: 60; stroke-dashoffset: 60; animation: vk-draw 0.5s 0.25s ease-out forwards; }
+.vk-wiggle { animation: vk-wiggle 0.8s ease-in-out; transform-origin: 50% 10%; }
+.vk-pulse { animation: vk-pulse-ring 1.6s ease-out infinite; }
+.vk-lift { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.vk-lift:hover { transform: translateY(-2px); box-shadow: 0 10px 24px -12px rgb(15 23 42 / 0.25); }
+
+@media (prefers-reduced-motion: reduce) {
+  .vk-rise, .vk-pop, .vk-wiggle, .vk-pulse { animation: none; }
+  .vk-draw { animation: none; stroke-dashoffset: 0; }
+  .vk-lift:hover { transform: none; }
+}

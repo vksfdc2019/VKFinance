@@ -16,6 +16,8 @@ global with sharing class VkfAccountsResource {
             List<String> parts = VkfRest.segmentsAfter(req, 'accounts');
             if (parts.isEmpty()) {
                 VkfRest.ok(AccountService.listAccounts(ctx, req.params.get('includeClosed') == 'true'));
+            } else if (parts.size() == 2 && parts[1] == 'statements') {
+                VkfRest.ok(CardStatementService.listStatements(ctx, VkfRest.toId(parts[0])));
             } else if (parts.size() == 1 && parts[0] == 'targets') {
                 VkfRest.ok(AccountService.transferTargets(ctx));
             } else {

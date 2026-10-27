@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Debit_Account__c</fullName>
+    <label>Debit Account</label>
+    <deleteConstraint>SetNull</deleteConstraint>
+    <referenceTo>Financial_Account__c</referenceTo>
+    <relationshipLabel>Loans Debited</relationshipLabel>
+    <relationshipName>Loans_Debited</relationshipName>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Lookup</type>
+</CustomField>

@@ -1,0 +1,398 @@
+/**
+ * Loans and EMIs. Each loan owns a Loan-type account whose ledger balance is the outstanding
+ * principal - so payments, prepayments and voids all flow through the normal ledger. Only
+ * the next WINDOW instalments are stored; the full schedule is computed on demand.
+ *
+ * Paying an EMI posts: interest as an Expense (EMI and Loans -> Loan Interest) and principal
+ * as two linked legs (bank Debit, loan account Credit) - all three share one group id.
+ */
+public without sharing class LoanService {
+    public static final Integer WINDOW = 12;
+    public static final List<String> TYPES = new List<String>{ 'Home', 'Car', 'Personal', 'Education', 'Gold', 'Consumer Durable', 'Card EMI', 'Other' };
+
+    public static String statusFor(Date due, Date today) {
+        return due < today ? 'Overdue' : due <= today.addDays(7) ? 'Due' : 'Upcoming';
+    }
+
+    private static Decimal outstanding(Loan__c l) {
+        if (l.Loan_Account__r != null && l.Loan_Account__r.Current_Balance__c != null) {
+            return l.Loan_Account__r.Current_Balance__c;
+        }
+        return LedgerUtil.zeroIfNull(l.Outstanding_Principal__c);
+    }
+
+    private static Loan__c visible(UserContext ctx, CommitmentSelector selector, Id loanId) {
+        Loan__c l = selector.loanById(loanId);
+        if (!new LedgerScope(ctx).wholeFamily() && l.Borrower_Member__c != ctx.userId) {
+            throw new PortalException('NOT_FOUND').withError('We couldn\'t find that record.');
+        }
+        return l;
+    }
+
+    public static List<CommitmentDtos.Loan> listLoans(UserContext ctx) {
+        AccessGuard.require(ctx, 'LOANS', 'READ');
+        CommitmentSelector selector = new CommitmentSelector(ctx);
+        List<Loan__c> loans = selector.loans(new LedgerScope(ctx).wholeFamily() ? null : ctx.userId);
+        Map<Id, EMI_Installment__c> nextByLoan = new Map<Id, EMI_Installment__c>();
+        for (EMI_Installment__c i : selector.installments(new Map<Id, Loan__c>(loans).keySet(), CommitmentSelector.OPEN_EMI)) {
+            if (!nextByLoan.containsKey(i.Loan__c)) {
+                nextByLoan.put(i.Loan__c, i);
+            }
+        }
+        List<CommitmentDtos.Loan> result = new List<CommitmentDtos.Loan>();
+        for (Loan__c l : loans) {
+            result.add(dto(ctx, l, nextByLoan.get(l.Id)));
+        }
+        return result;
+    }
+
+    private static CommitmentDtos.Loan dto(UserContext ctx, Loan__c l, EMI_Installment__c next) {
+        CommitmentDtos.Loan d = new CommitmentDtos.Loan();
+        d.id = l.Id;
+        d.name = l.Name;
+        d.lender = l.Lender__c;
+        d.loanType = l.Loan_Type__c;
+        d.principal = l.Principal__c;
+        d.annualRate = l.Annual_Rate__c;
+        d.tenureMonths = l.Tenure_Months__c == null ? null : l.Tenure_Months__c.intValue();
+        d.firstEmiDate = l.Start_Date__c;
+        d.emi = l.EMI_Amount__c;
+        d.outstanding = Math.max(0, outstanding(l));
+        d.installmentsPaid = l.Installments_Paid__c == null ? 0 : l.Installments_Paid__c.intValue();
+        d.repaidPct = l.Principal__c == null || l.Principal__c == 0 ? 0 : ((l.Principal__c - d.outstanding) / l.Principal__c * 100).setScale(1, RoundingMode.HALF_UP);
+        d.debitAccountId = l.Debit_Account__c;
+        d.debitAccountName = l.Debit_Account__r?.Name;
+        d.loanAccountId = l.Loan_Account__c;
+        d.autoDebit = l.Auto_Debit__c;
+        d.status = l.Status__c;
+        d.borrowerId = l.Borrower_Member__c;
+        d.borrowerName = l.Borrower_Member__c == null ? null : FinanceDtos.personName(l.Borrower_Member__r?.First_Name__c, l.Borrower_Member__r?.Last_Name__c);
+        d.next = next == null ? null : CommitmentDtos.installment(next);
+        d.canPay = AccessGuard.can(ctx, 'LOANS', 'PAY') && l.Status__c == 'Active';
+        d.interestRemaining = 0;
+        d.installmentsLeft = 0;
+        if (l.Status__c == 'Active' && d.outstanding > 0 && l.EMI_Amount__c != null && l.EMI_Amount__c > 0) {
+            Integer no = d.installmentsPaid + 1;
+            List<EmiCalculator.Row> rows = EmiCalculator.schedule(d.outstanding, l.Annual_Rate__c, l.EMI_Amount__c, no, l.Start_Date__c.addMonths(no - 1), 600);
+            for (EmiCalculator.Row r : rows) {
+                d.interestRemaining += r.interest;
+            }
+            d.installmentsLeft = rows.size();
+            d.payoffDate = rows.isEmpty() ? null : rows[rows.size() - 1].dueDate;
+        }
+        return d;
+    }
+
+    public static CommitmentDtos.Loan createLoan(UserContext ctx, Map<String, Object> body) {
+        AccessGuard.require(ctx, 'LOANS', 'CREATE');
+        List<String> errors = new List<String>();
+        String name = LedgerUtil.text(body, 'name');
+        if (String.isBlank(name) || name.length() > 80) {
+            errors.add('Loan name is required (up to 80 characters).');
+        }
+        String loanType = LedgerUtil.text(body, 'loanType');
+        if (!TYPES.contains(loanType)) {
+            errors.add('Choose a loan type.');
+        }
+        Decimal principal = LedgerUtil.dec(body, 'principal', 'Loan amount');
+        Decimal rate = LedgerUtil.dec(body, 'annualRate', 'Interest rate');
+        Decimal tenure = LedgerUtil.dec(body, 'tenureMonths', 'Tenure');
+        Date firstEmi = LedgerUtil.dateValue(body, 'firstEmiDate', 'First EMI date');
+        Decimal paidAlready = LedgerUtil.dec(body, 'installmentsPaid', 'EMIs already paid');
+        if (principal == null || principal <= 0 || principal > LedgerUtil.MAX_AMOUNT) {
+            errors.add('Loan amount must be more than zero.');
+        }
+        if (rate == null || rate < 0 || rate > 50) {
+            errors.add('Interest rate must be between 0 and 50%.');
+        }
+        if (tenure == null || tenure < 1 || tenure > 480 || tenure.scale() > 0 && tenure != tenure.round()) {
+            errors.add('Tenure must be between 1 and 480 months.');
+        }
+        if (firstEmi == null) {
+            errors.add('First EMI date is required.');
+        }
+        Integer paid = paidAlready == null ? 0 : paidAlready.intValue();
+        if (tenure != null && (paid < 0 || paid >= tenure)) {
+            errors.add('EMIs already paid must be less than the tenure.');
+        }
+        if (!errors.isEmpty()) {
+            throw new PortalException('VALIDATION').withErrors(errors);
+        }
+        Decimal emi = LedgerUtil.dec(body, 'emiAmount', 'EMI');
+        emi = emi == null ? EmiCalculator.emi(principal, rate, tenure.intValue()) : LedgerUtil.amount(emi, 'EMI');
+        Decimal owed = EmiCalculator.outstandingAfter(principal, rate, emi, paid);
+
+        Id debitId = VkfRest.toId(LedgerUtil.text(body, 'debitAccountId'));
+        Financial_Account__c debit = debitId == null ? null : TransactionService.usableAccount(ctx, debitId);
+        if (debit != null && LedgerUtil.isLiability(debit.Type__c)) {
+            throw new PortalException('VALIDATION').withError('EMIs are paid from a bank, cash or wallet account.');
+        }
+        Boolean autoDebit = LedgerUtil.bool(body, 'autoDebit');
+        if (autoDebit && debit == null) {
+            throw new PortalException('VALIDATION').withError('Auto-debit needs the account the EMI is taken from.');
+        }
+        Id borrower = new LedgerScope(ctx).memberFor(VkfRest.toId(LedgerUtil.text(body, 'borrowerId')), new PortalUserSelector(ctx));
+        String lender = LedgerUtil.limited(LedgerUtil.text(body, 'lender'), 80, 'Lender');
+
+        Financial_Account__c loanAccount = new Financial_Account__c(
+            Family__c = ctx.familyId, Name = name, Type__c = 'Loan', Institution__c = lender, Opening_Balance__c = owed,
+            Current_Balance__c = owed, Opening_Date__c = Date.today(), Owner_Member__c = borrower, Color__c = 'rose', Status__c = 'Active'
+        );
+        insert as system loanAccount;
+        Loan__c loan = new Loan__c(
+            Family__c = ctx.familyId, Name = name, Lender__c = lender, Loan_Type__c = loanType, Principal__c = principal,
+            Annual_Rate__c = rate, Tenure_Months__c = tenure, Start_Date__c = firstEmi, EMI_Amount__c = emi, Outstanding_Principal__c = owed,
+            Installments_Paid__c = paid, Debit_Account__c = debit?.Id, Loan_Account__c = loanAccount.Id, Auto_Debit__c = autoDebit,
+            Borrower_Member__c = borrower, Status__c = 'Active'
+        );
+        insert as system loan;
+        syncWindow(loan.Id);
+        AuditService.log(ctx, 'LOAN_CREATED', 'Loan__c', loan.Id, name + ' ' + principal);
+        return listOne(ctx, loan.Id);
+    }
+
+    public static CommitmentDtos.Loan updateLoan(UserContext ctx, Id loanId, Map<String, Object> body) {
+        AccessGuard.require(ctx, 'LOANS', 'EDIT');
+        Loan__c l = new CommitmentSelector(ctx).loanById(loanId);
+        Loan__c changes = new Loan__c(Id = l.Id);
+        if (LedgerUtil.has(body, 'name')) {
+            changes.Name = LedgerUtil.text(body, 'name');
+            if (String.isBlank(changes.Name) || changes.Name.length() > 80) {
+                throw new PortalException('VALIDATION').withError('Loan name is required (up to 80 characters).');
+            }
+        }
+        if (LedgerUtil.has(body, 'debitAccountId')) {
+            Id debitId = VkfRest.toId(LedgerUtil.text(body, 'debitAccountId'));
+            changes.Debit_Account__c = debitId == null ? null : TransactionService.usableAccount(ctx, debitId).Id;
+        }
+        if (LedgerUtil.has(body, 'autoDebit')) {
+            changes.Auto_Debit__c = LedgerUtil.bool(body, 'autoDebit');
+            if (changes.Auto_Debit__c && (LedgerUtil.has(body, 'debitAccountId') ? changes.Debit_Account__c : l.Debit_Account__c) == null) {
+                throw new PortalException('VALIDATION').withError('Auto-debit needs the account the EMI is taken from.');
+            }
+        }
+        update as system changes;
+        AuditService.log(ctx, 'LOAN_UPDATED', 'Loan__c', l.Id, String.join(new List<String>(body.keySet()), ','));
+        return listOne(ctx, l.Id);
+    }
+
+    public static CommitmentDtos.Schedule schedule(UserContext ctx, Id loanId) {
+        AccessGuard.require(ctx, 'LOANS', 'READ');
+        CommitmentSelector selector = new CommitmentSelector(ctx);
+        Loan__c l = visible(ctx, selector, loanId);
+        CommitmentDtos.Schedule s = new CommitmentDtos.Schedule();
+        s.loan = listOne(ctx, l.Id);
+        for (EMI_Installment__c i : selector.installments(new Set<Id>{ l.Id }, new Set<String>{ 'Paid' })) {
+            s.rows.add(CommitmentDtos.installment(i));
+        }
+        if (s.loan.outstanding > 0 && l.Status__c == 'Active') {
+            Integer no = s.loan.installmentsPaid + 1;
+            for (EmiCalculator.Row r : EmiCalculator.schedule(s.loan.outstanding, l.Annual_Rate__c, l.EMI_Amount__c, no, l.Start_Date__c.addMonths(no - 1), 600)) {
+                CommitmentDtos.Installment d = new CommitmentDtos.Installment();
+                d.no = r.no;
+                d.dueDate = r.dueDate;
+                d.emi = r.emi;
+                d.principal = r.principal;
+                d.interest = r.interest;
+                d.closing = r.closing;
+                d.status = statusFor(r.dueDate, Date.today());
+                s.rows.add(d);
+                s.totalInterestRemaining += r.interest;
+            }
+        }
+        return s;
+    }
+
+    /** Pays the next instalment. */
+    public static CommitmentDtos.Loan payEmi(UserContext ctx, Id loanId, Map<String, Object> body) {
+        AccessGuard.require(ctx, 'LOANS', 'PAY');
+        CommitmentSelector selector = new CommitmentSelector(ctx);
+        Loan__c l = visible(ctx, selector, loanId);
+        if (l.Status__c != 'Active') {
+            throw new PortalException('CONFLICT').withError('This loan is closed.');
+        }
+        List<EMI_Installment__c> open = selector.installments(new Set<Id>{ l.Id }, CommitmentSelector.OPEN_EMI);
+        if (open.isEmpty()) {
+            syncWindow(l.Id);
+            open = selector.installments(new Set<Id>{ l.Id }, CommitmentSelector.OPEN_EMI);
+        }
+        if (open.isEmpty()) {
+            throw new PortalException('CONFLICT').withError('There is no instalment left to pay.');
+        }
+        EMI_Installment__c next = open[0];
+        Financial_Account__c bank = payingAccount(ctx, l, body);
+        Date paidOn = LedgerUtil.txnDate(LedgerUtil.has(body, 'date') ? LedgerUtil.dateValue(body, 'date', 'Date') : Date.today());
+        String source = LedgerUtil.bool(body, 'auto') ? 'Auto-pay' : 'Manual';
+
+        CategorySelector categories = CategoryService.ensureSeeded(ctx);
+        Id interestCategory;
+        for (Category__c c : categories.all()) {
+            if (c.Name == 'Loan Interest' && c.Kind__c == 'Expense') {
+                interestCategory = c.Id;
+            }
+        }
+        String groupId = TokenService.newToken().left(32);
+        List<Transaction__c> rows = new List<Transaction__c>();
+        if (LedgerUtil.zeroIfNull(next.Interest_Part__c) > 0) {
+            rows.add(new Transaction__c(
+                Family__c = ctx.familyId, Account__c = bank.Id, Type__c = 'Expense', Direction__c = 'Debit', Amount__c = next.Interest_Part__c,
+                Txn_Date__c = paidOn, Category__c = interestCategory, Payee__c = (l.Lender__c != null ? l.Lender__c : l.Name).left(120),
+                Notes__c = ('EMI ' + next.Installment_No__c.intValue() + ' interest · ' + l.Name).left(255), Member__c = ctx.userId,
+                EMI_Installment__c = next.Id, Transfer_Group_Id__c = groupId, Status__c = 'Cleared', Source__c = source
+            ));
+        }
+        List<Transaction__c> pair = principalLegs(ctx, l, bank, next.Principal_Part__c, paidOn, 'EMI ' + next.Installment_No__c.intValue() + ' principal', groupId, source);
+        for (Transaction__c t : pair) {
+            t.EMI_Installment__c = next.Id;
+        }
+        rows.addAll(pair);
+        insert as system rows;
+        link(pair);
+        update as system new EMI_Installment__c(Id = next.Id, Status__c = 'Paid', Paid_On__c = paidOn);
+        update as system new Loan__c(Id = l.Id, Installments_Paid__c = LedgerUtil.zeroIfNull(l.Installments_Paid__c) + 1);
+        syncWindow(l.Id);
+        AuditService.log(ctx, 'EMI_PAID', 'Loan__c', l.Id, 'EMI ' + next.Installment_No__c + ' ' + next.EMI_Amount__c);
+        return listOne(ctx, l.Id);
+    }
+
+    /** A principal-only part-payment. The EMI stays the same, so the loan ends sooner. */
+    public static CommitmentDtos.Loan prepay(UserContext ctx, Id loanId, Map<String, Object> body) {
+        AccessGuard.require(ctx, 'LOANS', 'PAY');
+        CommitmentSelector selector = new CommitmentSelector(ctx);
+        Loan__c l = visible(ctx, selector, loanId);
+        if (l.Status__c != 'Active') {
+            throw new PortalException('CONFLICT').withError('This loan is closed.');
+        }
+        Decimal amount = LedgerUtil.amount(LedgerUtil.dec(body, 'amount', 'Amount'), 'Amount');
+        if (amount > outstanding(l)) {
+            throw new PortalException('VALIDATION').withError('That is more than the outstanding amount.');
+        }
+        Financial_Account__c bank = payingAccount(ctx, l, body);
+        Date paidOn = LedgerUtil.txnDate(LedgerUtil.has(body, 'date') ? LedgerUtil.dateValue(body, 'date', 'Date') : Date.today());
+        List<Transaction__c> pair = principalLegs(ctx, l, bank, amount, paidOn, 'Prepayment', TokenService.newToken().left(32), 'Manual');
+        insert as system pair;
+        link(pair);
+        syncWindow(l.Id);
+        AuditService.log(ctx, 'LOAN_PREPAID', 'Loan__c', l.Id, String.valueOf(amount));
+        return listOne(ctx, l.Id);
+    }
+
+    /** After an EMI or prepayment is voided, reopen the instalment and rebuild the window. */
+    public static void afterVoid(Set<Id> installmentIds, Set<Id> accountIds) {
+        Map<Id, Integer> reopenedPerLoan = new Map<Id, Integer>();
+        List<EMI_Installment__c> reopened = [
+            SELECT Id, Loan__c, Due_Date__c, Status__c FROM EMI_Installment__c WHERE Id IN :installmentIds AND Status__c = 'Paid' WITH SYSTEM_MODE
+        ];
+        for (EMI_Installment__c i : reopened) {
+            i.Status__c = statusFor(i.Due_Date__c, Date.today());
+            i.Paid_On__c = null;
+            reopenedPerLoan.put(i.Loan__c, (reopenedPerLoan.containsKey(i.Loan__c) ? reopenedPerLoan.get(i.Loan__c) : 0) + 1);
+        }
+        update as system reopened;
+        Set<Id> loanIds = new Set<Id>(reopenedPerLoan.keySet());
+        List<Loan__c> loans = [
+            SELECT Id, Installments_Paid__c FROM Loan__c WHERE Id IN :loanIds OR Loan_Account__c IN :accountIds WITH SYSTEM_MODE
+        ];
+        for (Loan__c l : loans) {
+            if (reopenedPerLoan.containsKey(l.Id)) {
+                l.Installments_Paid__c = Math.max(0, LedgerUtil.zeroIfNull(l.Installments_Paid__c) - reopenedPerLoan.get(l.Id));
+            }
+        }
+        update as system loans;
+        for (Loan__c l : loans) {
+            syncWindow(l.Id);
+        }
+    }
+
+    /** Rebuilds the stored upcoming instalments from the ledger's outstanding balance. */
+    public static void syncWindow(Id loanId) {
+        Loan__c l = [
+            SELECT Id, Family__c, Annual_Rate__c, EMI_Amount__c, Start_Date__c, Installments_Paid__c, Status__c, Outstanding_Principal__c,
+                Loan_Account__c, Loan_Account__r.Current_Balance__c
+            FROM Loan__c WHERE Id = :loanId WITH SYSTEM_MODE FOR UPDATE
+        ];
+        delete as system [SELECT Id FROM EMI_Installment__c WHERE Loan__c = :loanId AND Status__c IN :CommitmentSelector.OPEN_EMI WITH SYSTEM_MODE];
+        Decimal owed = Math.max(0, outstanding(l));
+        if (owed == 0) {
+            update as system new Loan__c(Id = l.Id, Outstanding_Principal__c = 0, Status__c = 'Closed');
+            return;
+        }
+        Integer no = (l.Installments_Paid__c == null ? 0 : l.Installments_Paid__c.intValue()) + 1;
+        List<EMI_Installment__c> upcoming = new List<EMI_Installment__c>();
+        for (EmiCalculator.Row r : EmiCalculator.schedule(owed, l.Annual_Rate__c, l.EMI_Amount__c, no, l.Start_Date__c.addMonths(no - 1), WINDOW)) {
+            upcoming.add(new EMI_Installment__c(
+                Loan__c = l.Id, Family__c = l.Family__c, Installment_No__c = r.no, Due_Date__c = r.dueDate, EMI_Amount__c = r.emi,
+                Principal_Part__c = r.principal, Interest_Part__c = r.interest, Opening_Balance__c = r.opening, Closing_Balance__c = r.closing,
+                Status__c = statusFor(r.dueDate, Date.today()), Unique_Key__c = l.Id + '-' + r.no
+            ));
+        }
+        Database.upsert(upcoming, EMI_Installment__c.Unique_Key__c, true, AccessLevel.SYSTEM_MODE);
+        update as system new Loan__c(Id = l.Id, Outstanding_Principal__c = owed, Status__c = 'Active');
+    }
+
+    /** Daily: refresh statuses, and rebuild windows that have run short. */
+    public static void refresh(Id familyId, Date today) {
+        List<EMI_Installment__c> changed = new List<EMI_Installment__c>();
+        Map<Id, Integer> openPerLoan = new Map<Id, Integer>();
+        for (EMI_Installment__c i : [
+            SELECT Id, Loan__c, Due_Date__c, Status__c FROM EMI_Installment__c
+            WHERE Family__c = :familyId AND Status__c IN :CommitmentSelector.OPEN_EMI WITH SYSTEM_MODE
+        ]) {
+            openPerLoan.put(i.Loan__c, (openPerLoan.containsKey(i.Loan__c) ? openPerLoan.get(i.Loan__c) : 0) + 1);
+            String status = statusFor(i.Due_Date__c, today);
+            if (status != i.Status__c) {
+                changed.add(new EMI_Installment__c(Id = i.Id, Status__c = status));
+            }
+        }
+        update as system changed;
+        for (Loan__c l : [SELECT Id FROM Loan__c WHERE Family__c = :familyId AND Status__c = 'Active' WITH SYSTEM_MODE]) {
+            Integer open = openPerLoan.containsKey(l.Id) ? openPerLoan.get(l.Id) : 0;
+            if (open < WINDOW / 2) {
+                syncWindow(l.Id);
+            }
+        }
+    }
+
+    private static CommitmentDtos.Loan listOne(UserContext ctx, Id loanId) {
+        CommitmentSelector selector = new CommitmentSelector(ctx);
+        Loan__c l = selector.loanById(loanId);
+        List<EMI_Installment__c> open = selector.installments(new Set<Id>{ l.Id }, CommitmentSelector.OPEN_EMI);
+        return dto(ctx, l, open.isEmpty() ? null : open[0]);
+    }
+
+    private static Financial_Account__c payingAccount(UserContext ctx, Loan__c l, Map<String, Object> body) {
+        Id accountId = LedgerUtil.has(body, 'accountId') ? VkfRest.toId(LedgerUtil.text(body, 'accountId')) : l.Debit_Account__c;
+        if (accountId == null) {
+            throw new PortalException('VALIDATION').withError('Choose the account the EMI is paid from.');
+        }
+        Financial_Account__c bank = TransactionService.usableAccount(ctx, accountId);
+        if (LedgerUtil.isLiability(bank.Type__c)) {
+            throw new PortalException('VALIDATION').withError('EMIs are paid from a bank, cash or wallet account.');
+        }
+        return bank;
+    }
+
+    private static List<Transaction__c> principalLegs(
+        UserContext ctx, Loan__c l, Financial_Account__c bank, Decimal amount, Date paidOn, String note, String groupId, String source
+    ) {
+        Id category = CategoryService.ensureSeeded(ctx).systemCategory('LOAN_PRINCIPAL')?.Id;
+        Transaction__c outLeg = new Transaction__c(
+            Family__c = ctx.familyId, Account__c = bank.Id, Type__c = 'EMI Payment', Direction__c = 'Debit', Amount__c = amount,
+            Txn_Date__c = paidOn, Category__c = category, Payee__c = l.Name.left(120), Notes__c = (note + ' · ' + l.Name).left(255),
+            Member__c = ctx.userId, Transfer_Group_Id__c = groupId, Status__c = 'Cleared', Source__c = source
+        );
+        Transaction__c inLeg = outLeg.clone(false, true);
+        inLeg.Account__c = l.Loan_Account__c;
+        inLeg.Direction__c = 'Credit';
+        inLeg.Payee__c = bank.Name.left(120);
+        inLeg.Member__c = l.Borrower_Member__c == null ? ctx.userId : l.Borrower_Member__c;
+        return new List<Transaction__c>{ outLeg, inLeg };
+    }
+
+    private static void link(List<Transaction__c> pair) {
+        update as system new List<Transaction__c>{
+            new Transaction__c(Id = pair[0].Id, Counter_Transaction__c = pair[1].Id),
+            new Transaction__c(Id = pair[1].Id, Counter_Transaction__c = pair[0].Id)
+        };
+    }
+}

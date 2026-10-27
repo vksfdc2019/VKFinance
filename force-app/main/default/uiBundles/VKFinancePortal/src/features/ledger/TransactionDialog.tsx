@@ -206,7 +206,7 @@ export function TransactionDialog({
 
 	const title = txn ? "Edit transaction" : "Add transaction";
 	const canVoid = Boolean(txn?.canEdit && txn.status !== "Void" && can("TRANSACTIONS:DELETE"));
-	const readOnly = Boolean(txn && !txn.canEdit);
+	const readOnly = Boolean(txn && (!txn.canEdit || txn.isPayment));
 	const symbol = currencySymbol(currency);
 
 	return (
@@ -378,7 +378,11 @@ export function TransactionDialog({
 
 						{readOnly && (
 							<p className="rounded-xl bg-amber-50 p-3 text-xs text-amber-900">
-								{txn?.status === "Void" ? "This transaction is void." : "You can view this transaction but not change it."}
+								{txn?.status === "Void"
+									? "This transaction is void."
+									: txn?.isPayment
+										? "This is a bill or EMI payment. Void it here if it was a mistake, then pay again from Bills or Loans."
+										: "You can view this transaction but not change it."}
 							</p>
 						)}
 						<FormErrors errors={errors} />

@@ -145,6 +145,9 @@ public without sharing class TransactionService {
         AccessGuard.require(ctx, 'TRANSACTIONS', 'EDIT');
         TransactionSelector selector = new TransactionSelector(ctx);
         Transaction__c existing = editable(ctx, selector, txnId);
+        if (isPayment(existing)) {
+            throw new PortalException('VALIDATION').withError('Bill and EMI payments can\'t be edited. Void the payment and pay it again.');
+        }
 
         if (existing.Transfer_Group_Id__c != null) {
             if (LedgerUtil.has(body, 'accountId') || LedgerUtil.has(body, 'categoryId') || LedgerUtil.has(body, 'type')) {
@@ -225,7 +228,29 @@ public without sharing class TransactionService {
             changes.add(new Transaction__c(Id = r.Id, Status__c = 'Void'));
         }
         update as system changes;
+
+        // A voided payment re-opens what it paid: the bill owes again, the loan balance comes back.
+        Set<Id> installments = new Set<Id>();
+        Set<Id> loanAccounts = new Set<Id>();
+        for (Transaction__c r : rows) {
+            if (r.Bill_Instance__c != null) {
+                BillService.revertPayment(r);
+            }
+            if (r.EMI_Installment__c != null) {
+                installments.add(r.EMI_Installment__c);
+            }
+            if (r.Type__c == 'EMI Payment') {
+                loanAccounts.add(r.Account__c);
+            }
+        }
+        if (!installments.isEmpty() || !loanAccounts.isEmpty()) {
+            LoanService.afterVoid(installments, loanAccounts);
+        }
         AuditService.log(ctx, 'TXN_VOIDED', 'Transaction__c', existing.Id, existing.Type__c + ' ' + existing.Amount__c);
+    }
+
+    public static Boolean isPayment(Transaction__c t) {
+        return t.Bill_Instance__c != null || t.EMI_Installment__c != null || t.Type__c == 'EMI Payment';
     }
 
     // ------------------------------------------------------------------ shared checks

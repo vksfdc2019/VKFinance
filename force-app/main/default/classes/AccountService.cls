@@ -75,8 +75,7 @@ public without sharing class AccountService {
     }
 
     /** Billing cycle from the statement day (clamped to month end); due date follows the last statement. */
-    @TestVisible
-    private static FinanceDtos.CardCycle cardCycle(Financial_Account__c a, Date today) {
+    public static FinanceDtos.CardCycle cardCycle(Financial_Account__c a, Date today) {
         Integer day = a.Statement_Day__c == null ? 1 : a.Statement_Day__c.intValue();
         Date thisMonth = clampedDay(today.year(), today.month(), day);
         FinanceDtos.CardCycle c = new FinanceDtos.CardCycle();

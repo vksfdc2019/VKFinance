@@ -37,6 +37,17 @@ spending and payments, SIPs and Arjun's pocket money, plus budgets for this mont
 - **Budgets:** see each category's progress. Amber means spending is running ahead of the month,
   red means over plan. **Edit plan** changes amounts and **Copy last month** starts a new month.
 - **Categories:** rename, recolour, hide or add categories (Family Admin only).
+- **Coming up and the bell:** the overview lists bills, EMIs and card bills due in the next 30
+  days. The bell (top left) holds reminders and alerts from the daily 06:00 job - bills due soon,
+  anything overdue, auto-payments, card bills and budgets passing 80% or 100%.
+- **Bills:** pay a bill in two taps (watch the tick), skip one occurrence, or add a biller with
+  auto-pay. Arjun (`demo.son.a`) sees and pays only the tuition bill assigned to him.
+- **Loans & EMIs:** each loan shows how much is repaid, every EMI split into principal and
+  interest, and the debt-free date. Try **Prepay** - the EMI stays the same and the loan ends
+  sooner. **Schedule** shows every instalment. Adding a loan shows the EMI as you type.
+- **Recurring:** salary, rent, SIP and pocket money repeat on their own (Auto-post) or ask first
+  (Suggest). **Record now** posts the next one immediately.
+- **Card statements:** Accounts → the card's **⋮** menu → **Statements**.
 - **Family Admin view:** sign in as `demo.admin.a` and open **Family**. You see only Family A's
   members, and you can add, edit, unlock, reset passwords, sign out, disable and remove members.
   Role and status changes ask for your own password again.
@@ -95,9 +106,12 @@ If the demo data is deleted, run:
 ```bash
 sf apex run --target-org VKFinance --file scripts/apex/seed-demo-families.apex
 sf apex run --target-org VKFinance --file scripts/apex/seed-demo-finance.apex
+sf apex run --target-org VKFinance --file scripts/apex/seed-demo-commitments.apex
+sf apex run --target-org VKFinance --file scripts/apex/seed-demo-commitments.apex
 ```
 
-The second script adds the sample accounts, transactions and budgets to Demo Family A. It runs as
+The finance script adds sample accounts, transactions and budgets to Demo Family A; the
+commitments script (run twice) adds bills, loans and recurring rules and starts the daily job. It runs as
 you, so you need the `VKF_Platform_Admin` permission set.
 
 The script prints the new temporary passwords to the debug log (look for lines starting with

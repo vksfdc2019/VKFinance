@@ -77,3 +77,23 @@ describe("transaction titles", () => {
 		expect(txnTitle({ ...base, type: "Expense", direction: "Debit", payee: "DMart", categoryName: "Groceries" } as Txn)).toBe("DMart");
 	});
 });
+
+describe("commitments", async () => {
+	const { emiFor } = await import("@/features/commitments/LoansPage");
+	const { dueText } = await import("@/features/commitments/shared");
+
+	it("computes the same EMI as the server", () => {
+		expect(emiFor(1000000, 9, 60)).toBe(20758.36);
+		expect(emiFor(100000, 12, 12)).toBe(8884.88);
+		expect(emiFor(1200, 0, 12)).toBe(100);
+		expect(emiFor(0, 9, 12)).toBe(0);
+	});
+
+	it("describes due dates in plain words", () => {
+		expect(dueText(-1)).toBe("1 day late");
+		expect(dueText(-3)).toBe("3 days late");
+		expect(dueText(0)).toBe("Due today");
+		expect(dueText(1)).toBe("Tomorrow");
+		expect(dueText(9)).toBe("In 9 days");
+	});
+});

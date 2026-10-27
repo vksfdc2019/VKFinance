@@ -150,6 +150,7 @@ export interface Txn {
 	counterAccountName?: string;
 	source?: string;
 	canEdit: boolean;
+	isPayment?: boolean;
 	createdAt?: string;
 }
 
@@ -254,4 +255,5 @@ export interface Dashboard {
 	accounts: Account[];
 	recent: Txn[];
 	members: { id: string; name: string }[];
+	upcoming: import("./commitmentTypes").DueItem[];
 }

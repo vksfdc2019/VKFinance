@@ -18,6 +18,9 @@ const AccountsPage = lazy(() => import("./features/accounts/AccountsPage"));
 const BudgetsPage = lazy(() => import("./features/budgets/BudgetsPage"));
 const CategoriesPage = lazy(() => import("./features/categories/CategoriesPage"));
 const ProfilePage = lazy(() => import("./features/profile/ProfilePage"));
+const BillsPage = lazy(() => import("./features/commitments/BillsPage"));
+const LoansPage = lazy(() => import("./features/commitments/LoansPage"));
+const RecurringPage = lazy(() => import("./features/commitments/RecurringPage"));
 
 function Root() {
 	return (
@@ -69,6 +72,18 @@ export const routes: RouteObject[] = [
 							{
 								element: <RequirePermission permission="MEMBERS:CREATE" />,
 								children: [{ path: "/family", element: <MembersPage /> }],
+							},
+							{
+								element: <RequirePermission permission="BILLS:READ" />,
+								children: [{ path: "/bills", element: <BillsPage /> }],
+							},
+							{
+								element: <RequirePermission permission="LOANS:READ" />,
+								children: [{ path: "/loans", element: <LoansPage /> }],
+							},
+							{
+								element: <RequirePermission permission="RECURRING:READ" />,
+								children: [{ path: "/recurring", element: <RecurringPage /> }],
 							},
 							{ path: "*", element: <NotFound /> },
 						],

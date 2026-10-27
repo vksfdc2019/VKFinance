@@ -38,6 +38,9 @@ public without sharing class DashboardService {
         addTrendAndKpis(d, selector, base, start, finish);
         addCategories(d, selector, base, categories, start, finish);
         addAccounts(d, ctx, base.memberId);
+        if (base.memberId == null) {
+            d.upcoming = DuesService.upcoming(ctx, 30);
+        }
 
         TransactionSelector.Filter recent = base.copy();
         recent.toDate = Date.today() > finish ? finish : null;
