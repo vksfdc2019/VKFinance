@@ -54,6 +54,7 @@ deployments of components when corresponding Apex jobs are pending or in progres
 
 `scripts/apex/seed-demo-families.apex` creates two demo families (`demo.admin.a`, `demo.admin.b`)
 for trying the portal and checking isolation. Delete them from the console when you're done.
+Sign-in details for the demo families are in [docs/Demo_Access.md](docs/Demo_Access.md).
 
 ## Things that will bite you
 
