@@ -10,6 +10,7 @@ import ForgotPasswordPage from "./features/auth/pages/ForgotPasswordPage";
 import ResetPasswordPage from "./features/auth/pages/ResetPasswordPage";
 import HomePage from "./pages/Home";
 import NotFound from "./pages/NotFound";
+import PrivacyPage from "./pages/PrivacyPage";
 
 // Pages beyond the overview load on demand, so signing in downloads less.
 const MembersPage = lazy(() => import("./features/family/MembersPage"));
@@ -58,6 +59,8 @@ export const routes: RouteObject[] = [
 			// Reachable signed in or out: the link comes from an email.
 			{ path: "/reset-password", element: <ResetPasswordPage /> },
 			{ path: "/first-login", element: <FirstLoginPage /> },
+			// Public: linked from the Google consent screen.
+			{ path: "/privacy", element: <PrivacyPage /> },
 			{
 				element: <RequireAuth />,
 				children: [
