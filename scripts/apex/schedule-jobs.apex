@@ -18,6 +18,10 @@ if (!existing.contains('VKF Retention Purge')) {
     // 04:00 on Sundays: old notifications, spent tokens, surplus password history, rate-limit rows.
     System.schedule('VKF Retention Purge', '0 0 4 ? * SUN', new RetentionPurgeJob());
 }
+if (!existing.contains('VKF Archive')) {
+    // 01:30 every day: copy old records to the archive big object and Google Sheets, then remove what is safely archived.
+    System.schedule('VKF Archive', '0 30 1 * * ?', new ArchiveJob());
+}
 if (!existing.contains('VKF Security Digest')) {
     // 07:00 on Mondays: one email to whoever runs this script (the platform owner).
     System.schedule('VKF Security Digest', '0 0 7 ? * MON', new SecurityDigestJob());

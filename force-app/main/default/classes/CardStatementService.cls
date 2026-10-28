@@ -8,7 +8,7 @@ public without sharing class CardStatementService {
     /** Creates the statement for each card's most recent closed cycle, if missing. */
     public static Integer generate(Id familyId, Date today) {
         List<Financial_Account__c> cards = [
-            SELECT Id, Family__c, Opening_Balance__c, Statement_Day__c, Payment_Due_Days__c, Min_Due_Pct__c, Credit_Limit__c, Type__c
+            SELECT Id, Family__c, Opening_Balance__c, Archived_Net__c, Statement_Day__c, Payment_Due_Days__c, Min_Due_Pct__c, Credit_Limit__c, Type__c
             FROM Financial_Account__c
             WHERE Family__c = :familyId AND Type__c = 'Credit Card' AND Status__c = 'Active' AND Statement_Day__c != NULL
             WITH SYSTEM_MODE
@@ -36,9 +36,9 @@ public without sharing class CardStatementService {
         return byKey.size();
     }
 
-    /** What the card owed at the end of a day: opening + debits - credits up to and including it. */
+    /** What the card owed at the end of a day: opening + debits - credits up to and including it (archived entries included). */
     public static Decimal balanceAsOf(Financial_Account__c card, Date asOf) {
-        Decimal owed = LedgerUtil.zeroIfNull(card.Opening_Balance__c);
+        Decimal owed = LedgerUtil.zeroIfNull(card.Opening_Balance__c) - LedgerUtil.zeroIfNull(card.Archived_Net__c);
         Id cardId = card.Id;
         for (AggregateResult ar : [
             SELECT Direction__c dir, SUM(Amount__c) total

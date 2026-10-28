@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AuthProvider xmlns="http://soap.sforce.com/2006/04/metadata">
+    <authorizeUrl>https://accounts.google.com/o/oauth2/v2/auth?access_type=offline&amp;prompt=consent</authorizeUrl>
+    <consumerKey>PASTE_GOOGLE_CLIENT_ID_IN_SETUP</consumerKey>
+    <consumerSecret>PASTE_GOOGLE_CLIENT_SECRET_IN_SETUP</consumerSecret>
+    <defaultScopes>openid email https://www.googleapis.com/auth/drive.file</defaultScopes>
+    <friendlyName>VKF Google</friendlyName>
+    <includeOrgIdInIdentifier>false</includeOrgIdInIdentifier>
+    <isPkceEnabled>true</isPkceEnabled>
+    <providerType>OpenIdConnect</providerType>
+    <requireMfa>false</requireMfa>
+    <sendAccessTokenInHeader>true</sendAccessTokenInHeader>
+    <sendClientCredentialsInHeader>false</sendClientCredentialsInHeader>
+    <sendSecretInApis>true</sendSecretInApis>
+    <tokenUrl>https://oauth2.googleapis.com/token</tokenUrl>
+    <userInfoUrl>https://openidconnect.googleapis.com/v1/userinfo</userInfoUrl>
+</AuthProvider>

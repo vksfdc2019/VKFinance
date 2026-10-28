@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Archived_Through__c</fullName>
+    <description>Entries dated on or before this day are archived and can't be added or changed.</description>
+    <label>Archived Through</label>
+    <required>false</required>
+    <type>Date</type>
+</CustomField>

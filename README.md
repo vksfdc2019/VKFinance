@@ -24,8 +24,13 @@ Phase 6 optional enhancements were deployed and published on 28 October 2026, wi
 tests passing. Every family starts with these features off; see the Phase 6 guide for activation,
 release evidence and remaining pilot checks.
 
+The storage archive was deployed on 28 October 2026, with all 158 Apex tests passing. Every night it
+copies old records to a big object and to the owner's Google Drive, then removes them from the 5 MB
+data storage without changing any balance.
+
 | Document | For |
 | --- | --- |
+| [Archive](docs/Archive.md) | Nightly big-object and Google Sheets archive: what moves, guarantees, settings, Google setup and operations |
 | [Phase 6 enhancements](docs/Phase6_Enhancements.md) | Released optional features; per-family switches, limits, deployment evidence and live-site checks |
 | [Implementation guide (PDF)](docs/VKFinance_Implementation_Document.pdf) / [Word](docs/VKFinance_Implementation_Document.docx) | Developers and administrators: 12 diagrams, architecture, security, APIs, full data dictionary, deployment and operations |
 | [docs/User_Guide.md](docs/User_Guide.md) | Families using the portal (also in the app under **Help**) |
@@ -66,6 +71,9 @@ sf apex run --target-org VKFinance --file scripts/apex/unschedule-jobs.apex
 sf project deploy start --target-org VKFinance --source-dir force-app
 sf apex run --target-org VKFinance --file scripts/apex/schedule-jobs.apex
 sf community publish --name VKFinancePortal --target-org VKFinance
+
+# Google connection for the archive: deploy ONCE (redeploying resets the secret), see docs/Archive.md
+# sf project deploy start --target-org VKFinance --metadata-dir config/google-archive
 
 # Apex tests
 sf apex run test --target-org VKFinance --test-level RunLocalTests --code-coverage --wait 20

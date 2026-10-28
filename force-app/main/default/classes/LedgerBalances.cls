@@ -8,8 +8,13 @@
  *
  * Net effect: Credit = +amount, Debit = -amount, Void = 0. Assets hold opening + net;
  * liabilities (cards, loans) owe opening - net, because spending on a card is a Debit.
+ * Archived transactions are gone from the ledger; their net effect lives in Archived_Net__c
+ * and counts as part of the opening position.
  */
 public without sharing class LedgerBalances {
+    /** Set by ArchiveService while it removes archived entries, so their balances don't move. */
+    public static Boolean suspended = false;
+
     public static Decimal netEffect(Transaction__c t) {
         if (t == null || t.Status__c == 'Void' || t.Amount__c == null || t.Account__c == null) {
             return 0;
@@ -18,6 +23,9 @@ public without sharing class LedgerBalances {
     }
 
     public static void apply(List<Transaction__c> newRows, Map<Id, Transaction__c> oldMap) {
+        if (suspended) {
+            return;
+        }
         Map<Id, Decimal> deltas = new Map<Id, Decimal>();
         if (newRows != null) {
             for (Transaction__c t : newRows) {
@@ -85,7 +93,7 @@ public without sharing class LedgerBalances {
 
     private static List<Financial_Account__c> lockAccounts(Set<Id> accountIds) {
         return [
-            SELECT Id, Name, Family__c, Type__c, Opening_Balance__c, Current_Balance__c
+            SELECT Id, Name, Family__c, Type__c, Opening_Balance__c, Archived_Net__c, Current_Balance__c
             FROM Financial_Account__c
             WHERE Id IN :accountIds
             WITH SYSTEM_MODE
@@ -109,7 +117,7 @@ public without sharing class LedgerBalances {
         Map<Id, Decimal> result = new Map<Id, Decimal>();
         for (Financial_Account__c a : accounts) {
             Decimal opening = LedgerUtil.zeroIfNull(a.Opening_Balance__c);
-            Decimal n = net.containsKey(a.Id) ? net.get(a.Id) : 0;
+            Decimal n = (net.containsKey(a.Id) ? net.get(a.Id) : 0) + LedgerUtil.zeroIfNull(a.Archived_Net__c);
             result.put(a.Id, LedgerUtil.isLiability(a.Type__c) ? opening - n : opening + n);
         }
         return result;

@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import {
+	Archive,
 	ArrowLeftRight,
 	BarChart3,
 	Landmark,
@@ -68,6 +69,7 @@ function Shell() {
 		{ to: "/loans", label: "Loans & EMIs", icon: Landmark, show: can("LOANS:READ") },
 		{ to: "/recurring", label: "Recurring", icon: Repeat, show: can("RECURRING:READ") },
 		{ to: "/reports", label: "Reports", icon: BarChart3, show: can("REPORTS:READ") },
+		{ to: "/archive", label: "Archive", icon: Archive, show: can("TRANSACTIONS:READ") },
 		{ to: "/enhancements", label: "Discover", icon: Sparkles, show: can("ENHANCEMENTS:READ") },
 		{ to: "/categories", label: "Categories", icon: Tags, show: can("CATEGORIES:CREATE") },
 		{ to: "/family", label: "Family", icon: Users, show: can("MEMBERS:CREATE") },

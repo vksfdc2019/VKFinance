@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+    <types><members>VKF_Google</members><name>AuthProvider</name></types>
+    <types><members>VKF_Google</members><name>ExternalCredential</name></types>
+    <types><members>VKF_Google_Drive</members><members>VKF_Google_Sheets</members><name>NamedCredential</name></types>
+    <types><members>VKF_Google_Archive</members><name>PermissionSet</name></types>
+    <version>68.0</version>
+</Package>

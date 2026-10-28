@@ -186,7 +186,23 @@ public without sharing class ReportService {
                 security(s, r);
             }
         }
+        archiveNote(ctx, r);
         return r;
+    }
+
+    /** Says so when the period reaches back into archived months. */
+    private static void archiveNote(UserContext ctx, Report r) {
+        Date through = archivedThrough(ctx.familyId);
+        if (through == null || r.fromDate == null || r.fromDate > through || r.type == 'forecast' || r.type == 'security') {
+            return;
+        }
+        String note = 'Entries up to ' + through.format() + ' are archived and appear under Archive. Family monthly totals still include them.';
+        r.note = String.isBlank(r.note) ? note : r.note + ' ' + note;
+    }
+
+    private static Date archivedThrough(Id familyId) {
+        List<Family__c> rows = [SELECT Archived_Through__c FROM Family__c WHERE Id = :familyId WITH SYSTEM_MODE LIMIT 1];
+        return rows.isEmpty() ? null : rows[0].Archived_Through__c;
     }
 
     // ------------------------------------------------------------------ shared aggregates
@@ -614,11 +630,20 @@ public without sharing class ReportService {
         Boolean liability = LedgerUtil.isLiability(a.Type__c);
         r.title = a.Name + ' statement';
         r.subtitle = (liability ? 'Amount owed' : 'Running balance') + ' · ' + a.Type__c;
-        Decimal opening = LedgerUtil.zeroIfNull(a.Opening_Balance__c);
+        // Archived entries are gone from the ledger: their net effect is part of the opening position,
+        // so the statement can't start inside the archived period.
+        Decimal archived = LedgerUtil.zeroIfNull(a.Archived_Net__c);
+        Decimal opening = LedgerUtil.zeroIfNull(a.Opening_Balance__c) + (liability ? -archived : archived);
+        Date start = s.fromDate;
+        Date through = archivedThrough(s.ctx.familyId);
+        if (through != null && start <= through) {
+            start = through.addDays(1);
+            r.fromDate = start;
+        }
         TransactionSelector.Filter before = new TransactionSelector.Filter();
         before.wholeFamily = true;
         before.accountIds = new Set<Id>{ a.Id };
-        before.toDate = s.fromDate.addDays(-1);
+        before.toDate = start.addDays(-1);
         for (AggregateResult ar : s.selector.aggregate('Direction__c d, SUM(Amount__c) s', before, 'Direction__c')) {
             Decimal amount = LedgerUtil.zeroIfNull(ar.get('s'));
             Boolean credit = (String) ar.get('d') == 'Credit';
@@ -631,7 +656,7 @@ public without sharing class ReportService {
         r.table = new Table().col('date', 'Date', 'date').col('description', 'Description', 'text').col('out', 'Money out', 'money')
             .col('in', 'Money in', 'money').col('balance', liability ? 'Owed' : 'Balance', 'money');
         Map<String, Decimal> byDay = new Map<String, Decimal>();
-        for (Transaction__c t : s.selector.forAccount(a.Id, s.fromDate, s.toDate, 2000)) {
+        for (Transaction__c t : s.selector.forAccount(a.Id, start, s.toDate, 2000)) {
             Boolean credit = t.Direction__c == 'Credit';
             balance += (credit != liability) ? t.Amount__c : -t.Amount__c;
             if (credit) {
@@ -646,7 +671,7 @@ public without sharing class ReportService {
             byDay.put(String.valueOf(t.Txn_Date__c), balance);
         }
         Point first = new Point();
-        first.label = String.valueOf(s.fromDate);
+        first.label = String.valueOf(start);
         first.values.put('balance', opening);
         r.chart.points.add(first);
         for (String day : byDay.keySet()) {

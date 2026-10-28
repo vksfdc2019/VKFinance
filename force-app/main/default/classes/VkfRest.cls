@@ -116,8 +116,25 @@ public inherited sharing class VkfRest {
             respond(pe.httpStatus(), new ErrorBody(pe.code(), pe.errors));
             return;
         }
+        String rowError = rowError(e);
+        if (rowError != null) {
+            respond(400, new ErrorBody('VALIDATION', new List<String>{ rowError }));
+            return;
+        }
         System.debug(LoggingLevel.ERROR, e.getTypeName() + ': ' + e.getMessage() + '\n' + e.getStackTraceString());
         respond(500, new ErrorBody('UNEXPECTED', new List<String>{ 'Something went wrong. Please try again.' }));
+    }
+
+    /** A row error raised by a trigger (e.g. the archived-period guard) is meant for the user. */
+    private static String rowError(Exception e) {
+        // Read from the message: the row accessors throw an uncatchable error on a DmlException built in code.
+        String marker = 'FIELD_CUSTOM_VALIDATION_EXCEPTION, ';
+        String message = e instanceof DmlException ? e.getMessage() : null;
+        if (message == null || !message.contains(marker)) {
+            return null;
+        }
+        String text = message.substringAfter(marker);
+        return text.contains(': [') ? text.substringBeforeLast(': [') : text;
     }
 
     public class ErrorBody {

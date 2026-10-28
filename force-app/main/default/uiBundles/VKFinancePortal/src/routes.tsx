@@ -32,6 +32,7 @@ const RequestsPage = lazy(() => import("./features/enhancements/RequestsPage"));
 const GoalsPage = lazy(() => import("./features/enhancements/GoalsPage"));
 const InstallPage = lazy(() => import("./features/enhancements/InstallPage"));
 const InsightsPage = lazy(() => import("./features/enhancements/InsightsPage"));
+const ArchivePage = lazy(() => import("./features/archive/ArchivePage"));
 
 
 function Root() {
@@ -80,7 +81,10 @@ export const routes: RouteObject[] = [
 							},
 							{
 								element: <RequirePermission permission="TRANSACTIONS:READ" />,
-								children: [{ path: "/transactions", element: <TransactionsPage /> }],
+								children: [
+									{ path: "/transactions", element: <TransactionsPage /> },
+									{ path: "/archive", element: <ArchivePage /> },
+								],
 							},
 							{
 								element: <RequirePermission permission="ACCOUNTS:READ" />,

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Family__c</fullName>
+    <label>Family</label>
+    <deleteConstraint>Restrict</deleteConstraint>
+    <referenceTo>Family__c</referenceTo>
+    <relationshipLabel>Archive Logs</relationshipLabel>
+    <relationshipName>Archive_Logs</relationshipName>
+    <required>true</required>
+    <type>Lookup</type>
+</CustomField>
