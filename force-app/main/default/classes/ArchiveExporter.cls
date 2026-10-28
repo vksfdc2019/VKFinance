@@ -22,7 +22,7 @@ public without sharing class ArchiveExporter {
             'name:Name', 'username:Username', 'email:Email', 'role:Role', 'relationship:Relationship', 'status:Status',
             'viewerScope:Viewer scope', 'lastLogin:Last sign-in', 'twoStep:Two-step on'
         },
-        'Bills' => new List<String>{ 'bill:Bill', 'dueDate:Due', 'amountDue:Amount due', 'amountPaid:Paid', 'status:Status', 'paidOn:Paid on' },
+        'Bill payments' => new List<String>{ 'bill:Bill', 'dueDate:Due', 'amountDue:Amount due', 'amountPaid:Paid', 'status:Status', 'paidOn:Paid on' },
         'EMIs' => new List<String>{
             'loan:Loan', 'installment:No', 'dueDate:Due', 'emi:EMI', 'principal:Principal', 'interest:Interest',
             'openingBalance:Opening', 'closingBalance:Closing', 'status:Status', 'paidOn:Paid on'
@@ -46,9 +46,22 @@ public without sharing class ArchiveExporter {
 
     public static final Map<String, String> TAB_FOR_TYPE = new Map<String, String>{
         ArchiveService.TXN => 'Transactions', ArchiveService.ACCOUNT => 'Accounts', ArchiveService.MEMBER => 'Members',
-        ArchiveService.BILL => 'Bills', ArchiveService.EMI => 'EMIs', ArchiveService.REQUEST => 'Spend requests',
+        ArchiveService.BILL => 'Bill payments', ArchiveService.EMI => 'EMIs', ArchiveService.REQUEST => 'Spend requests',
         ArchiveService.STATEMENT => 'Statement imports', ArchiveService.SESSION => 'Sessions', ArchiveService.NOTICE => 'Notifications'
     };
+
+    static {
+        // Setup snapshots (bills, loans, budgets, categories, recurring, goals, card statements).
+        for (ArchiveService.Snapshot def : ArchiveService.SNAPSHOTS) {
+            List<String> cols = new List<String>();
+            for (String col : def.columns) {
+                List<String> parts = col.split(':');
+                cols.add(parts[0] + ':' + parts[1]);
+            }
+            TABS.put(def.tab, cols);
+            TAB_FOR_TYPE.put(def.type, def.tab);
+        }
+    }
 
     public static final List<String> AUDIT_COLUMNS = new List<String>{ 'Time', 'Event', 'Actor', 'Object', 'Record', 'Details' };
 

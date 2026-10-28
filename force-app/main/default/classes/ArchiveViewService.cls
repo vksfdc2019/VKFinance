@@ -44,8 +44,13 @@ public without sharing class ArchiveViewService {
         Summary s = new Summary();
         Id fid = ctx.familyId;
         s.archivedThrough = [SELECT Archived_Through__c FROM Family__c WHERE Id = :fid WITH SYSTEM_MODE].Archived_Through__c;
+        if (s.archivedThrough == null) {
+            return s;
+        }
+        // Every month is copied as a backup; only months closed into the archive are listed here.
+        Date through = s.archivedThrough;
         for (Archive_Log__c log : [
-            SELECT Month__c, Counts__c FROM Archive_Log__c WHERE Family__c = :fid WITH SYSTEM_MODE ORDER BY Month__c DESC LIMIT 240
+            SELECT Month__c, Counts__c FROM Archive_Log__c WHERE Family__c = :fid AND Month__c <= :through WITH SYSTEM_MODE ORDER BY Month__c DESC LIMIT 240
         ]) {
             Integer txns = 0;
             if (String.isNotBlank(log.Counts__c)) {

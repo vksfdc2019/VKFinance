@@ -52,7 +52,8 @@ private class ArchiveServiceTest {
     }
 
     private static Archive_Log__c ageLog(Id familyId) {
-        Archive_Log__c log = [SELECT Id FROM Archive_Log__c WHERE Family__c = :familyId WITH SYSTEM_MODE LIMIT 1];
+        Date oldStart = oldDate().toStartOfMonth();
+        Archive_Log__c log = [SELECT Id FROM Archive_Log__c WHERE Family__c = :familyId AND Month__c = :oldStart WITH SYSTEM_MODE LIMIT 1];
         Datetime past = Datetime.now().addDays(-(ArchiveService.graceDays() + 1));
         log.Copied_At__c = past;
         log.Exported_At__c = past;
@@ -72,18 +73,26 @@ private class ArchiveServiceTest {
 
         ArchiveService.Collected c = ArchiveService.collect(admin.familyId, Date.today());
         Integer txns = 0;
+        Integer oldTxns = 0;
         for (Archive_Record__b r : c.rows) {
             if (r.Record_Type__c == ArchiveService.TXN) {
                 txns++;
-                Assert.areEqual(oldMonth(), r.Archive_Month__c);
+                oldTxns += r.Archive_Month__c == oldMonth() ? 1 : 0;
             }
             if (r.Record_Type__c == ArchiveService.MEMBER) {
                 Assert.isFalse(r.Payload__c.containsIgnoreCase('hash'), 'Secrets must never be archived.');
                 Assert.isFalse(r.Payload__c.containsIgnoreCase('salt'));
             }
         }
-        Assert.areEqual(2, txns, 'Only entries older than the live window are archived.');
+        Assert.areEqual(3, txns, 'Every entry is copied, including this month.');
+        Assert.areEqual(2, oldTxns);
         Assert.isTrue(c.touched.contains(oldMonth()));
+        Assert.isTrue(c.touched.contains(ArchiveService.monthKey(Date.today())));
+        Set<String> types = new Set<String>();
+        for (Archive_Record__b r : c.rows) {
+            types.add(r.Record_Type__c);
+        }
+        Assert.isTrue(types.containsAll(new Set<String>{ ArchiveService.ACCOUNT, ArchiveService.MEMBER, 'Category' }), String.valueOf(types));
         ArchiveStore.save(c.rows);
         ArchiveService.Collected again = ArchiveService.collect(admin.familyId, Date.today());
         Assert.areEqual(0, again.rows.size(), 'Unchanged records are not copied twice.');
@@ -93,7 +102,8 @@ private class ArchiveServiceTest {
         Test.setMock(HttpCalloutMock.class, google);
         Test.startTest();
         ArchiveExporter.export(admin.familyId, new List<String>(c.touched), c.touched);
-        Archive_Log__c log = [SELECT Status__c, Sheet_Id__c, Exported_At__c, Records__c, Error__c FROM Archive_Log__c WHERE Family__c = :admin.familyId WITH SYSTEM_MODE];
+        Date oldStart = oldDate().toStartOfMonth();
+        Archive_Log__c log = [SELECT Status__c, Sheet_Id__c, Exported_At__c, Records__c, Error__c FROM Archive_Log__c WHERE Family__c = :admin.familyId AND Month__c = :oldStart WITH SYSTEM_MODE];
         Assert.areEqual('Copied', log.Status__c);
         Assert.areEqual('sheet-1', log.Sheet_Id__c, 'Error: ' + log.Error__c);
         Assert.isNotNull(log.Exported_At__c);
@@ -175,7 +185,8 @@ private class ArchiveServiceTest {
         ArchiveExporter.export(admin.familyId, new List<String>(c.touched), c.touched);
         Test.stopTest();
 
-        Archive_Log__c log = [SELECT Exported_At__c, Error__c FROM Archive_Log__c WHERE Family__c = :admin.familyId WITH SYSTEM_MODE];
+        Date oldStart = oldDate().toStartOfMonth();
+        Archive_Log__c log = [SELECT Exported_At__c, Error__c FROM Archive_Log__c WHERE Family__c = :admin.familyId AND Month__c = :oldStart WITH SYSTEM_MODE];
         Assert.isNull(log.Exported_At__c);
         Assert.isTrue(log.Error__c != null && log.Error__c.contains('401'), 'Error: ' + log.Error__c);
         log.Copied_At__c = Datetime.now().addDays(-30);
@@ -269,7 +280,8 @@ private class ArchiveServiceTest {
         remover.execute(null, due);
         remover.finish(null);
         Test.stopTest();
-        Archive_Log__c log = [SELECT Status__c, Purged__c FROM Archive_Log__c WHERE Family__c = :admin.familyId WITH SYSTEM_MODE];
+        Date oldStart = oldDate().toStartOfMonth();
+        Archive_Log__c log = [SELECT Status__c, Purged__c FROM Archive_Log__c WHERE Family__c = :admin.familyId AND Month__c = :oldStart WITH SYSTEM_MODE];
         Assert.areEqual('Purged', log.Status__c);
         Assert.areEqual(1, log.Purged__c);
         Assert.areEqual(940, LedgerTestData.balance(account));

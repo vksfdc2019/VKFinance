@@ -20,19 +20,22 @@ flowchart LR
   Remove --> Net[Archived_Net__c keeps balances identical]
 ```
 
-## What is archived
+## What is copied
 
-| Record | When | Removed from Salesforce? |
+Every family gets a complete copy. In Drive, each family has its own folder (`VKFinance Archive / FAM-0001`) with one spreadsheet per month.
+
+| Record | Sheet tab and month | Removed from Salesforce? |
 | --- | --- | --- |
-| Transactions | Dated before the live window | Yes, except entries with receipt photos |
-| Spend requests (decided) | Created before the live window | Yes |
-| Statement imports (finished) | Created before the live window | Yes |
-| Ended sessions | As soon as they end | Already deleted after 7 days by the session cleanup job |
-| Read notifications | As soon as they are read | Already deleted after 60 days by the retention job |
-| Accounts | Snapshot with each month's month-end balance | No, copy only |
-| Members | Snapshot | No, copy only. Passwords, salts, two-step keys and recovery codes are never copied |
-| Bill instances, EMI instalments | Due before the live window | No, copy only |
-| Audit log | Per month | No, it's already a big object; copied to the sheet only |
+| Transactions | **Transactions**, in the month of the entry (current month included) | Only for months older than the live window, except entries with receipt photos |
+| Spend requests | **Spend requests**, by request month | Decided requests in months older than the live window |
+| Statement imports | **Statement imports**, by upload month | Finished imports in months older than the live window |
+| Ended sessions, read notifications | **Sessions**, **Notifications** | Deleted by the existing cleanup jobs (7 and 60 days) |
+| Bill payments, EMI instalments | **Bill payments**, **EMIs**, by due month (upcoming ones in the current month) | No |
+| Accounts (with month-end balance), members | **Accounts**, **Members**, as a snapshot | No |
+| Bills, loans, budgets, categories, recurring entries, goals, card statements | **Bills**, **Loans**, **Budgets**, **Categories**, **Recurring**, **Goals**, **Card statements**, as a snapshot | No |
+| Audit log | **Audit** | No (already a big object) |
+
+The current month's sheet is refreshed every night with whatever changed. Each older month keeps the snapshot taken when its entries last changed. Passwords, salts, two-step keys, recovery codes and session tokens are never copied. The portal **Archive** page lists only months that have been closed into the archive.
 
 **Live window:** the current month plus 3 full previous months. Reports and smart insights read the last three full months directly from the live ledger, so the policy never allows fewer than 3.
 

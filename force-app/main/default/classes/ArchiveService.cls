@@ -2,13 +2,15 @@
  * Moves old records out of the 5 MB data storage into the Archive_Record__b big object (with a
  * Google Sheet copy made by ArchiveExporter), then removes the originals.
  *
- *   collect() - what belongs in the archive and isn't there yet (or changed since). Ledger
- *               records qualify once their month is older than the live window (current month
- *               plus Live_Months__c, so reports and insights still read three full months);
- *               ended sessions and read notifications are copied as they happen, because the
- *               existing cleanup jobs delete those after a few days.
- *   purge()    - after the grace period, and only once the month is safely copied, deletes the
- *               archived transactions, decided spend requests and old statement imports. The
+ *   collect() - a full copy of each family: every transaction (by its month), spend request,
+ *               statement import, ended session, read notification, bill payment and EMI, plus
+ *               snapshots of accounts, members, bills, loans, budgets, categories, recurring
+ *               entries, goals and card statements. Only new or changed records are written.
+ *               Live data is bounded by the 5 MB storage, so a full pass each night stays small.
+ *   purge()    - only for months older than the live window (current month plus Live_Months__c,
+ *               so reports and insights still read three full months), after the grace period and
+ *               once the month is safely copied: deletes its transactions, decided spend requests
+ *               and finished statement imports. The
  *               deleted transactions' net effect moves into Financial_Account__c.Archived_Net__c,
  *               so every balance stays exactly the same.
  *
@@ -28,7 +30,7 @@ public without sharing class ArchiveService {
     public static final String MEMBER = 'Member';
     public static final String BILL = 'BillInstance';
     public static final String EMI = 'EmiInstallment';
-    public static final Integer MAX_PER_TYPE = 2000;
+    public static final Integer MAX_PER_TYPE = 5000;
     public static final Integer MAX_MONTHS = 12;
 
     @TestVisible
@@ -111,16 +113,15 @@ public without sharing class ArchiveService {
      * reads included), so the caller can write the rows with ArchiveStore.save() afterwards.
      */
     public static Collected collect(Id familyId, Date today) {
-        Date cut = cutoff(today);
-        Datetime cutAt = Datetime.newInstance(cut, Time.newInstance(0, 0, 0, 0));
         List<Candidate> found = new List<Candidate>();
+        String thisMonth = monthKey(today);
 
         for (Transaction__c t : [
             SELECT Id, Name, Txn_Date__c, Type__c, Direction__c, Amount__c, Status__c, Account__c, Account__r.Name, Category__c,
                 Category__r.Name, Member__c, Member__r.First_Name__c, Member__r.Last_Name__c, Payee__c, Notes__c, Payment_Mode__c,
                 Reference_No__c, Source__c, Transfer_Group_Id__c, CreatedDate, LastModifiedDate
             FROM Transaction__c
-            WHERE Family__c = :familyId AND Txn_Date__c < :cut
+            WHERE Family__c = :familyId
             WITH SYSTEM_MODE ORDER BY Txn_Date__c LIMIT :MAX_PER_TYPE
         ]) {
             found.add(new Candidate(TXN, t.Id, t.Txn_Date__c, Datetime.newInstance(t.Txn_Date__c, Time.newInstance(12, 0, 0, 0)), t.LastModifiedDate, new Map<String, Object>{
@@ -137,7 +138,7 @@ public without sharing class ArchiveService {
                 Valid_Until__c, Decided_At__c, Decided_By__r.First_Name__c, Decided_By__r.Last_Name__c, Decision_Note__c, Note__c,
                 Transaction__c, CreatedDate, LastModifiedDate
             FROM Spend_Request__c
-            WHERE Family__c = :familyId AND CreatedDate < :cutAt AND Status__c != 'Pending'
+            WHERE Family__c = :familyId
             WITH SYSTEM_MODE ORDER BY CreatedDate LIMIT :MAX_PER_TYPE
         ]) {
             found.add(new Candidate(REQUEST, r.Id, r.CreatedDate.date(), r.CreatedDate, r.LastModifiedDate, new Map<String, Object>{
@@ -152,7 +153,7 @@ public without sharing class ArchiveService {
             SELECT Id, Name, File_Name__c, Status__c, Account__r.Name, Member__r.First_Name__c, Member__r.Last_Name__c, Total__c,
                 Imported__c, Duplicates__c, Failed__c, Error__c, CreatedDate, LastModifiedDate
             FROM Statement_Import__c
-            WHERE Family__c = :familyId AND CreatedDate < :cutAt AND Status__c IN ('Archived', 'Completed', 'Cancelled')
+            WHERE Family__c = :familyId
             WITH SYSTEM_MODE ORDER BY CreatedDate LIMIT :MAX_PER_TYPE
         ]) {
             found.add(new Candidate(STATEMENT, s.Id, s.CreatedDate.date(), s.CreatedDate, s.LastModifiedDate, new Map<String, Object>{
@@ -193,10 +194,10 @@ public without sharing class ArchiveService {
         for (Bill_Instance__c b : [
             SELECT Id, Bill__r.Name, Due_Date__c, Amount_Due__c, Amount_Paid__c, Status__c, Paid_On__c, LastModifiedDate
             FROM Bill_Instance__c
-            WHERE Family__c = :familyId AND Due_Date__c < :cut
+            WHERE Family__c = :familyId
             WITH SYSTEM_MODE ORDER BY Due_Date__c LIMIT :MAX_PER_TYPE
         ]) {
-            found.add(new Candidate(BILL, b.Id, b.Due_Date__c, Datetime.newInstance(b.Due_Date__c, Time.newInstance(12, 0, 0, 0)), b.LastModifiedDate, new Map<String, Object>{
+            found.add(new Candidate(BILL, b.Id, sheetMonth(b.Due_Date__c, today), Datetime.newInstance(b.Due_Date__c, Time.newInstance(12, 0, 0, 0)), b.LastModifiedDate, new Map<String, Object>{
                 'bill' => b.Bill__r?.Name, 'dueDate' => b.Due_Date__c, 'amountDue' => b.Amount_Due__c, 'amountPaid' => b.Amount_Paid__c,
                 'status' => b.Status__c, 'paidOn' => b.Paid_On__c
             }));
@@ -206,10 +207,10 @@ public without sharing class ArchiveService {
             SELECT Id, Loan__r.Name, Installment_No__c, Due_Date__c, EMI_Amount__c, Principal_Part__c, Interest_Part__c, Opening_Balance__c,
                 Closing_Balance__c, Status__c, Paid_On__c, LastModifiedDate
             FROM EMI_Installment__c
-            WHERE Family__c = :familyId AND Due_Date__c < :cut
+            WHERE Family__c = :familyId
             WITH SYSTEM_MODE ORDER BY Due_Date__c LIMIT :MAX_PER_TYPE
         ]) {
-            found.add(new Candidate(EMI, e.Id, e.Due_Date__c, Datetime.newInstance(e.Due_Date__c, Time.newInstance(12, 0, 0, 0)), e.LastModifiedDate, new Map<String, Object>{
+            found.add(new Candidate(EMI, e.Id, sheetMonth(e.Due_Date__c, today), Datetime.newInstance(e.Due_Date__c, Time.newInstance(12, 0, 0, 0)), e.LastModifiedDate, new Map<String, Object>{
                 'loan' => e.Loan__r?.Name, 'installment' => e.Installment_No__c, 'dueDate' => e.Due_Date__c, 'emi' => e.EMI_Amount__c,
                 'principal' => e.Principal_Part__c, 'interest' => e.Interest_Part__c, 'openingBalance' => e.Opening_Balance__c,
                 'closingBalance' => e.Closing_Balance__c, 'status' => e.Status__c, 'paidOn' => e.Paid_On__c
@@ -227,6 +228,10 @@ public without sharing class ArchiveService {
             months.remove(months.size() - 1);
         }
         Set<String> allowed = new Set<String>(months);
+        // The current month always holds the latest snapshot of accounts, bills, loans and so on.
+        if (!allowed.contains(thisMonth)) {
+            months.add(thisMonth);
+        }
 
         Map<String, Datetime> archived = new Map<String, Datetime>();
         Set<String> monthsWithRows = new Set<String>();
@@ -268,15 +273,24 @@ public without sharing class ArchiveService {
                 ledgerMonths.add(c.month);
             }
         }
-        if (!ledgerMonths.isEmpty()) {
-            result.rows.addAll(snapshots(familyId, ledgerMonths, now));
+        // Months that gained entries get a full snapshot; the current month gets whatever changed.
+        Boolean thisMonthGainedEntries = ledgerMonths.contains(thisMonth);
+        ledgerMonths.add(thisMonth);
+        for (Archive_Record__b r : snapshots(familyId, ledgerMonths, now)) {
+            Datetime known = archived.get(r.Record_Type__c + '|' + r.Record_Id__c);
+            Boolean fullMonth = r.Archive_Month__c != thisMonth || thisMonthGainedEntries;
+            if (fullMonth || known == null || (r.Source_Modified__c != null && known < r.Source_Modified__c)) {
+                result.rows.add(r);
+                result.touched.add(r.Archive_Month__c);
+            }
         }
         return result;
     }
 
     /**
-     * Accounts (with each one's balance at month end) and members, as they were when the month
-     * was archived. Months already removed from the live ledger keep their earlier snapshot.
+     * Accounts (with each one's balance at month end), members and the setup records, as they
+     * were when the month was copied. Months already removed from the live ledger keep their
+     * earlier snapshot.
      */
     private static List<Archive_Record__b> snapshots(Id familyId, Set<String> monthKeys, Datetime now) {
         Set<String> keys = new Set<String>();
@@ -297,6 +311,7 @@ public without sharing class ArchiveService {
                 Last_Login__c, MFA_Enrolled_At__c, LastModifiedDate
             FROM Portal_User__c WHERE Family__c = :familyId WITH SYSTEM_MODE
         ];
+        Map<String, List<SObject>> setup = setupRecords(familyId);
         List<Archive_Record__b> rows = new List<Archive_Record__b>();
         for (String m : monthKeys) {
             if (skip.contains(m)) {
@@ -331,8 +346,97 @@ public without sharing class ArchiveService {
                     'lastLogin' => u.Last_Login__c, 'twoStep' => u.MFA_Enrolled_At__c != null
                 }));
             }
+            for (Snapshot def : SNAPSHOTS) {
+                for (SObject rec : setup.get(def.type)) {
+                    Map<String, Object> payload = new Map<String, Object>();
+                    for (String col : def.columns) {
+                        List<String> parts = col.split(':');
+                        payload.put(parts[0], valueAt(rec, parts[2]));
+                    }
+                    rows.add(row(familyId, m, def.type, rec.Id, at, (Datetime) rec.get('LastModifiedDate'), now, payload));
+                }
+            }
         }
         return rows;
+    }
+
+    /** Setup records copied whole with every snapshot: type, sheet tab, object and 'key:Heading:field path' columns. */
+    public class Snapshot {
+        public String type;
+        public String tab;
+        public String objectName;
+        public List<String> columns;
+        Snapshot(String type, String tab, String objectName, List<String> columns) {
+            this.type = type;
+            this.tab = tab;
+            this.objectName = objectName;
+            this.columns = columns;
+        }
+    }
+
+    public static final List<Snapshot> SNAPSHOTS = new List<Snapshot>{
+        new Snapshot('Bill', 'Bills', 'Bill__c', new List<String>{
+            'name:Bill:Name', 'category:Category:Category__r.Name', 'amount:Expected amount:Expected_Amount__c', 'frequency:Frequency:Frequency__c',
+            'nextDue:Next due:Next_Due_Date__c', 'account:Pay from:Pay_From_Account__r.Name', 'autoPay:Auto pay:Auto_Pay__c',
+            'consumerNo:Consumer no:Consumer_No__c', 'reminderDays:Reminder days:Reminder_Days__c', 'active:Active:Active__c'
+        }),
+        new Snapshot('Loan', 'Loans', 'Loan__c', new List<String>{
+            'name:Loan:Name', 'loanType:Type:Loan_Type__c', 'lender:Lender:Lender__c', 'principal:Principal:Principal__c',
+            'rate:Annual rate (%):Annual_Rate__c', 'tenure:Tenure (months):Tenure_Months__c', 'emi:EMI:EMI_Amount__c', 'start:Start:Start_Date__c',
+            'paid:Instalments paid:Installments_Paid__c', 'outstanding:Outstanding principal:Outstanding_Principal__c', 'status:Status:Status__c',
+            'debitAccount:Debit account:Debit_Account__r.Name', 'autoDebit:Auto debit:Auto_Debit__c'
+        }),
+        new Snapshot('BudgetLine', 'Budgets', 'Budget_Line__c', new List<String>{
+            'month:Month:Budget__r.Month__c', 'category:Category:Category__r.Name', 'planned:Planned:Planned__c', 'notes:Budget notes:Budget__r.Notes__c'
+        }),
+        new Snapshot('Category', 'Categories', 'Category__c', new List<String>{
+            'name:Category:Name', 'kind:Kind:Kind__c', 'parent:Parent:Parent_Category__r.Name', 'essential:Essential:Is_Essential__c',
+            'tax:Tax relevant:Tax_Relevant__c', 'active:Active:Active__c'
+        }),
+        new Snapshot('RecurringRule', 'Recurring', 'Recurring_Rule__c', new List<String>{
+            'name:Name:Name', 'type:Type:Type__c', 'amount:Amount:Amount__c', 'frequency:Frequency:Frequency__c', 'mode:Mode:Mode__c',
+            'account:Account:Account__r.Name', 'toAccount:To account:To_Account__r.Name', 'category:Category:Category__r.Name', 'payee:Payee:Payee__c',
+            'nextRun:Next run:Next_Run_Date__c', 'lastRun:Last run:Last_Run_Date__c', 'endDate:Ends:End_Date__c', 'active:Active:Active__c'
+        }),
+        new Snapshot('SavingsGoal', 'Goals', 'Savings_Goal__c', new List<String>{
+            'title:Goal:Title__c', 'target:Target:Target__c', 'targetDate:Target date:Target_Date__c', 'account:Account:Account__r.Name',
+            'baseline:Baseline:Baseline__c', 'status:Status:Status__c'
+        }),
+        new Snapshot('CardStatement', 'Card statements', 'Card_Statement__c', new List<String>{
+            'card:Card:Account__r.Name', 'cycleStart:Cycle start:Cycle_Start__c', 'cycleEnd:Cycle end:Cycle_End__c',
+            'amount:Statement amount:Statement_Amount__c', 'minimum:Minimum due:Minimum_Due__c', 'due:Due:Due_Date__c'
+        })
+    };
+
+    private static Map<String, List<SObject>> setupRecords(Id familyId) {
+        Map<String, List<SObject>> result = new Map<String, List<SObject>>();
+        for (Snapshot def : SNAPSHOTS) {
+            Set<String> fields = new Set<String>{ 'Id', 'LastModifiedDate' };
+            for (String col : def.columns) {
+                fields.add(col.split(':')[2]);
+            }
+            result.put(def.type, Database.queryWithBinds(
+                'SELECT ' + String.join(new List<String>(fields), ', ') + ' FROM ' + def.objectName +
+                ' WHERE Family__c = :familyId ORDER BY CreatedDate LIMIT ' + MAX_PER_TYPE,
+                new Map<String, Object>{ 'familyId' => familyId },
+                AccessLevel.SYSTEM_MODE
+            ));
+        }
+        return result;
+    }
+
+    /** Reads 'Field__c' or 'Lookup__r.Field__c' from a queried record. */
+    private static Object valueAt(SObject rec, String path) {
+        if (!path.contains('.')) {
+            return rec.get(path);
+        }
+        SObject parent = rec.getSObject(path.substringBefore('.'));
+        return parent == null ? null : parent.get(path.substringAfter('.'));
+    }
+
+    /** Upcoming instalments sit in the current month's sheet until their own month arrives. */
+    private static Date sheetMonth(Date due, Date today) {
+        return due > LedgerUtil.monthEnd(today.toStartOfMonth()) ? today : due;
     }
 
     private static Archive_Record__b row(Id familyId, String month, String type, Id recordId, Datetime recordDate, Datetime modified, Datetime now, Map<String, Object> payload) {
@@ -450,7 +554,7 @@ public without sharing class ArchiveService {
         List<Statement_Import__c> statements = new List<Statement_Import__c>();
         for (Statement_Import__c s : [
             SELECT Id, LastModifiedDate FROM Statement_Import__c
-            WHERE Id IN :statementIds.keySet() AND Family__c = :familyId AND Status__c != 'Processing' WITH SYSTEM_MODE
+            WHERE Id IN :statementIds.keySet() AND Family__c = :familyId AND Status__c IN ('Archived', 'Completed', 'Cancelled') WITH SYSTEM_MODE
         ]) {
             if (unchanged(s.LastModifiedDate, statementIds.get(s.Id))) {
                 statements.add(s);
