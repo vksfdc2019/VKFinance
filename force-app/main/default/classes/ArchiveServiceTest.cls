@@ -85,7 +85,9 @@ private class ArchiveServiceTest {
         Assert.areEqual(2, txns, 'Only entries older than the live window are archived.');
         Assert.isTrue(c.touched.contains(oldMonth()));
         ArchiveStore.save(c.rows);
-        Assert.areEqual(0, ArchiveService.collect(admin.familyId, Date.today()).rows.size(), 'Unchanged records are not copied twice.');
+        ArchiveService.Collected again = ArchiveService.collect(admin.familyId, Date.today());
+        Assert.areEqual(0, again.rows.size(), 'Unchanged records are not copied twice.');
+        Assert.isTrue(again.touched.contains(oldMonth()), 'A copied month without a log still gets its sheet.');
 
         GoogleMock google = new GoogleMock(false);
         Test.setMock(HttpCalloutMock.class, google);
@@ -251,12 +253,21 @@ private class ArchiveServiceTest {
         UserContext admin = VkfTestData.ctx('admina');
         Id account = LedgerTestData.account(admin, 'Bank', 'Savings', 1000).id;
         LedgerTestData.entry(admin, 'Expense', 60, account, LedgerTestData.categoryId(admin, 'Groceries'), oldDate(), 'Shop');
-        List<Id> families = new List<Id>{ admin.familyId };
+        List<Family__c> families = [SELECT Id FROM Family__c WHERE Id = :admin.familyId WITH SYSTEM_MODE];
         Test.startTest();
-        new ArchiveWorker(families, 0, ArchiveWorker.Step.COPY_RECORDS, new List<String>(), new Set<String>()).execute((QueueableContext) null);
-        new ArchiveWorker(families, 0, ArchiveWorker.Step.WRITE_SHEETS, new List<String>{ oldMonth() }, new Set<String>{ oldMonth() }).execute((QueueableContext) null);
+        new ArchiveWorker(ArchiveWorker.Step.COPY_RECORDS, null).execute(null, families);
+        new ArchiveWorker(ArchiveWorker.Step.WRITE_SHEETS, new Map<Id, Set<String>>{ admin.familyId => new Set<String>{ oldMonth() } })
+            .execute(null, families);
         ageLog(admin.familyId);
-        new ArchiveWorker(families, 0, ArchiveWorker.Step.REMOVE_ARCHIVED, new List<String>(), new Set<String>()).execute((QueueableContext) null);
+        ArchiveWorker remover = new ArchiveWorker(ArchiveWorker.Step.REMOVE_ARCHIVED, null);
+        List<SObject> due = new List<SObject>();
+        Database.QueryLocatorIterator it = remover.start(null).iterator();
+        while (it.hasNext()) {
+            due.add(it.next());
+        }
+        Assert.areEqual(1, due.size(), 'The remove pass finds the aged month.');
+        remover.execute(null, due);
+        remover.finish(null);
         Test.stopTest();
         Archive_Log__c log = [SELECT Status__c, Purged__c FROM Archive_Log__c WHERE Family__c = :admin.familyId WITH SYSTEM_MODE];
         Assert.areEqual('Purged', log.Status__c);

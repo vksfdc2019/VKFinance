@@ -4,7 +4,7 @@ Released 28 October 2026. The org's data storage is 5 MB, which is about 2,500 r
 
 ## What happens every night (01:30, "VKF Archive")
 
-For each active family, `ArchiveJob` starts `ArchiveWorker`, which runs three steps:
+`ArchiveJob` starts `ArchiveWorker`, which makes three batch passes, each starting the next. The first two passes go one family at a time; the last goes one month at a time. Chained queueables would hit Developer Edition's five-job limit, so the steps are batch passes instead.
 
 1. **Copy.** New or changed records are written to the `Archive_Record__b` big object. Big objects don't count against data storage.
 2. **Google Sheets.** Each family-month that changed is rebuilt as one spreadsheet: `VKFinance Archive / FAM-0001 / FAM-0001 2026-07`. It has one tab per record type, plus that month's audit trail. The result goes to `Archive_Log__c`.
@@ -78,5 +78,5 @@ The `drive.file` scope means the app can see only the folders and spreadsheets i
 
 - **Status:** query the `Archive_Log__c` rows. Each row shows the status (`Copied` or `Purged`), row counts, the sheet link and the last error.
 - **Failures:** a failing family is logged as `ARCHIVE_FAILED` in the audit trail, and the job moves on to the next family. A failed Google copy is retried every night.
-- **Run now:** `System.enqueueJob(new ArchiveWorker(new List<Id>{ familyId }, 0, ArchiveWorker.Step.COPY_RECORDS, new List<String>(), new Set<String>()));`
+- **Run now:** `ArchiveWorker.start();` from anonymous Apex runs exactly what the nightly job runs.
 - **Deploy:** `ArchiveJob` is scheduled, so the standard unschedule → deploy → schedule sequence in the README applies.

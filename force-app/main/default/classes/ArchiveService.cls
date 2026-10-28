@@ -229,13 +229,29 @@ public without sharing class ArchiveService {
         Set<String> allowed = new Set<String>(months);
 
         Map<String, Datetime> archived = new Map<String, Datetime>();
+        Set<String> monthsWithRows = new Set<String>();
         for (String m : months) {
             for (Archive_Record__b r : ArchiveStore.month(familyId, m)) {
                 archived.put(r.Record_Type__c + '|' + r.Record_Id__c, r.Source_Modified__c);
+                monthsWithRows.add(m);
             }
         }
 
         Collected result = new Collected();
+        // A month copied earlier but never logged (the run stopped between steps) still needs its sheet.
+        Set<String> logKeys = new Set<String>();
+        for (String m : monthsWithRows) {
+            logKeys.add(logKey(familyId, m));
+        }
+        Set<String> logged = new Set<String>();
+        for (Archive_Log__c log : [SELECT Unique_Key__c FROM Archive_Log__c WHERE Unique_Key__c IN :logKeys WITH SYSTEM_MODE]) {
+            logged.add(log.Unique_Key__c);
+        }
+        for (String m : monthsWithRows) {
+            if (!logged.contains(logKey(familyId, m))) {
+                result.touched.add(m);
+            }
+        }
         Datetime now = Datetime.now();
         Set<String> ledgerMonths = new Set<String>();
         for (Candidate c : found) {
