@@ -9,7 +9,7 @@ public without sharing class PortalUserSelector extends FamilyScopedSelector {
         return [
             SELECT
                 Id, Name, Family__c, First_Name__c, Last_Name__c, Username__c, Email__c, Mobile__c, Relationship__c,
-                Role__c, Status__c, Viewer_Scope__c, Must_Change_Password__c, Locked_Until__c, Last_Login__c
+                Role__c, Status__c, Viewer_Scope__c, Must_Change_Password__c, Locked_Until__c, Last_Login__c, MFA_Method__c
             FROM Portal_User__c
             WHERE Family__c = :fid AND Id IN :memberIds AND Status__c != 'Removed'
             WITH SYSTEM_MODE ORDER BY First_Name__c, Last_Name__c
@@ -26,7 +26,7 @@ public without sharing class PortalUserSelector extends FamilyScopedSelector {
                       First_Name__c, Last_Name__c, Username__c, Email__c, Mobile__c, Relationship__c, Role__c,
                       Status__c, Viewer_Scope__c, Password_Hash__c, Password_Salt__c, Hash_Iterations__c,
                       Must_Change_Password__c, Temp_Password_Expires_At__c, Failed_Login_Count__c, Lockout_Count__c,
-                      Locked_Until__c, Last_Login__c
+                      Locked_Until__c, Last_Login__c, MFA_Method__c
                   FROM Portal_User__c
                   WHERE Id = :memberId AND Family__c = :fid AND Status__c != 'Removed'
                   WITH SYSTEM_MODE LIMIT 1

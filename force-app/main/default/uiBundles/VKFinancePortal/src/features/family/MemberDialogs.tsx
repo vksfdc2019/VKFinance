@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "@/components/ui/sonner";
 import { FormErrors, TextField } from "@/components/forms";
+import { OtpInput } from "@/components/security/OtpInput";
+import { useAuth } from "@/features/auth/AuthContext";
 import { errorMessages } from "@/api/vkfClient";
 import { familyApi } from "@/api/endpoints";
 import { RELATIONSHIPS, ROLES, type CreatedMember, type Member, type MemberInput, type Role } from "@/api/types";
@@ -161,8 +163,11 @@ export function EditMemberDialog({
 	onClose(): void;
 	onSaved(): void;
 }) {
+	const { profile } = useAuth();
+	const needsCode = !!profile?.mfaEnabled;
 	const [form, setForm] = useState<MemberInput>({});
 	const [password, setPassword] = useState("");
+	const [code, setCode] = useState("");
 	const [errors, setErrors] = useState<string[]>([]);
 	const [busy, setBusy] = useState(false);
 
@@ -178,6 +183,7 @@ export function EditMemberDialog({
 				viewerScope: member.viewerScope ?? "Own",
 			});
 			setPassword("");
+			setCode("");
 			setErrors([]);
 		}
 	}, [member]);
@@ -203,6 +209,7 @@ export function EditMemberDialog({
 			if (roleChanged) {
 				changes.role = form.role;
 				changes.currentPassword = password;
+				if (needsCode) changes.code = code;
 			}
 			await familyApi.updateMember(member.id, changes);
 			toast.success(`${form.firstName}'s details are saved.`);
@@ -253,11 +260,17 @@ export function EditMemberDialog({
 							hint="Changing a role signs the member out and needs your password."
 						/>
 					)}
+					{roleChanged && needsCode && (
+						<div className="grid gap-2">
+							<span className="text-sm font-medium">Code from your authenticator app</span>
+							<OtpInput value={code} onChange={setCode} disabled={busy} />
+						</div>
+					)}
 					<DialogFooter>
 						<Button type="button" variant="outline" onClick={onClose}>
 							Cancel
 						</Button>
-						<Button type="submit" disabled={busy || (roleChanged && !password)}>
+						<Button type="submit" disabled={busy || (roleChanged && (!password || (needsCode && code.length !== 6)))}>
 							{busy && <Spinner />}
 							Save
 						</Button>
@@ -273,17 +286,21 @@ export interface PasswordConfirmation {
 	description: string;
 	confirmLabel: string;
 	destructive?: boolean;
-	run(password: string): Promise<void>;
+	run(password: string, code?: string): Promise<void>;
 }
 
-/** Re-asks the admin's own password before a sensitive change (the server checks it too). */
+/** Re-asks the admin's own password - and a code when two-step is on - before a sensitive change (the server checks both). */
 export function PasswordConfirmDialog({ action, onClose }: { action: PasswordConfirmation | null; onClose(): void }) {
+	const { profile } = useAuth();
+	const needsCode = !!profile?.mfaEnabled;
 	const [password, setPassword] = useState("");
+	const [code, setCode] = useState("");
 	const [errors, setErrors] = useState<string[]>([]);
 	const [busy, setBusy] = useState(false);
 
 	useEffect(() => {
 		setPassword("");
+		setCode("");
 		setErrors([]);
 	}, [action]);
 
@@ -295,10 +312,11 @@ export function PasswordConfirmDialog({ action, onClose }: { action: PasswordCon
 		setErrors([]);
 		setBusy(true);
 		try {
-			await action.run(password);
+			await action.run(password, needsCode ? code : undefined);
 			onClose();
 		} catch (error) {
 			setErrors(errorMessages(error));
+			setCode("");
 		} finally {
 			setBusy(false);
 		}
@@ -322,11 +340,21 @@ export function PasswordConfirmDialog({ action, onClose }: { action: PasswordCon
 						onChange={(e) => setPassword(e.target.value)}
 						autoFocus
 					/>
+					{needsCode && (
+						<div className="grid gap-2">
+							<span className="text-sm font-medium">Code from your authenticator app</span>
+							<OtpInput value={code} onChange={setCode} disabled={busy} />
+						</div>
+					)}
 					<DialogFooter>
 						<Button type="button" variant="outline" onClick={onClose}>
 							Cancel
 						</Button>
-						<Button type="submit" variant={action.destructive ? "destructive" : "default"} disabled={busy || !password}>
+						<Button
+							type="submit"
+							variant={action.destructive ? "destructive" : "default"}
+							disabled={busy || !password || (needsCode && code.length !== 6)}
+						>
 							{busy && <Spinner />}
 							{action.confirmLabel}
 						</Button>

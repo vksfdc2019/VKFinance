@@ -55,6 +55,15 @@ spending and payments, SIPs and Arjun's pocket money, plus budgets for this mont
   family). Arjun sees only the reports and money he's allowed to.
 - **Customise the overview:** the sliders button next to the month switcher shows, hides and
   reorders the panels - saved to your login.
+- **Security:** open **Security** for a checkup score, every device you're signed in on, and your
+  recent sign-ins and changes. **Set up** two-step verification: scan the QR code with Google or
+  Microsoft Authenticator, type a code, and save the recovery codes. Sign out and in again to see
+  the code step. Admins see a reminder on the overview until two-step is on. To undo it, use
+  **Turn off** on Security, or as `demo.admin.a` choose **Reset two-step** for that member on
+  **Family**. Two-step on the demo logins also stops `scripts/security/pentest.mjs`, which signs in
+  with passwords only.
+- **Help:** short answers to common questions, searchable as you type. Members don't see the
+  admin-only topic.
 - **Family Admin view:** sign in as `demo.admin.a` and open **Family**. You see only Family A's
   members, and you can add, edit, unlock, reset passwords, sign out, disable and remove members.
   Role and status changes ask for your own password again.

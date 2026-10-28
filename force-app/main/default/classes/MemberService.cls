@@ -174,7 +174,7 @@ public without sharing class MemberService {
             if (target.Id == ctx.userId) {
                 throw new PortalException('VALIDATION').withError('You can\'t change your own role or status. Ask another Family Admin.');
             }
-            AuthService.requireStepUp(ctx, VkfRest.str(body, 'currentPassword'));
+            AuthService.requireStepUp(ctx, VkfRest.str(body, 'currentPassword'), VkfRest.str(body, 'code'));
             if (roleChange && !ROLES.contains(input.role)) {
                 errors.add('Choose a valid role.');
             }
@@ -209,6 +209,10 @@ public without sharing class MemberService {
                 target.Password_Hash__c = null;
                 target.Password_Salt__c = null;
                 target.Must_Change_Password__c = false;
+                target.MFA_Method__c = 'None';
+                target.MFA_Secret__c = null;
+                target.MFA_Enrolled_At__c = null;
+                target.MFA_Last_Step__c = null;
                 delete as system [SELECT Id FROM Auth_Token__c WHERE Portal_User__c = :target.Id WITH SYSTEM_MODE];
             }
         }
@@ -230,6 +234,10 @@ public without sharing class MemberService {
 
     /** Issues a temporary password (shown once to the admin) and signs the member out everywhere. */
     public static String resetMemberPassword(UserContext ctx, Id memberId, String adminPassword) {
+        return resetMemberPassword(ctx, memberId, adminPassword, null);
+    }
+
+    public static String resetMemberPassword(UserContext ctx, Id memberId, String adminPassword, String code) {
         AccessGuard.require(ctx, 'MEMBER_SECURITY', 'EDIT');
         Portal_User__c target = new PortalUserSelector(ctx).memberInFamily(memberId);
         guardFamilyAdminTarget(ctx, target);
@@ -239,7 +247,7 @@ public without sharing class MemberService {
         if (target.Status__c == 'Disabled') {
             throw new PortalException('VALIDATION').withError('Enable this member before resetting their password.');
         }
-        AuthService.requireStepUp(ctx, adminPassword);
+        AuthService.requireStepUp(ctx, adminPassword, code);
         String temporaryPassword = PasswordService.generateTemporaryPassword();
         PasswordService.apply(target, temporaryPassword, true);
         update as system new Portal_User__c(
@@ -256,6 +264,35 @@ public without sharing class MemberService {
         SessionService.revokeAll(target.Id, 'Password reset by admin', null);
         AuditService.log(ctx, 'ADMIN_PASSWORD_RESET', 'Portal_User__c', target.Id, null);
         return temporaryPassword;
+    }
+
+    /** For a member who lost their phone and recovery codes: turns two-step off so they can sign in and set it up again. */
+    public static void resetMemberMfa(UserContext ctx, Id memberId, String adminPassword, String code) {
+        AccessGuard.require(ctx, 'MEMBER_SECURITY', 'EDIT');
+        Portal_User__c target = new PortalUserSelector(ctx).memberInFamily(memberId);
+        guardFamilyAdminTarget(ctx, target);
+        if (target.Id == ctx.userId) {
+            throw new PortalException('VALIDATION').withError('Use Security on your own profile to change your two-step verification.');
+        }
+        if (target.MFA_Method__c != MfaService.METHOD_APP) {
+            throw new PortalException('VALIDATION').withError('Two-step verification is already off for this member.');
+        }
+        AuthService.requireStepUp(ctx, adminPassword, code);
+        MfaService.clear(target.Id);
+        SessionService.revokeAll(target.Id, 'Two-step reset by admin', null);
+        NotificationService.notify(
+            target.Family__c,
+            new Set<Id>{ target.Id },
+            new NotificationService.Message(
+                'security',
+                'warning',
+                'Two-step verification was reset',
+                ctx.firstName + ' turned off two-step verification on your account. Set it up again from Security.',
+                '/profile',
+                null
+            )
+        );
+        AuditService.log(ctx, 'ADMIN_MFA_RESET', 'Portal_User__c', target.Id, null);
     }
 
     public static Integer revokeMemberSessions(UserContext ctx, Id memberId) {

@@ -24,6 +24,16 @@
                 <default>false</default>
                 <label>Email OTP</label>
             </value>
+            <value>
+                <fullName>MFA Challenge</fullName>
+                <default>false</default>
+                <label>MFA Challenge</label>
+            </value>
+            <value>
+                <fullName>Recovery Code</fullName>
+                <default>false</default>
+                <label>Recovery Code</label>
+            </value>
         </valueSetDefinition>
     </valueSet>
 </CustomField>

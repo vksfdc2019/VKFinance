@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Org hardening for Health Check. Only the settings listed here change; everything else
+    (including your own MFA, IP-locking and lockout-threshold choices) is left alone.
+    Deploy with the command in README.md (Hardening section).
+-->
+<SecuritySettings xmlns="http://soap.sforce.com/2006/04/metadata">
+    <passwordPolicies>
+        <complexity>SpecialCharacters</complexity>
+        <lockoutInterval>ThirtyMinutes</lockoutInterval>
+        <minimumPasswordLifetime>true</minimumPasswordLifetime>
+        <obscureSecretAnswer>true</obscureSecretAnswer>
+    </passwordPolicies>
+    <sessionSettings>
+        <enableClickjackNonsetupUser>true</enableClickjackNonsetupUser>
+        <enableClickjackNonsetupUserHeaderless>true</enableClickjackNonsetupUserHeaderless>
+        <identityConfirmationOnEmailChange>true</identityConfirmationOnEmailChange>
+        <requireHttpOnly>true</requireHttpOnly>
+        <terminateUserSessionsWhenAdminResetsPassword>true</terminateUserSessionsWhenAdminResetsPassword>
+    </sessionSettings>
+</SecuritySettings>

@@ -18,6 +18,7 @@ public inherited sharing class PortalDtos {
         public String familyCode;
         public String currencyCode;
         public Boolean mustChangePassword;
+        public Boolean mfaEnabled;
         public String sessionScope;
         public Integer idleTimeoutMinutes;
         public List<String> permissions;
@@ -40,6 +41,7 @@ public inherited sharing class PortalDtos {
         public Boolean mustChangePassword;
         public Integer activeSessions;
         public Boolean isSelf;
+        public Boolean mfaEnabled;
     }
 
     public class Session {
@@ -67,6 +69,7 @@ public inherited sharing class PortalDtos {
         p.familyCode = ctx.familyCode;
         p.currencyCode = ctx.currencyCode;
         p.mustChangePassword = ctx.mustChangePassword == true;
+        p.mfaEnabled = ctx.mfaEnabled == true;
         p.sessionScope = ctx.scope;
         p.idleTimeoutMinutes = SecurityPolicy.idleMinutes();
         p.permissions = AccessGuard.permissionsFor(ctx.role);
@@ -91,6 +94,7 @@ public inherited sharing class PortalDtos {
         m.mustChangePassword = u.Must_Change_Password__c == true;
         m.activeSessions = activeSessions == null ? 0 : activeSessions;
         m.isSelf = u.Id == selfId;
+        m.mfaEnabled = u.getPopulatedFieldsAsMap().get('MFA_Method__c') == MfaService.METHOD_APP;
         return m;
     }
 
@@ -106,7 +110,7 @@ public inherited sharing class PortalDtos {
     }
 
     @TestVisible
-    private static String describeDevice(String userAgent) {
+    public static String describeDevice(String userAgent) {
         if (String.isBlank(userAgent)) {
             return 'Unknown device';
         }

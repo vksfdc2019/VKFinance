@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { authApi } from "@/api/endpoints";
 import { SESSION_EXPIRED_EVENT, sessionStore } from "@/api/vkfClient";
-import type { LoginResult, Profile } from "@/api/types";
+import type { CompletedLogin, LoginResult, Profile } from "@/api/types";
 
 export type AuthStatus = "loading" | "anonymous" | "restricted" | "authenticated";
 export type SignOutReason = "user" | "expired" | "idle";
@@ -11,7 +11,9 @@ interface AuthContextValue {
 	profile: Profile | null;
 	/** Why the last session ended; shown once on the sign-in page. */
 	signOutReason: SignOutReason | null;
+	/** Resolves with mfaRequired + challenge when an authenticator code is needed next. */
 	login(username: string, password: string): Promise<LoginResult>;
+	completeMfa(challenge: string, code: string): Promise<CompletedLogin>;
 	completeFirstLogin(newPassword: string): Promise<void>;
 	logout(reason?: SignOutReason): Promise<void>;
 	refresh(): Promise<void>;
@@ -36,7 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		setSignOutReason(reason);
 	}, []);
 
-	const accept = useCallback((result: LoginResult) => {
+	const accept = useCallback((result: CompletedLogin) => {
 		sessionStore.set(result.token);
 		setProfile(result.profile);
 		setStatus(statusFor(result.profile));
@@ -61,6 +63,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	const login = useCallback(
 		async (username: string, password: string) => {
 			const result = await authApi.login(username, password);
+			if (!result.mfaRequired && result.token && result.profile) accept(result as CompletedLogin);
+			return result;
+		},
+		[accept],
+	);
+
+	const completeMfa = useCallback(
+		async (challenge: string, code: string) => {
+			const result = await authApi.verifyMfa(challenge, code);
 			accept(result);
 			return result;
 		},
@@ -89,8 +100,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 	const can = useCallback((permission: string) => profile?.permissions.includes(permission) ?? false, [profile]);
 
 	const value = useMemo(
-		() => ({ status, profile, signOutReason, login, completeFirstLogin, logout, refresh, can }),
-		[status, profile, signOutReason, login, completeFirstLogin, logout, refresh, can],
+		() => ({ status, profile, signOutReason, login, completeMfa, completeFirstLogin, logout, refresh, can }),
+		[status, profile, signOutReason, login, completeMfa, completeFirstLogin, logout, refresh, can],
 	);
 	return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

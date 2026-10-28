@@ -174,6 +174,13 @@
   60% { transform: rotate(8deg); }
   80% { transform: rotate(-4deg); }
 }
+@keyframes vk-shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-6px); }
+  40% { transform: translateX(5px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(2px); }
+}
 @keyframes vk-pulse-ring {
   0% { box-shadow: 0 0 0 0 rgb(220 38 38 / 0.45); }
   100% { box-shadow: 0 0 0 8px rgb(220 38 38 / 0); }
@@ -183,11 +190,12 @@
 .vk-draw { stroke-dasharray: 60; stroke-dashoffset: 60; animation: vk-draw 0.5s 0.25s ease-out forwards; }
 .vk-wiggle { animation: vk-wiggle 0.8s ease-in-out; transform-origin: 50% 10%; }
 .vk-pulse { animation: vk-pulse-ring 1.6s ease-out infinite; }
+.vk-shake { animation: vk-shake 0.4s ease-in-out; }
 .vk-lift { transition: transform 0.2s ease, box-shadow 0.2s ease; }
 .vk-lift:hover { transform: translateY(-2px); box-shadow: 0 10px 24px -12px rgb(15 23 42 / 0.25); }
 
 @media (prefers-reduced-motion: reduce) {
-  .vk-rise, .vk-pop, .vk-wiggle, .vk-pulse { animation: none; }
+  .vk-rise, .vk-pop, .vk-wiggle, .vk-pulse, .vk-shake { animation: none; }
   .vk-draw { animation: none; stroke-dashoffset: 0; }
   .vk-lift:hover { transform: none; }
 }

@@ -1,5 +1,15 @@
 import { vkf } from "./vkfClient";
-import type { CreatedMember, DeviceSession, LoginResult, Member, MemberInput, Profile } from "./types";
+import type {
+	CompletedLogin,
+	CreatedMember,
+	DeviceSession,
+	LoginResult,
+	Member,
+	MemberInput,
+	MfaSetup,
+	Profile,
+	SecurityOverview,
+} from "./types";
 import type {
 	Account,
 	AccountInput,
@@ -34,9 +44,10 @@ type Message = { message: string };
 
 export const authApi = {
 	login: (username: string, password: string) => vkf<LoginResult>("POST", "/auth/login", { username, password }),
+	verifyMfa: (challenge: string, code: string) => vkf<CompletedLogin>("POST", "/auth/mfa", { challenge, code }),
 	logout: () => vkf<void>("POST", "/auth/logout", {}),
 	session: () => vkf<Profile>("GET", "/auth/session"),
-	firstLogin: (newPassword: string) => vkf<LoginResult>("POST", "/auth/first-login", { newPassword }),
+	firstLogin: (newPassword: string) => vkf<CompletedLogin>("POST", "/auth/first-login", { newPassword }),
 	changePassword: (currentPassword: string, newPassword: string) =>
 		vkf<Message>("PUT", "/auth/password", { currentPassword, newPassword }),
 	forgot: (identifier: string) => vkf<Message>("POST", "/auth/forgot", { identifier }),
@@ -48,6 +59,12 @@ export const profileApi = {
 	sessions: () => vkf<DeviceSession[]>("GET", "/profile/sessions"),
 	signOutOtherDevices: () => vkf<{ revoked: number }>("DELETE", "/profile/sessions"),
 	signOutDevice: (sessionId: string) => vkf<void>("DELETE", `/profile/sessions/${encodeURIComponent(sessionId)}`),
+	security: () => vkf<SecurityOverview>("GET", "/profile/security"),
+	startMfa: (currentPassword: string) => vkf<MfaSetup>("POST", "/profile/mfa/setup", { currentPassword }),
+	confirmMfa: (code: string) => vkf<{ recoveryCodes: string[] }>("POST", "/profile/mfa/confirm", { code }),
+	disableMfa: (currentPassword: string, code: string) => vkf<void>("POST", "/profile/mfa/disable", { currentPassword, code }),
+	renewRecoveryCodes: (currentPassword: string, code: string) =>
+		vkf<{ recoveryCodes: string[] }>("POST", "/profile/mfa/recovery-codes", { currentPassword, code }),
 };
 
 export const familyApi = {
@@ -56,10 +73,13 @@ export const familyApi = {
 	updateMember: (id: string, input: MemberInput) =>
 		vkf<Member>("PATCH", `/family/members/${encodeURIComponent(id)}`, input),
 	unlock: (id: string) => vkf<void>("POST", `/family/members/${encodeURIComponent(id)}/unlock`, {}),
-	resetPassword: (id: string, currentPassword: string) =>
+	resetPassword: (id: string, currentPassword: string, code?: string) =>
 		vkf<{ temporaryPassword: string }>("POST", `/family/members/${encodeURIComponent(id)}/reset-password`, {
 			currentPassword,
+			code,
 		}),
+	resetMfa: (id: string, currentPassword: string, code?: string) =>
+		vkf<void>("POST", `/family/members/${encodeURIComponent(id)}/reset-mfa`, { currentPassword, code }),
 	signOutMember: (id: string) => vkf<{ revoked: number }>("DELETE", `/family/members/${encodeURIComponent(id)}/sessions`),
 };
 

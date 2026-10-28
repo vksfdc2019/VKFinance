@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { MoreHorizontal, UserPlus } from "lucide-react";
+import { MoreHorizontal, ShieldCheck, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Spinner } from "@/components/ui/spinner";
@@ -90,8 +90,8 @@ export default function MembersPage() {
 			description: copy.description,
 			confirmLabel: copy.label,
 			destructive: status !== "Active",
-			run: async (password) => {
-				await familyApi.updateMember(member.id, { status, currentPassword: password });
+			run: async (password, code) => {
+				await familyApi.updateMember(member.id, { status, currentPassword: password, code });
 				toast.success(`${member.firstName} is now ${status.toLowerCase()}.`);
 				await load();
 			},
@@ -103,9 +103,24 @@ export default function MembersPage() {
 			title: `Reset ${member.firstName}'s password?`,
 			description: "We'll create a temporary password and sign them out on every device.",
 			confirmLabel: "Reset password",
-			run: async (password) => {
-				const { temporaryPassword } = await familyApi.resetPassword(member.id, password);
+			run: async (password, code) => {
+				const { temporaryPassword } = await familyApi.resetPassword(member.id, password, code);
 				setCredentials({ name: member.firstName, username: member.username, password: temporaryPassword });
+				await load();
+			},
+		});
+	}
+
+	function confirmResetMfa(member: Member) {
+		setConfirmation({
+			title: `Reset ${member.firstName}'s two-step verification?`,
+			description:
+				"For when they've lost their phone and their recovery codes. Two-step turns off and they're signed out everywhere; they can sign in with their password and set it up again.",
+			confirmLabel: "Reset two-step",
+			destructive: true,
+			run: async (password, code) => {
+				await familyApi.resetMfa(member.id, password, code);
+				toast.success(`${member.firstName}'s two-step verification is reset.`);
 				await load();
 			},
 		});
@@ -157,6 +172,7 @@ export default function MembersPage() {
 									<TableRow key={member.id}>
 										<TableCell className="font-medium">
 											{member.firstName} {member.lastName}
+											{member.mfaEnabled && <ShieldCheck className="ml-1.5 inline size-4 text-emerald-600" aria-label="Two-step on" />}
 											{member.isSelf && <span className="ml-2 text-xs text-slate-500">(you)</span>}
 											{member.relationship && <div className="text-xs text-slate-500">{member.relationship}</div>}
 										</TableCell>
@@ -186,6 +202,9 @@ export default function MembersPage() {
 														)}
 														{!member.isSelf && member.status !== "Disabled" && (
 															<DropdownMenuItem onSelect={() => confirmReset(member)}>Reset password</DropdownMenuItem>
+														)}
+														{!member.isSelf && member.mfaEnabled && (
+															<DropdownMenuItem onSelect={() => confirmResetMfa(member)}>Reset two-step</DropdownMenuItem>
 														)}
 														{member.activeSessions > 0 && !member.isSelf && (
 															<DropdownMenuItem

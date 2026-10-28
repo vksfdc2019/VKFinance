@@ -5,12 +5,27 @@ members (spouse, children, parents) who sign in to a React portal hosted on Expe
 family can see another family's data. The full design is in
 [docs/VKFinance_Solution_Blueprint.pdf](docs/VKFinance_Solution_Blueprint.pdf).
 
-**Status:** Phases 0-3 are built and deployed to the `VKFinance` org: React on Experience Cloud,
-custom identity and security, member management, the core ledger (accounts, categories,
-transactions, transfers, credit cards, budgets, dashboard) and commitments with automation (bills,
-loans and EMIs, card statements, recurring entries, in-app notifications and a daily dues job) and
-insights (13 reports with CSV, print and saved filters, monthly snapshots, a customisable overview).
-Hardening and go-live come in Phase 5.
+**Status: v1.0.** All five phases are built and deployed to the `VKFinance` org:
+- React on Experience Cloud, custom identity and security, and member management.
+- The core ledger: accounts, categories, transactions, transfers, credit cards, budgets and the
+  dashboard.
+- Commitments with automation: bills, loans and EMIs, card statements, recurring entries, in-app
+  notifications and a daily dues job.
+- Insights: 13 reports with CSV, print and saved filters, monthly snapshots and a customisable
+  overview.
+- Go-live hardening:
+  - two-step verification with an authenticator app, plus recovery codes
+  - per-address throttling and step-up checks that count toward lockout
+  - a Security page and in-app Help
+  - nightly balance reconciliation, weekly retention purge and a weekly security digest
+  - a passing security test run (see [docs/Security_Checklist.md](docs/Security_Checklist.md))
+
+| Document | For |
+| --- | --- |
+| [docs/User_Guide.md](docs/User_Guide.md) | Families using the portal (also in the app under **Help**) |
+| [docs/Security_Checklist.md](docs/Security_Checklist.md) | The go-live security pass: live checks, Code Analyzer triage, Health Check |
+| [docs/Demo_Access.md](docs/Demo_Access.md) | Demo sign-ins and what to try |
+| [docs/VKFinance_Solution_Blueprint.pdf](docs/VKFinance_Solution_Blueprint.pdf) | The full design |
 
 ## How it fits together
 
@@ -19,10 +34,13 @@ Hardening and go-live come in Phase 5.
 | Portal | React 19 UI bundle (`force-app/main/default/uiBundles/VKFinancePortal`) on the Experience Cloud site `VKFinancePortal`, served at `/VKFinancePortal` |
 | API | Apex REST under `/services/apexrest/vkf/v1/*` (`Vkf*Resource` classes), called as the site guest user with the VK session token in the `X-VKF-Session` header |
 | Identity | Custom `Portal_User__c` / `Portal_Session__c` - not Salesforce users. Passwords are salted, iterated HMAC-SHA256; only token hashes are stored |
+| Two-step | `MfaService`: RFC 6238 authenticator codes (key in an encrypted field, replay-proof), 10 single-use recovery codes and sign-in challenges, stored as hashes in `Auth_Token__c`. Step-up checks (password, plus a code when two-step is on) guard sensitive actions, and failures count toward lockout |
+| Throttling | Per username (`Security_Policy__mdt`) and per client address (`RateLimiter` → `Rate_Limit__c`, which stores only a hash of the address), plus caps on reset emails |
 | Security gateway | `SessionService.require` → `AccessGuard.require` → `FamilyScopedSelector` on every endpoint. Other families' records return 404 |
 | Ledger | `Financial_Account__c`, `Category__c`, `Transaction__c` (one row per money movement; a transfer is two linked rows), `Budget__c` / `Budget_Line__c`. `TransactionTrigger` → `LedgerBalances` keeps balances current incrementally, locking accounts `FOR UPDATE` |
 | Commitments | `Bill__c` → `Bill_Instance__c`, `Loan__c` → `EMI_Installment__c` (only the next 12 stored; the full schedule is computed by `EmiCalculator`), `Card_Statement__c`, `Recurring_Rule__c`. Paying posts normal ledger entries, so budgets and balances just work; voiding a payment re-opens what it paid |
 | Automation | `DailyDuesBatch` (06:00, "VKF Daily Dues") runs `DuesProcessor` once per family in its own transaction: bill/EMI statuses, card statements, recurring posts, auto-pay, reminders and budget alerts as `Notification__c` (deduplicated, read ones purged after 60 days) |
+| Housekeeping | `BalanceReconcileJob` (02:00 daily) fixes and audits balance drift; `RetentionPurgeJob` (Sundays 04:00) deletes stale notifications, tokens, password history and rate-limit rows; `SecurityDigestJob` (Mondays 07:00) emails the org owner a weekly security summary; `SessionCleanupJob` runs hourly |
 | Insights | `ReportService` returns every report in one shape (KPIs, one chart, tables), so the portal renders all 13 with one component. `InsightService`: saved reports (filters only - data is always re-read with the viewer's scope), per-person overview layout (`Portal_User__c.Dashboard_Layout__c`), and `Monthly_Summary__c` snapshots written by the daily job and used for months older than three in the trend |
 | Who sees what | `LedgerScope`: admins see the family; Members their own and shared accounts; Children their own (editable for 24 hours); Viewers read only |
 | Config | `Security_Policy__mdt` (timeouts, lockout, password rules, hash iterations), `Role_Permission__mdt` (role × feature × action) and `Default_Category__mdt` (the category template each family starts with) |
@@ -48,6 +66,12 @@ sf apex run test --target-org VKFinance --test-level RunLocalTests --code-covera
 
 # React unit tests
 cd force-app/main/default/uiBundles/VKFinancePortal && npx vitest run
+
+# Org hardening for Health Check (only the settings it lists; safe to re-run)
+sf project deploy start --target-org VKFinance --metadata-dir config/hardening
+
+# Live security checks (see docs/Security_Checklist.md for the variables)
+node scripts/security/pentest.mjs
 ```
 
 The unschedule/reschedule step can be skipped by enabling **Setup → Deployment Settings → Allow
@@ -87,9 +111,17 @@ Sign-in details for the demo families are in [docs/Demo_Access.md](docs/Demo_Acc
 - **Never change a balance directly.** Opening balances and Adjustment entries (Accounts → Match to
   statement) are the only ways in, so the ledger always explains every balance.
   `LedgerBalances.recalculate()` rebuilds balances from the ledger if you ever need to check.
+- **Big-object (audit log) queries fail after any DML in the same request**, and the error can't be
+  caught. `SessionService` defers its last-activity update to `VkfRest.respond`, so audit reads
+  run first. Keep any new audit read ahead of writes, and run anonymous checks in their own
+  transaction.
+- **Recovery for lost two-step:** a Family Admin uses **Reset two-step** on the Family page. If the
+  Family Admin is the one locked out, the platform owner clears `MFA_Method__c` on their Portal User
+  record in the console.
 - **Never use GraphQL / UI API from the portal for family data.** The guest user can't read it, and
   granting access would expose every family.
 - The Data SDK makes two background calls as the guest (`ui-api/session/csrf`, `ui-telemetry`) that
   return 401. They're harmless platform noise.
 - Developer Edition limits: 5 MB data storage, 15 emails/day. Sessions are deleted after 7 days by
-  the hourly `VKF Session Cleanup` job; audit lives in a big object.
+  the hourly `VKF Session Cleanup` job, the weekly purge keeps the rest lean, and audit lives in a
+  big object.

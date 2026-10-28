@@ -5,6 +5,7 @@ import {
 	BarChart3,
 	Landmark,
 	LayoutDashboard,
+	LifeBuoy,
 	LogOut,
 	Plus,
 	ReceiptText,
@@ -68,7 +69,8 @@ function Shell() {
 		{ to: "/reports", label: "Reports", icon: BarChart3, show: can("REPORTS:READ") },
 		{ to: "/categories", label: "Categories", icon: Tags, show: can("CATEGORIES:CREATE") },
 		{ to: "/family", label: "Family", icon: Users, show: can("MEMBERS:CREATE") },
-		{ to: "/profile", label: "Profile & security", icon: ShieldCheck, show: true },
+		{ to: "/profile", label: "Security", icon: ShieldCheck, show: true },
+		{ to: "/help", label: "Help", icon: LifeBuoy, show: true },
 	].filter((link) => link.show);
 	const avatar = initials(profile?.firstName, profile?.lastName);
 
@@ -102,6 +104,10 @@ function Shell() {
 							<DropdownMenuItem onSelect={() => navigate("/profile")}>
 								<UserRound />
 								Profile &amp; security
+							</DropdownMenuItem>
+							<DropdownMenuItem onSelect={() => navigate("/help")}>
+								<LifeBuoy />
+								Help
 							</DropdownMenuItem>
 							<DropdownMenuItem onSelect={() => void logout("user")}>
 								<LogOut />

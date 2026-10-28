@@ -17,6 +17,7 @@ public without sharing class UserContext {
     public String relationship;
     public String viewerScope;
     public Boolean mustChangePassword;
+    public Boolean mfaEnabled;
     public String familyName;
     public String familyCode;
     public String currencyCode;
@@ -37,6 +38,8 @@ public without sharing class UserContext {
         this.relationship = user.Relationship__c;
         this.viewerScope = user.Viewer_Scope__c;
         this.mustChangePassword = user.Must_Change_Password__c;
+        // Read defensively: some callers build a context from a record queried without this field.
+        this.mfaEnabled = user.getPopulatedFieldsAsMap().get('MFA_Method__c') == MfaService.METHOD_APP;
         this.familyName = user.Family__r?.Name;
         this.familyCode = user.Family__r?.Family_Code__c;
         this.currencyCode = String.isBlank(user.Family__r?.Base_Currency__c) ? 'INR' : user.Family__r.Base_Currency__c;

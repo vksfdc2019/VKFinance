@@ -5,6 +5,7 @@
  *   PATCH  /family/members/{id}
  *   POST   /family/members/{id}/unlock
  *   POST   /family/members/{id}/reset-password
+ *   POST   /family/members/{id}/reset-mfa
  *   DELETE /family/members/{id}/sessions
  */
 @RestResource(urlMapping='/vkf/v1/family/*')
@@ -42,9 +43,13 @@ global with sharing class VkfFamilyResource {
                 String temporaryPassword = MemberService.resetMemberPassword(
                     ctx,
                     VkfRest.toId(parts[1]),
-                    VkfRest.str(body, 'currentPassword')
+                    VkfRest.str(body, 'currentPassword'),
+                    VkfRest.str(body, 'code')
                 );
                 VkfRest.ok(new Map<String, Object>{ 'temporaryPassword' => temporaryPassword });
+            } else if (parts.size() == 3 && parts[0] == 'members' && parts[2] == 'reset-mfa') {
+                MemberService.resetMemberMfa(ctx, VkfRest.toId(parts[1]), VkfRest.str(body, 'currentPassword'), VkfRest.str(body, 'code'));
+                VkfRest.noContent();
             } else {
                 throw new PortalException('NOT_FOUND');
             }

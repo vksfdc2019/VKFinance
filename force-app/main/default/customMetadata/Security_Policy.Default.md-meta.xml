@@ -62,4 +62,12 @@
         <field>Portal_Base_Url__c</field>
         <value xsi:type="xsd:string">https://orgfarm-db588f31ab-dev-ed.develop.my.site.com/VKFinancePortal</value>
     </values>
+    <values>
+        <field>MFA_Challenge_Minutes__c</field>
+        <value xsi:type="xsd:double">5</value>
+    </values>
+    <values>
+        <field>Ip_Max_Failures__c</field>
+        <value xsi:type="xsd:double">30</value>
+    </values>
 </CustomMetadata>

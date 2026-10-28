@@ -23,6 +23,7 @@ const LoansPage = lazy(() => import("./features/commitments/LoansPage"));
 const RecurringPage = lazy(() => import("./features/commitments/RecurringPage"));
 const ReportsPage = lazy(() => import("./features/reports/ReportsPage"));
 const ReportView = lazy(() => import("./features/reports/ReportView"));
+const HelpPage = lazy(() => import("./features/help/HelpPage"));
 
 function Root() {
 	return (
@@ -55,6 +56,7 @@ export const routes: RouteObject[] = [
 						children: [
 							{ index: true, element: <HomePage /> },
 							{ path: "/profile", element: <ProfilePage /> },
+							{ path: "/help", element: <HelpPage /> },
 							{
 								element: <RequirePermission permission="TRANSACTIONS:READ" />,
 								children: [{ path: "/transactions", element: <TransactionsPage /> }],

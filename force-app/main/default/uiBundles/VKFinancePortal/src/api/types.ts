@@ -30,14 +30,23 @@ export interface Profile {
 	familyCode: string;
 	currencyCode?: string;
 	mustChangePassword: boolean;
+	mfaEnabled: boolean;
 	sessionScope: "FULL" | "CHANGE_PASSWORD";
 	idleTimeoutMinutes: number;
 	permissions: string[];
 }
 
+/** A sign-in either finishes (token + profile) or asks for an authenticator code first. */
 export interface LoginResult {
-	token: string;
+	token?: string;
 	mustChangePassword: boolean;
+	profile?: Profile;
+	mfaRequired?: boolean;
+	challenge?: string;
+}
+
+export interface CompletedLogin extends LoginResult {
+	token: string;
 	profile: Profile;
 }
 
@@ -58,6 +67,7 @@ export interface Member {
 	mustChangePassword: boolean;
 	activeSessions: number;
 	isSelf: boolean;
+	mfaEnabled?: boolean;
 }
 
 export interface CreatedMember {
@@ -85,4 +95,32 @@ export interface MemberInput {
 	viewerScope?: "Own" | "Family";
 	status?: MemberStatus;
 	currentPassword?: string;
+	/** Authenticator or recovery code, when the admin has two-step on. */
+	code?: string;
+}
+
+export interface MfaStatus {
+	enabled: boolean;
+	enrolledAt?: string;
+	recoveryCodesLeft: number;
+}
+
+export interface MfaSetup {
+	secret: string;
+	otpauthUri: string;
+}
+
+export interface SecurityEvent {
+	at: string;
+	type: string;
+	details?: string;
+	byAdmin: boolean;
+}
+
+export interface SecurityOverview {
+	mfa: MfaStatus;
+	passwordChangedAt?: string;
+	lastLogin?: string;
+	activeSessions: number;
+	activity: SecurityEvent[];
 }

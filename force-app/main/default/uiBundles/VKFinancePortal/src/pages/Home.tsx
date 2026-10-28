@@ -20,6 +20,7 @@ import { useAsync } from "@/lib/useAsync";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/features/auth/AuthContext";
 import { useLedger } from "@/features/ledger/LedgerContext";
+import { TwoStepNudge } from "@/features/profile/TwoStepNudge";
 import { TxnRow } from "@/features/ledger/TxnRow";
 
 function greeting() {
@@ -56,7 +57,8 @@ export default function HomePage() {
 	}
 
 	const header = (
-		<PageHeader
+		<>
+			<PageHeader
 			title={`${greeting()}, ${profile?.firstName ?? ""}`}
 			description={`${profile?.familyName} · ${profile?.familyCode}`}
 			actions={
@@ -83,7 +85,9 @@ export default function HomePage() {
 					{customising && <CustomiseDialog layout={layout} onClose={() => setCustomising(false)} onSave={saveLayout} />}
 				</>
 			}
-		/>
+			/>
+			<TwoStepNudge />
+		</>
 	);
 
 	if (!data) {

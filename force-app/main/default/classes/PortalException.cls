@@ -15,7 +15,9 @@ public class PortalException extends Exception {
         'VALIDATION' => 422,
         // Apex REST rejects 423, so a locked account is a 403 with code LOCKED.
         'LOCKED' => 403,
-        'THROTTLED' => 429
+        'THROTTLED' => 429,
+        'INVALID_CODE' => 422,
+        'MFA_EXPIRED' => 400
     };
 
     public List<String> errors = new List<String>();

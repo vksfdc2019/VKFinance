@@ -14,7 +14,8 @@ public inherited sharing class SecurityPolicy {
                     Idle_Timeout_Minutes__c, Absolute_Timeout_Hours__c, Max_Sessions_Per_User__c, Max_Failed_Logins__c,
                     Lockout_Minutes__c, Throttle_Window_Minutes__c, Throttle_Max_Attempts__c, Min_Password_Length__c,
                     Min_Admin_Password_Length__c, Password_History_Count__c, Hash_Iterations__c, Reset_Token_Minutes__c,
-                    Temp_Password_Hours__c, Session_Retention_Days__c, Portal_Base_Url__c
+                    Temp_Password_Hours__c, Session_Retention_Days__c, Portal_Base_Url__c, MFA_Challenge_Minutes__c,
+                    Ip_Max_Failures__c
                 FROM Security_Policy__mdt
                 WHERE DeveloperName = 'Default'
                 WITH SYSTEM_MODE
@@ -83,6 +84,15 @@ public inherited sharing class SecurityPolicy {
 
     public static Integer sessionRetentionDays() {
         return num(current().Session_Retention_Days__c, 7);
+    }
+
+    public static Integer mfaChallengeMinutes() {
+        return num(current().MFA_Challenge_Minutes__c, 5);
+    }
+
+    /** Failed sign-in, reset and two-step attempts allowed from one client address per throttle window. */
+    public static Integer ipMaxFailures() {
+        return num(current().Ip_Max_Failures__c, 30);
     }
 
     public static String portalBaseUrl() {

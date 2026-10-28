@@ -70,6 +70,7 @@ public inherited sharing class VkfRest {
     }
 
     public static void respond(Integer status, Object payload) {
+        SessionService.flushActivity();
         RestResponse res = RestContext.response;
         res.statusCode = status;
         res.addHeader('Content-Type', 'application/json');

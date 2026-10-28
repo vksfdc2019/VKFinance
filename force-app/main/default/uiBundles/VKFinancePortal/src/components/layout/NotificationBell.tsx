@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { AlertTriangle, Bell, CheckCheck, CheckCircle2, Info, OctagonAlert } from "lucide-react";
+import { AlertTriangle, Bell, CheckCheck, CheckCircle2, Info, OctagonAlert, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { commitmentApi } from "@/api/endpoints";
@@ -97,7 +97,7 @@ export function NotificationBell({ className }: { className?: string }) {
 				<ul className="max-h-[26rem] overflow-y-auto p-1.5">
 					{items.length === 0 && <li className="px-3 py-10 text-center text-sm text-slate-500">You&apos;re all caught up.</li>}
 					{items.map((n, i) => {
-						const Icon = ICONS[n.severity] ?? Info;
+						const Icon = n.type === "security" ? ShieldCheck : (ICONS[n.severity] ?? Info);
 						return (
 							<li key={n.id} className="vk-rise" style={{ animationDelay: `${Math.min(i, 8) * 35}ms` }}>
 								<button

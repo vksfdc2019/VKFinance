@@ -55,30 +55,64 @@ public without sharing class LedgerBalances {
 
     /** Rebuilds balances from opening balance plus every non-void transaction. */
     public static void recalculate(Set<Id> accountIds) {
+        List<Financial_Account__c> accounts = lockAccounts(accountIds);
+        Map<Id, Decimal> expected = expected(accounts);
+        for (Financial_Account__c a : accounts) {
+            a.Current_Balance__c = expected.get(a.Id);
+        }
+        update as system accounts;
+    }
+
+    /**
+     * Nightly check: recomputes each balance from the ledger and fixes only the ones that drifted.
+     * Returns the accounts that were wrong, with Current_Balance__c still holding the old value.
+     */
+    public static List<Financial_Account__c> reconcile(Set<Id> accountIds) {
+        List<Financial_Account__c> accounts = lockAccounts(accountIds);
+        Map<Id, Decimal> expected = expected(accounts);
+        List<Financial_Account__c> drifted = new List<Financial_Account__c>();
+        List<Financial_Account__c> fixes = new List<Financial_Account__c>();
+        for (Financial_Account__c a : accounts) {
+            Decimal right = expected.get(a.Id);
+            if (LedgerUtil.zeroIfNull(a.Current_Balance__c) != right) {
+                drifted.add(a.clone(true, true));
+                fixes.add(new Financial_Account__c(Id = a.Id, Current_Balance__c = right));
+            }
+        }
+        update as system fixes;
+        return drifted;
+    }
+
+    private static List<Financial_Account__c> lockAccounts(Set<Id> accountIds) {
+        return [
+            SELECT Id, Name, Family__c, Type__c, Opening_Balance__c, Current_Balance__c
+            FROM Financial_Account__c
+            WHERE Id IN :accountIds
+            WITH SYSTEM_MODE
+            FOR UPDATE
+        ];
+    }
+
+    private static Map<Id, Decimal> expected(List<Financial_Account__c> accounts) {
         Map<Id, Decimal> net = new Map<Id, Decimal>();
+        Set<Id> ids = new Map<Id, Financial_Account__c>(accounts).keySet();
         for (AggregateResult ar : [
             SELECT Account__c acct, Direction__c dir, SUM(Amount__c) total
             FROM Transaction__c
-            WHERE Account__c IN :accountIds AND Status__c != 'Void'
+            WHERE Account__c IN :ids AND Status__c != 'Void'
             WITH SYSTEM_MODE
             GROUP BY Account__c, Direction__c
         ]) {
             Decimal total = LedgerUtil.zeroIfNull(ar.get('total'));
             add(net, (Id) ar.get('acct'), (String) ar.get('dir') == 'Credit' ? total : -total);
         }
-        List<Financial_Account__c> accounts = [
-            SELECT Id, Type__c, Opening_Balance__c, Current_Balance__c
-            FROM Financial_Account__c
-            WHERE Id IN :accountIds
-            WITH SYSTEM_MODE
-            FOR UPDATE
-        ];
+        Map<Id, Decimal> result = new Map<Id, Decimal>();
         for (Financial_Account__c a : accounts) {
             Decimal opening = LedgerUtil.zeroIfNull(a.Opening_Balance__c);
             Decimal n = net.containsKey(a.Id) ? net.get(a.Id) : 0;
-            a.Current_Balance__c = LedgerUtil.isLiability(a.Type__c) ? opening - n : opening + n;
+            result.put(a.Id, LedgerUtil.isLiability(a.Type__c) ? opening - n : opening + n);
         }
-        update as system accounts;
+        return result;
     }
 
     private static void add(Map<Id, Decimal> totals, Id key, Decimal value) {

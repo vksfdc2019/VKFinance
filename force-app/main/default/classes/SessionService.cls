@@ -4,7 +4,10 @@
  */
 public without sharing class SessionService {
     public static final String SCOPE_FULL = 'FULL';
-    public static final String SCOPE_CHANGE_PASSWORD = 'CHANGE_PASSWORD';
+    public static final String SCOPE_CHANGE_PASSWORD = 'CHANGE_PASSWORD'; // NOPMD - a session scope name, not a credential
+
+    /** Session whose activity time is saved when the response is written (see flushActivity). */
+    private static Id activityPending;
 
     public class NewSession {
         public String token;
@@ -69,7 +72,8 @@ public without sharing class SessionService {
                 Portal_User__r.Family__r.Base_Currency__c, Portal_User__r.Role__c,
                 Portal_User__r.Status__c, Portal_User__r.First_Name__c, Portal_User__r.Last_Name__c,
                 Portal_User__r.Username__c, Portal_User__r.Email__c, Portal_User__r.Mobile__c,
-                Portal_User__r.Relationship__c, Portal_User__r.Viewer_Scope__c, Portal_User__r.Must_Change_Password__c
+                Portal_User__r.Relationship__c, Portal_User__r.Viewer_Scope__c, Portal_User__r.Must_Change_Password__c,
+                Portal_User__r.MFA_Method__c
             FROM Portal_Session__c
             WHERE Token_Hash__c = :tokenHash
             WITH SYSTEM_MODE LIMIT 1
@@ -84,7 +88,8 @@ public without sharing class SessionService {
         }
         Datetime now = Datetime.now();
         if (session.Last_Activity__c.addMinutes(1) < now) {
-            update as system new Portal_Session__c(Id = session.Id, Last_Activity__c = now);
+            // Deferred: audit-log (big object) reads fail after any DML in the same request.
+            activityPending = session.Id;
         }
         return new UserContext(session.Portal_User__r, session.Id, session.Scope__c);
     }
@@ -106,6 +111,14 @@ public without sharing class SessionService {
             userOk &&
             user.Family__r.Status__c == 'Active' &&
             session.Family__c == user.Family__c;
+    }
+
+    /** Saves the deferred activity time. VkfRest calls this just before writing each response. */
+    public static void flushActivity() {
+        if (activityPending != null) {
+            update as system new Portal_Session__c(Id = activityPending, Last_Activity__c = Datetime.now());
+            activityPending = null;
+        }
     }
 
     public static void end(Id sessionId, String status, String reason) {

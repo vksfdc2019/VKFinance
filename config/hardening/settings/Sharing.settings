@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Health Check: record names in lookups need the View All Lookup Record Names permission (admins have it). -->
+<SharingSettings xmlns="http://soap.sforce.com/2006/04/metadata">
+    <enableRestrictAccessLookupRecords>true</enableRestrictAccessLookupRecords>
+</SharingSettings>

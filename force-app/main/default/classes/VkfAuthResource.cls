@@ -14,6 +14,9 @@ global with sharing class VkfAuthResource {
                 when 'login' {
                     VkfRest.ok(AuthService.login(VkfRest.str(body, 'username'), VkfRest.str(body, 'password'), userAgent));
                 }
+                when 'mfa' {
+                    VkfRest.ok(AuthService.completeMfa(VkfRest.str(body, 'challenge'), VkfRest.str(body, 'code'), userAgent));
+                }
                 when 'logout' {
                     AuthService.logout(SessionService.require(VkfRest.sessionToken(req), userAgent, true));
                     VkfRest.noContent();

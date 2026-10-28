@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>MFA_Last_Step__c</fullName>
+    <description>Last accepted 30-second code window, so a code can't be replayed.</description>
+    <label>Two-Step Last Window</label>
+    <precision>18</precision>
+    <scale>0</scale>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+</CustomField>

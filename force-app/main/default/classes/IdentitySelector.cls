@@ -10,7 +10,7 @@ public without sharing class IdentitySelector {
         'Last_Name__c, Username__c, Email__c, Mobile__c, Relationship__c, Role__c, Status__c, Viewer_Scope__c, ' +
         'Password_Hash__c, Password_Salt__c, Hash_Iterations__c, Password_Changed_At__c, Must_Change_Password__c, ' +
         'Temp_Password_Expires_At__c, Failed_Login_Count__c, Lockout_Count__c, Locked_Until__c, ' +
-        'Login_Window_Start__c, Login_Window_Attempts__c, Last_Login__c';
+        'Login_Window_Start__c, Login_Window_Attempts__c, Last_Login__c, MFA_Method__c';
 
     public static Portal_User__c byUsername(String username) {
         List<Portal_User__c> rows = query('Username__c = :value', username);
