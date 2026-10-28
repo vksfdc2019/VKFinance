@@ -1,17 +1,17 @@
 # VK Finance - Detailed Implementation Document
 
-Version 1.1 | 28 October 2026
+Version 1.2 | 28 October 2026
 
 ## 1. Purpose, scope and evidence
 
 VK Finance is a multi-family personal finance platform implemented on Salesforce. Families use a React portal on Experience Cloud to manage accounts, income, expenses, transfers, budgets, bills, loans, recurring entries and reports. Internal Salesforce users operate the VK Finance Console to onboard and support families. Portal members are custom records, rather than individual Salesforce users.
 
-This guide describes the checked-in implementation as reviewed on 28 October 2026. It is intended for developers, solution architects, administrators, testers and support owners. Source code and metadata determine the implementation tables. Existing README and security documents provide historical deployment and validation context. No org deployment, live security test or application test was run to prepare this guide.
+This guide describes the implementation and release reviewed on 28 October 2026. It is intended for developers, solution architects, administrators, testers and support owners. Phase 6 is deployed and published, with all 150 Apex tests passing. Six live pilot checks passed for actual imports, private receipts, goals, approvals, insights and authenticated phone-width browser workflows. Disposable families were removed and existing family switches remain off. Native Android/iOS installation still requires a real device.
 
 | Document control | Value |
 | --- | --- |
 | Document | VK Finance - Detailed Implementation Document |
-| Edition / date | 1.1 / 28 October 2026; expanded diagrams |
+| Edition / date | 1.2 / 28 October 2026; Phase 6 enhancements |
 | Scope | Repository implementation, metadata, UI, API, security, operations and handover |
 | Evidence boundary | Local source review; live org state and current scheduled jobs were not independently verified |
 | Outputs | VKFinance_Implementation_Document.docx and VKFinance_Implementation_Document.pdf; Markdown, generator and 12 SVG/PNG diagrams included |
@@ -19,11 +19,11 @@ This guide describes the checked-in implementation as reviewed on 28 October 202
 
 | Source inventory | Count / setting |
 | --- | --- |
-| Apex classes / test-annotated classes | 116 / 34 (includes Salesforce template code and test helpers) |
-| Apex REST resource classes | 15 |
-| Object, event, big-object and custom-metadata definitions | 25 |
-| Checked-in custom field definitions | 248 |
-| Role permission records | 51 |
+| Apex classes / test-annotated classes | 129 / 38 (includes Salesforce template code and test helpers) |
+| Apex REST resource classes | 16 |
+| Object, event, big-object and custom-metadata definitions | 31 |
+| Checked-in custom field definitions | 307 |
+| Role permission records | 77 |
 | Salesforce source API version | 68.0 in sfdx-project.json |
 
 Source: README.md; sfdx-project.json; force-app/main/default; docs/Security_Checklist.md.
@@ -135,6 +135,7 @@ Source: objects/**/fields/*.field-meta.xml; FamilyScopedSelector.cls.
 | EMI_Installment__c | Persisted loan installment with principal/interest split and due status. |
 | Family__c | Tenant root; family configuration, status, currency, time zone and member cap. |
 | Financial_Account__c | Bank, cash, wallet, card, loan and investment balances and ownership. |
+| Insight_Preference__c | Phase 6: per-viewer insight dismissal and snooze state. |
 | Loan__c | Loan terms, borrower, loan account, EMI and outstanding principal. |
 | Monthly_Summary__c | Monthly snapshots supporting older historical trends. |
 | Notification__c | Recipient-specific alert, severity, read state and deduplication key. |
@@ -145,8 +146,13 @@ Source: objects/**/fields/*.field-meta.xml; FamilyScopedSelector.cls.
 | Recurring_Rule__c | Recurring transaction configuration, cadence and next-run state. |
 | Role_Permission__mdt | Role x feature x action grants plus descriptive scope. |
 | Saved_Report__c | Report type and saved filters; private or family shared. |
+| Savings_Goal__c | Phase 6: exclusive account allocation, savings baseline, target and target date. |
 | Security_Policy__mdt | Default timeouts, password, hashing, throttling and portal URL configuration. |
+| Spend_Request__c | Phase 6: child request, administrator decision, expiry and explicitly recorded expense. |
+| Statement_Import__c | Phase 6: personal statement staging, async job state, result counters and history. |
+| Statement_Row__c | Phase 6: reviewed row JSON, duplicate fingerprint and per-row result; 30-day staging retention. |
 | Transaction__c | One ledger movement; linked transfer/payment rows and commitment references. |
+| Transaction_Receipt__c | Phase 6: private transaction-to-Attachment mapping, creator, MIME type and byte count; legacy Files reference fields retained. |
 
 ### 5.1 Relationship interpretation
 
@@ -247,12 +253,18 @@ Cells below are generated from the checked-in role metadata. A dash means no met
 | BUDGETS | READ, CREATE, EDIT | READ, CREATE, EDIT | READ | - | READ |
 | CATEGORIES | READ, CREATE, EDIT | READ | READ | READ | READ |
 | DASHBOARD | READ | READ | READ | READ | READ |
+| ENHANCEMENTS | READ, EDIT | READ | READ | READ | READ |
+| GOALS | READ, CREATE, EDIT, DELETE | READ, CREATE, EDIT, DELETE | READ, CREATE, EDIT, DELETE | READ, CREATE, EDIT, DELETE | READ |
+| IMPORTS | READ, CREATE | READ, CREATE | READ, CREATE | - | - |
+| INSIGHTS | READ | READ | READ | READ | READ |
 | LOANS | READ, CREATE, EDIT, PAY | READ, CREATE, EDIT, PAY | READ | - | READ |
 | MEMBERS | READ, CREATE, EDIT | READ, CREATE, EDIT | READ | READ | READ |
 | MEMBER_SECURITY | EDIT | EDIT | - | - | - |
 | NOTIFICATIONS | READ | READ | READ | READ | READ |
+| RECEIPTS | READ, CREATE, DELETE | READ, CREATE, DELETE | READ, CREATE, DELETE | READ, CREATE, DELETE | READ |
 | RECURRING | READ, CREATE, EDIT | READ, CREATE, EDIT | READ, CREATE, EDIT | - | - |
 | REPORTS | READ, CREATE | READ, CREATE | READ, CREATE | READ, CREATE | READ |
+| REQUESTS | READ, APPROVE | READ, APPROVE | - | READ, CREATE, CANCEL | - |
 | TRANSACTIONS | READ, CREATE, EDIT, DELETE | READ, CREATE, EDIT, DELETE | READ, CREATE, EDIT, DELETE | READ, CREATE, EDIT | READ |
 
 ### 7.2 Row-level rules
@@ -416,6 +428,7 @@ Base path: /services/apexrest/vkf/v1. The mappings below are read directly from 
 | VkfBudgetsResource | /vkf/v1/budgets/* | Get, Put, Post |
 | VkfCategoriesResource | /vkf/v1/categories/* | Get, Post, Patch |
 | VkfDashboardResource | /vkf/v1/dashboard/* | Get |
+| VkfEnhancementsResource | /vkf/v1/enhancements/* | Get, Post, Patch, Delete |
 | VkfFamilyResource | /vkf/v1/family/* | Get, Post, Patch, Delete |
 | VkfLoansResource | /vkf/v1/loans/* | Get, Post, Patch |
 | VkfNotificationsResource | /vkf/v1/notifications/* | Get, Post |
@@ -626,7 +639,7 @@ Source: README.md; scripts/apex/*.apex; config/hardening; VKF_Platform_Admin.per
 
 ## 14. Verification strategy and existing evidence
 
-This documentation task validates generated artifacts and repository-derived tables. It does not certify runtime correctness. The figures below are recorded claims from docs/Security_Checklist.md dated 28 October 2026, not test results produced during this task.
+The figures below are historical claims from docs/Security_Checklist.md dated 28 October 2026. Fresh Phase 6 verification is recorded separately in section 16 and docs/Phase6_Enhancements.md; published-site runtime behavior is not certified by the local and validation-only checks.
 
 | Existing evidence | Recorded result | Interpretation |
 | --- | --- | --- |
@@ -701,6 +714,57 @@ Configured family time zones and currency fields should be reviewed before broad
 | Finance support | Opening balances, adjustment policy, payment void/repost behavior and reconciliation review. |
 | Operations | Storage/email monitoring, failed jobs, purge backlog, snapshot freshness and backup/restore procedure. |
 | Tester | Two-family test dataset, all five roles and fresh unit/integration/browser/security results. |
+
+## 16. Phase 6: optional enhancements
+
+Phase 6 adds six optional modules below the Discover navigation entry. Existing families begin with every feature disabled because Family__c.Enhancements__c is blank. A Family Admin can enable selected features with password/MFA step-up. EnhancementService checks the family switch and additive role/action grants on the server. Existing ledger, authentication, family isolation, reports and scheduled-job class implementations are unchanged.
+
+| Module | Implementation | Behavior and safeguards |
+| --- | --- | --- |
+| Statement import | StatementImportService; StatementImportWorker; Statement_Import__c / Statement_Row__c | CSV upload, column/date/sign mapping, review and draft; explicit start; three rows per async execution; conservative duplicate checks against imports and manual entries; retry failed rows. |
+| Receipt photos | ReceiptService; Transaction_Receipt__c; private Attachment | Browser resize/compression, MIME/signature/size validation and private internal ownership. Live guest upload/download, direct-download denial and cross-family privacy passed. ContentVersion queries were platform-blocked for the guest, so the private Attachment path is used. |
+| Child spend requests | SpendRequestService; Spend_Request__c | Pending -> Approved/Declined/Cancelled; approved purchases are explicitly recorded once. Approval does not reserve money or enforce a new gate on existing manual child transactions. |
+| Savings goals | SavingsGoalService; Savings_Goal__c | One active goal/account; progress = max(0, current balance - baseline); optional existing savings; target/date/monthly amount; archive without moving funds. |
+| Phone installation | Manifest/icons, InstallPage, scoped worker and public offline notice | Checks hosting responses and worker scope before setup. Caches only a marked public offline page. Financial data and write requests stay online. Published Experience Cloud paths require verification. |
+| Smart insights | SmartInsightService; Insight_Preference__c | Scoped category spending pace and recurring-expense review; explanations, seven-day snooze and dismiss. No external AI call, automatic cancellation or financial write. |
+
+### 16.1 API and access model
+
+VkfEnhancementsResource exposes /services/apexrest/vkf/v1/enhancements/*. It authenticates through SessionService and uses the existing VkfRest error/rollback conventions. New paths cover settings, imports, goals, requests, receipts and insights. Existing API contracts remain intact. Imports are personal even for administrators; receipts inherit transaction visibility/editability; goals require visible accounts and restrict creation to owned accounts for non-admins; requests are visible to the child and family administrators; insights always use current viewer scope.
+
+| Path after /enhancements | Verbs / action |
+| --- | --- |
+| /settings | GET; PATCH selected switches with currentPassword and optional MFA code |
+| /imports; /imports/{id}; /imports/{id}/{commit\|cancel} | GET/POST staging; GET detail; POST start/retry or cancel |
+| /goals; /goals/{id} | GET/POST; PATCH; DELETE archives the goal |
+| /requests; /requests/{id}/{approve\|decline\|cancel\|record} | GET/POST; POST explicit decision or purchase recording |
+| /transactions/{id}/receipts; /receipts/{id} | GET/POST photos; GET protected image data; DELETE photo and attachment |
+| /insights; /insights/dismiss | GET explainable suggestions; POST personal snooze/dismiss |
+
+### 16.2 Capacity and maintenance
+
+| Concern | Enforced limit / operation |
+| --- | --- |
+| Import file / staged rows | 1 MB CSV; 500 rows per import; 20 new imports/family/day; at most three active imports/person |
+| Background work | Three statement rows per batch execution, independent savepoints, current member access rechecked |
+| Receipt storage | 350,000 decoded bytes/photo; five photos/transaction; browser source <=10 MB and <=40 megapixels |
+| Child requests / goals | 20 current pending requests/child; request expiry <=90 days; 50 active goals/family; unique active account allocation |
+| Maintenance | Optional VKF Enhancement Maintenance: Sunday 03:20; archives old inactive staging after 30 days; removes expired insight preferences; preserves ledger, files and decision history |
+
+The retention schedule is created separately by scripts/apex/schedule-phase6.apex and leaves existing schedules untouched. Processing imports need operator review if a system-level async failure prevents normal completion; inspect Job_Id__c and AsyncApexJob before restarting. Financial and Files storage quotas still constrain the Developer Edition deployment. Feature disablement and source rollback do not undo completed ledger entries.
+
+### 16.3 Verification and release boundary
+
+| Verification | Evidence / remaining boundary |
+| --- | --- |
+| Apex backend deployment | Deployment 0AfjV000005BI3ZSAW succeeded with 150 tests passing; metadata saved. Release and publication IDs are recorded in docs/phase6/Deployment.json. |
+| Frontend | 32 unit tests pass, including generic Salesforce manifest MIME handling; production build and targeted ESLint pass. |
+| Browser fixtures | Four desktop/mobile workflow tests; a test-only SDK alias supplies deterministic local data and is absent from production |
+| Published-site checks | Six authenticated live pilot checks passed, including real import jobs, receipt privacy and phone-width browser compression/preview/install setup. Test families removed; only native Android/iOS installation remains a manual device check. |
+
+Release instructions and detailed tradeoffs are in docs/Phase6_Enhancements.md. The requested deployment and publication are complete. A read-only release check found zero enabled families and one enhancement-maintenance schedule; existing schedules were retained. Enable features for a pilot family after the relevant authenticated checks. The existing Security_Checklist.md remains historical v1 evidence, not a new Phase 6 penetration-test report.
+
+Source: EnhancementService.cls; StatementImportService.cls; StatementImportWorker.cls; ReceiptService.cls; SpendRequestService.cls; SavingsGoalService.cls; SmartInsightService.cls; EnhancementMaintenanceJob.cls; src/features/enhancements; docs/Phase6_Enhancements.md.
 
 ## Appendix A. Complete custom-field dictionary
 
@@ -877,6 +941,7 @@ Tenant root; family configuration, status, currency, time zone and member cap.
 | Field API name | Type | Req. | Definition / constraints |
 | --- | --- | --- | --- |
 | Base_Currency__c | Text | - | Length 3; Default: "INR" |
+| Enhancements__c | Text | - | Length 255; Comma-separated opt-in Phase 6 feature keys. Blank leaves all enhancements off. |
 | Family_Code__c | AutoNumber | - | External ID |
 | Large_Txn_Threshold__c | Currency | - | Precision 16, scale 2 |
 | Max_Members__c | Number | - | Precision 3, scale 0; Default: 10 |
@@ -906,6 +971,18 @@ Bank, cash, wallet, card, loan and investment balances and ownership.
 | Statement_Day__c | Number | - | Precision 2, scale 0 |
 | Status__c | Picklist | - | Values: Active, Closed |
 | Type__c | Picklist | - | Values: Savings, Current, Cash, UPI Wallet, Credit Card, Loan, Fixed Deposit, Investment |
+
+### Insight_Preference__c
+
+Phase 6: per-viewer insight dismissal and snooze state.
+
+| Field API name | Type | Req. | Definition / constraints |
+| --- | --- | --- | --- |
+| Family__c | Lookup | Yes | Target: Family__c |
+| Hidden_Until__c | Date | - | Hidden Until |
+| Insight_Key__c | Text | - | Length 120 |
+| Member__c | Lookup | Yes | Target: Portal_User__c |
+| Unique_Key__c | Text | - | Length 64; Unique |
 
 ### Loan__c
 
@@ -1079,6 +1156,23 @@ Report type and saved filters; private or family shared.
 | Report_Type__c | Text | - | Length 40 |
 | Shared_With_Family__c | Checkbox | - | Default: false |
 
+### Savings_Goal__c
+
+Phase 6: exclusive account allocation, savings baseline, target and target date.
+
+| Field API name | Type | Req. | Definition / constraints |
+| --- | --- | --- | --- |
+| Account__c | Lookup | Yes | Target: Financial_Account__c |
+| Account_Key__c | Text | - | Length 64; Unique |
+| Baseline__c | Currency | - | Precision 16, scale 2 |
+| Color__c | Text | - | Length 20 |
+| Family__c | Lookup | Yes | Target: Family__c |
+| Member__c | Lookup | Yes | Target: Portal_User__c |
+| Status__c | Text | - | Length 24 |
+| Target__c | Currency | - | Precision 16, scale 2 |
+| Target_Date__c | Date | - | Target Date |
+| Title__c | Text | - | Length 80 |
+
 ### Security_Policy__mdt
 
 Default timeouts, password, hashing, throttling and portal URL configuration.
@@ -1103,6 +1197,59 @@ Default timeouts, password, hashing, throttling and portal URL configuration.
 | Throttle_Max_Attempts__c | Number | - | Precision 18, scale 0 |
 | Throttle_Window_Minutes__c | Number | - | Precision 18, scale 0 |
 
+### Spend_Request__c
+
+Phase 6: child request, administrator decision, expiry and explicitly recorded expense.
+
+| Field API name | Type | Req. | Definition / constraints |
+| --- | --- | --- | --- |
+| Account__c | Lookup | Yes | Target: Financial_Account__c |
+| Amount__c | Currency | - | Precision 16, scale 2 |
+| Category__c | Lookup | Yes | Target: Category__c |
+| Child__c | Lookup | Yes | Target: Portal_User__c |
+| Decided_At__c | DateTime | - | Decided At |
+| Decided_By__c | Lookup | - | Target: Portal_User__c |
+| Decision_Note__c | Text | - | Length 255 |
+| Family__c | Lookup | Yes | Target: Family__c |
+| Note__c | Text | - | Length 255 |
+| Status__c | Text | - | Length 24 |
+| Title__c | Text | - | Length 120 |
+| Transaction__c | Lookup | - | Target: Transaction__c |
+| Valid_Until__c | Date | - | Valid Until |
+
+### Statement_Import__c
+
+Phase 6: personal statement staging, async job state, result counters and history.
+
+| Field API name | Type | Req. | Definition / constraints |
+| --- | --- | --- | --- |
+| Account__c | Lookup | Yes | Target: Financial_Account__c |
+| Duplicates__c | Number | - | Precision 12, scale 0 |
+| Error__c | Text | - | Length 255 |
+| Failed__c | Number | - | Precision 12, scale 0 |
+| Family__c | Lookup | Yes | Target: Family__c |
+| File_Name__c | Text | - | Length 120 |
+| Imported__c | Number | - | Precision 12, scale 0 |
+| Job_Id__c | Text | - | Length 18 |
+| Member__c | Lookup | Yes | Target: Portal_User__c |
+| Status__c | Text | - | Length 24 |
+| Total__c | Number | - | Precision 12, scale 0 |
+
+### Statement_Row__c
+
+Phase 6: reviewed row JSON, duplicate fingerprint and per-row result; 30-day staging retention.
+
+| Field API name | Type | Req. | Definition / constraints |
+| --- | --- | --- | --- |
+| Entry_JSON__c | LongTextArea | - | Length 4096 |
+| Error__c | Text | - | Length 255 |
+| Family__c | Lookup | Yes | Target: Family__c |
+| Fingerprint__c | Text | - | Length 64 |
+| Import__c | Lookup | Yes | Target: Statement_Import__c |
+| Row_No__c | Number | - | Precision 12, scale 0 |
+| Status__c | Text | - | Length 24 |
+| Transaction__c | Lookup | - | Target: Transaction__c |
+
 ### Transaction__c
 
 One ledger movement; linked transfer/payment rows and commitment references.
@@ -1117,6 +1264,7 @@ One ledger movement; linked transfer/payment rows and commitment references.
 | Direction__c | Picklist | - | Values: Debit, Credit |
 | EMI_Installment__c | Lookup | - | Target: EMI_Installment__c |
 | Family__c | Lookup | Yes | Target: Family__c |
+| Import_Key__c | Text | - | Length 64; Unique; External ID; Server-generated family/account statement fingerprint. Makes import retries idempotent. |
 | Member__c | Lookup | - | Target: Portal_User__c |
 | Notes__c | Text | - | Length 255 |
 | Payee__c | Text | - | Length 120 |
@@ -1128,6 +1276,23 @@ One ledger movement; linked transfer/payment rows and commitment references.
 | Transfer_Group_Id__c | Text | - | Length 36; External ID; Shared by both legs of a transfer. |
 | Txn_Date__c | Date | Yes | Date |
 | Type__c | Picklist | - | Values: Income, Expense, Refund, Transfer Out, Transfer In, Card Payment, Bill Payment, EMI Payment, Adjustment |
+
+### Transaction_Receipt__c
+
+Phase 6: private transaction-to-Attachment mapping, creator, MIME type and byte count; legacy Files reference fields retained.
+
+| Field API name | Type | Req. | Definition / constraints |
+| --- | --- | --- | --- |
+| Attachment_Id__c | Text | - | Length 18 |
+| Bytes__c | Number | - | Precision 12, scale 0 |
+| Content_Document_Id__c | Text | - | Length 18 |
+| Content_Version_Id__c | Text | - | Length 18 |
+| Dedupe_Key__c | Text | - | Length 64; Unique |
+| Family__c | Lookup | Yes | Target: Family__c |
+| File_Name__c | Text | - | Length 120 |
+| Member__c | Lookup | Yes | Target: Portal_User__c |
+| Mime_Type__c | Text | - | Length 32 |
+| Transaction__c | Lookup | Yes | Target: Transaction__c |
 
 Source: force-app/main/default/objects/**/fields/*.field-meta.xml; standard fields and Apex-only validations are outside this generated inventory.
 
@@ -1142,40 +1307,62 @@ Exact Actions__c and Scope__c values are preserved here for traceability. As exp
 | Co-Admin | BUDGETS | READ,CREATE,EDIT | FAMILY |
 | Co-Admin | CATEGORIES | READ | FAMILY |
 | Co-Admin | DASHBOARD | READ | FAMILY |
+| Co-Admin | ENHANCEMENTS | READ | OWN |
+| Co-Admin | GOALS | READ,CREATE,EDIT,DELETE | OWN |
+| Co-Admin | IMPORTS | READ,CREATE | OWN |
+| Co-Admin | INSIGHTS | READ | OWN |
 | Co-Admin | LOANS | READ,CREATE,EDIT,PAY | FAMILY |
 | Co-Admin | MEMBER_SECURITY | EDIT | FAMILY |
 | Co-Admin | MEMBERS | READ,CREATE,EDIT | FAMILY |
 | Co-Admin | NOTIFICATIONS | READ | OWN |
+| Co-Admin | RECEIPTS | READ,CREATE,DELETE | OWN |
 | Co-Admin | RECURRING | READ,CREATE,EDIT | FAMILY |
 | Co-Admin | REPORTS | READ,CREATE | FAMILY |
+| Co-Admin | REQUESTS | READ,APPROVE | OWN |
 | Co-Admin | TRANSACTIONS | READ,CREATE,EDIT,DELETE | FAMILY |
 | Child | ACCOUNTS | READ | OWN |
 | Child | CATEGORIES | READ | FAMILY |
 | Child | DASHBOARD | READ | OWN |
+| Child | ENHANCEMENTS | READ | OWN |
+| Child | GOALS | READ,CREATE,EDIT,DELETE | OWN |
+| Child | INSIGHTS | READ | OWN |
 | Child | MEMBERS | READ | OWN |
 | Child | NOTIFICATIONS | READ | OWN |
+| Child | RECEIPTS | READ,CREATE,DELETE | OWN |
 | Child | REPORTS | READ,CREATE | OWN |
+| Child | REQUESTS | READ,CREATE,CANCEL | OWN |
 | Child | TRANSACTIONS | READ,CREATE,EDIT | OWN |
 | Family Admin | ACCOUNTS | READ,CREATE,EDIT | FAMILY |
 | Family Admin | BILLS | READ,CREATE,EDIT,PAY | FAMILY |
 | Family Admin | BUDGETS | READ,CREATE,EDIT | FAMILY |
 | Family Admin | CATEGORIES | READ,CREATE,EDIT | FAMILY |
 | Family Admin | DASHBOARD | READ | FAMILY |
+| Family Admin | ENHANCEMENTS | READ,EDIT | OWN |
+| Family Admin | GOALS | READ,CREATE,EDIT,DELETE | OWN |
+| Family Admin | IMPORTS | READ,CREATE | OWN |
+| Family Admin | INSIGHTS | READ | OWN |
 | Family Admin | LOANS | READ,CREATE,EDIT,PAY | FAMILY |
 | Family Admin | MEMBER_SECURITY | EDIT | FAMILY |
 | Family Admin | MEMBERS | READ,CREATE,EDIT | FAMILY |
 | Family Admin | NOTIFICATIONS | READ | OWN |
+| Family Admin | RECEIPTS | READ,CREATE,DELETE | OWN |
 | Family Admin | RECURRING | READ,CREATE,EDIT | FAMILY |
 | Family Admin | REPORTS | READ,CREATE | FAMILY |
+| Family Admin | REQUESTS | READ,APPROVE | OWN |
 | Family Admin | TRANSACTIONS | READ,CREATE,EDIT,DELETE | FAMILY |
 | Member | ACCOUNTS | READ,CREATE,EDIT | OWN_SHARED |
 | Member | BILLS | READ,PAY | ASSIGNED |
 | Member | BUDGETS | READ | FAMILY |
 | Member | CATEGORIES | READ | FAMILY |
 | Member | DASHBOARD | READ | OWN_SHARED |
+| Member | ENHANCEMENTS | READ | OWN |
+| Member | GOALS | READ,CREATE,EDIT,DELETE | OWN |
+| Member | IMPORTS | READ,CREATE | OWN |
+| Member | INSIGHTS | READ | OWN |
 | Member | LOANS | READ | OWN |
 | Member | MEMBERS | READ | OWN |
 | Member | NOTIFICATIONS | READ | OWN |
+| Member | RECEIPTS | READ,CREATE,DELETE | OWN |
 | Member | RECURRING | READ,CREATE,EDIT | OWN |
 | Member | REPORTS | READ,CREATE | OWN_SHARED |
 | Member | TRANSACTIONS | READ,CREATE,EDIT,DELETE | OWN_SHARED |
@@ -1183,9 +1370,13 @@ Exact Actions__c and Scope__c values are preserved here for traceability. As exp
 | Viewer | BUDGETS | READ | FAMILY |
 | Viewer | CATEGORIES | READ | FAMILY |
 | Viewer | DASHBOARD | READ | VIEWER |
+| Viewer | ENHANCEMENTS | READ | OWN |
+| Viewer | GOALS | READ | OWN |
+| Viewer | INSIGHTS | READ | OWN |
 | Viewer | LOANS | READ | VIEWER |
 | Viewer | MEMBERS | READ | OWN |
 | Viewer | NOTIFICATIONS | READ | OWN |
+| Viewer | RECEIPTS | READ | OWN |
 | Viewer | REPORTS | READ | VIEWER |
 | Viewer | TRANSACTIONS | READ | VIEWER |
 

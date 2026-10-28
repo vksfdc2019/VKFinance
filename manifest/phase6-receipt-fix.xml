@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+    <types><members>ReceiptService</members><members>Phase6ReceiptTest</members><name>ApexClass</name></types>
+    <types><members>Transaction_Receipt__c.Attachment_Id__c</members><name>CustomField</name></types>
+    <types><members>VKF_Platform_Admin</members><name>PermissionSet</name></types>
+    <version>68.0</version>
+</Package>

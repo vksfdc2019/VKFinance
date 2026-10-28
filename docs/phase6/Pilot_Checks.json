@@ -1,0 +1,72 @@
+{
+  "date": "2026-10-28",
+  "checkedAtUtc": "2026-10-28T09:26:47.963439+00:00",
+  "site": "https://orgfarm-db588f31ab-dev-ed.develop.my.site.com/VKFinancePortal",
+  "checks": [
+    {
+      "name": "Real guest-triggered statement batch, duplicate handling and isolation",
+      "passed": true,
+      "details": {
+        "imported": 1,
+        "duplicates": 1,
+        "safeRetry": true,
+        "crossFamilyDenied": true
+      }
+    },
+    {
+      "name": "Guest receipt upload, protected download and cross-family denial",
+      "passed": true,
+      "details": {
+        "guestUpload": true,
+        "privateDownload": true,
+        "deduplicated": true,
+        "crossFamilyDenied": true,
+        "anonymousDirectDownloadDenied": true,
+        "deleted": true
+      }
+    },
+    {
+      "name": "Savings goal progress and isolation",
+      "passed": true,
+      "details": {
+        "ledgerProgress": true,
+        "crossFamilyDenied": true
+      }
+    },
+    {
+      "name": "Child approval and explicit idempotent purchase recording",
+      "passed": true,
+      "details": {
+        "approvalWithoutPosting": true,
+        "explicitPurchase": true,
+        "safeRetry": true,
+        "crossFamilyDenied": true
+      }
+    },
+    {
+      "name": "Live insights scope and snooze",
+      "passed": true,
+      "details": {
+        "scopedSuggestion": true,
+        "personalSnooze": true
+      }
+    },
+    {
+      "name": "Authenticated live mobile browser: goals, receipt photos and install setup",
+      "passed": true,
+      "details": {
+        "liveMobileGoals": true,
+        "liveReceiptCompressionUploadPreviewDelete": true,
+        "authenticatedInstallSetup": true,
+        "manifestErrors": 0,
+        "offlineCachePublicOnly": true
+      }
+    }
+  ],
+  "cleanup": {
+    "operationalRowsRemoved": 25,
+    "familiesRemoved": 2,
+    "completed": true
+  },
+  "nativePhoneInstallation": "Requires a real Android/iOS device; not claimed by API checks."
+}

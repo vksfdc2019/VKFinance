@@ -828,6 +828,50 @@
         <field>Rate_Limit__c.Hits__c</field>
         <readable>true</readable>
     </fieldPermissions>
+    <!-- Phase 6 support fields -->
+    <fieldPermissions><editable>false</editable><field>Family__c.Enhancements__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Transaction__c.Import_Key__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Statement_Import__c.Duplicates__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Statement_Import__c.Error__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Statement_Import__c.Failed__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Statement_Import__c.File_Name__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Statement_Import__c.Imported__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Statement_Import__c.Job_Id__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Statement_Import__c.Status__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Statement_Import__c.Total__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Statement_Row__c.Entry_JSON__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Statement_Row__c.Error__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Statement_Row__c.Fingerprint__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Statement_Row__c.Row_No__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Statement_Row__c.Status__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Statement_Row__c.Transaction__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Transaction_Receipt__c.Attachment_Id__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Transaction_Receipt__c.Bytes__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Transaction_Receipt__c.Content_Document_Id__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Transaction_Receipt__c.Content_Version_Id__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Transaction_Receipt__c.Dedupe_Key__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Transaction_Receipt__c.File_Name__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Transaction_Receipt__c.Mime_Type__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Spend_Request__c.Amount__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Spend_Request__c.Decided_At__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Spend_Request__c.Decided_By__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Spend_Request__c.Decision_Note__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Spend_Request__c.Note__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Spend_Request__c.Status__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Spend_Request__c.Title__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Spend_Request__c.Transaction__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Spend_Request__c.Valid_Until__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Savings_Goal__c.Account_Key__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Savings_Goal__c.Baseline__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Savings_Goal__c.Color__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Savings_Goal__c.Status__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Savings_Goal__c.Target__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Savings_Goal__c.Target_Date__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Savings_Goal__c.Title__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Insight_Preference__c.Hidden_Until__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Insight_Preference__c.Insight_Key__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Insight_Preference__c.Unique_Key__c</field><readable>true</readable></fieldPermissions>
+    <!-- End Phase 6 support fields -->
     <hasActivationRequired>false</hasActivationRequired>
     <label>VKF Platform Admin</label>
     <objectPermissions>
@@ -1019,6 +1063,14 @@
         <object>Rate_Limit__c</object>
         <viewAllRecords>true</viewAllRecords>
     </objectPermissions>
+    <!-- Phase 6 support objects -->
+    <objectPermissions><allowCreate>false</allowCreate><allowDelete>true</allowDelete><allowEdit>true</allowEdit><allowRead>true</allowRead><modifyAllRecords>true</modifyAllRecords><object>Statement_Import__c</object><viewAllRecords>true</viewAllRecords></objectPermissions>
+    <objectPermissions><allowCreate>false</allowCreate><allowDelete>true</allowDelete><allowEdit>true</allowEdit><allowRead>true</allowRead><modifyAllRecords>true</modifyAllRecords><object>Statement_Row__c</object><viewAllRecords>true</viewAllRecords></objectPermissions>
+    <objectPermissions><allowCreate>false</allowCreate><allowDelete>true</allowDelete><allowEdit>true</allowEdit><allowRead>true</allowRead><modifyAllRecords>true</modifyAllRecords><object>Transaction_Receipt__c</object><viewAllRecords>true</viewAllRecords></objectPermissions>
+    <objectPermissions><allowCreate>false</allowCreate><allowDelete>true</allowDelete><allowEdit>true</allowEdit><allowRead>true</allowRead><modifyAllRecords>true</modifyAllRecords><object>Spend_Request__c</object><viewAllRecords>true</viewAllRecords></objectPermissions>
+    <objectPermissions><allowCreate>false</allowCreate><allowDelete>true</allowDelete><allowEdit>true</allowEdit><allowRead>true</allowRead><modifyAllRecords>true</modifyAllRecords><object>Savings_Goal__c</object><viewAllRecords>true</viewAllRecords></objectPermissions>
+    <objectPermissions><allowCreate>false</allowCreate><allowDelete>true</allowDelete><allowEdit>true</allowEdit><allowRead>true</allowRead><modifyAllRecords>true</modifyAllRecords><object>Insight_Preference__c</object><viewAllRecords>true</viewAllRecords></objectPermissions>
+    <!-- End Phase 6 support objects -->
     <tabSettings>
         <tab>VKF_Onboarding</tab>
         <visibility>Visible</visibility>

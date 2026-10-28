@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <deploymentStatus>Deployed</deploymentStatus>
+    <externalSharingModel>Private</externalSharingModel>
+    <label>Spend Request</label>
+    <nameField><displayFormat>P6-{00000000}</displayFormat><label>Spend Request Number</label><type>AutoNumber</type></nameField>
+    <pluralLabel>Spend Requests</pluralLabel>
+    <sharingModel>Private</sharingModel>
+</CustomObject>

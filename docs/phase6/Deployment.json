@@ -1,0 +1,73 @@
+{
+  "date": "2026-10-28",
+  "verifiedAtUtc": "2026-10-28T09:30:25.737330+00:00",
+  "targetAlias": "VKFinance",
+  "portalUrl": "https://orgfarm-db588f31ab-dev-ed.develop.my.site.com/VKFinancePortal",
+  "status": "deployed and published",
+  "backend": {
+    "id": "0AfjV000005BI3ZSAW",
+    "checkOnly": false,
+    "status": "Succeeded",
+    "testsPassed": 150
+  },
+  "ui": {
+    "id": "0AfjV000005BSXZSA4",
+    "checkOnly": false,
+    "status": "Succeeded",
+    "entryScript": "index-xrZci7ga.js"
+  },
+  "publication": {
+    "jobId": "08PjV00000DS0JFUA1",
+    "status": "Complete",
+    "error": null
+  },
+  "liveChecks": {
+    "finalBundleMatches": true,
+    "unauthenticatedApiStatuses": {
+      "settings": 401,
+      "goals": 401,
+      "requests": 401,
+      "imports": 401,
+      "insights": 401
+    },
+    "signInPage": true,
+    "manifestParsedWithoutErrors": true,
+    "serviceWorkerActivated": true,
+    "cacheContainsOnlyPublicOfflineNotice": true
+  },
+  "configuration": {
+    "familiesChecked": 3,
+    "familiesWithEnabledEnhancements": 0,
+    "enhancementMaintenanceSchedules": 1,
+    "existingSchedulesRetained": true
+  },
+  "frontend": {
+    "unitTestsPassed": 32,
+    "browserFixtureTestsPassed": 4,
+    "productionBuild": "passed"
+  },
+  "pilotChecksPending": [
+    "Native Android/iOS home-screen installation on a real device"
+  ],
+  "receiptHotfix": {
+    "id": "0AfjV000005BWT7SAO",
+    "status": "Succeeded",
+    "testsPassed": 150,
+    "storage": "private Attachment, internal owner, private receipt parent"
+  },
+  "platformSupportPermissions": {
+    "deploymentId": "0AfjV000005BVOzSAO",
+    "status": "Succeeded",
+    "guestObjectPermissionsAdded": false
+  },
+  "livePilot": {
+    "checksPassed": 6,
+    "checksFailed": 0,
+    "cleanupComplete": true,
+    "temporaryFamiliesRemoved": 2,
+    "originalFamilyCountAfterCleanup": 3,
+    "familiesWithEnabledEnhancements": 0,
+    "guestTraceRemoved": true,
+    "report": "docs/phase6/Pilot_Checks.json"
+  }
+}

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Child__c</fullName>
+    <label>Child</label>
+    <deleteConstraint>Restrict</deleteConstraint>
+    <referenceTo>Portal_User__c</referenceTo>
+    <relationshipLabel>Spend Request Child</relationshipLabel>
+    <relationshipName>Spend_Request_Child</relationshipName>
+    <required>true</required>
+    <type>Lookup</type>
+</CustomField>

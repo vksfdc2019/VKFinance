@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Transaction__c</fullName>
+    <label>Transaction</label>
+    <deleteConstraint>Restrict</deleteConstraint>
+    <referenceTo>Transaction__c</referenceTo>
+    <relationshipLabel>Transaction Receipt Transaction</relationshipLabel>
+    <relationshipName>Transaction_Receipt_Transaction</relationshipName>
+    <required>true</required>
+    <type>Lookup</type>
+</CustomField>

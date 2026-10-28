@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Import__c</fullName>
+    <label>Import</label>
+    <deleteConstraint>Restrict</deleteConstraint>
+    <referenceTo>Statement_Import__c</referenceTo>
+    <relationshipLabel>Statement Row Import</relationshipLabel>
+    <relationshipName>Statement_Row_Import</relationshipName>
+    <required>true</required>
+    <type>Lookup</type>
+</CustomField>

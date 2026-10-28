@@ -53,10 +53,10 @@ for file in sorted((META / 'classes').glob('Vkf*Resource.cls')):
 
 h('1. Purpose, scope and evidence')
 p('VK Finance is a multi-family personal finance platform implemented on Salesforce. Families use a React portal on Experience Cloud to manage accounts, income, expenses, transfers, budgets, bills, loans, recurring entries and reports. Internal Salesforce users operate the VK Finance Console to onboard and support families. Portal members are custom records, rather than individual Salesforce users.')
-p('This guide describes the checked-in implementation as reviewed on 28 October 2026. It is intended for developers, solution architects, administrators, testers and support owners. Source code and metadata determine the implementation tables. Existing README and security documents provide historical deployment and validation context. No org deployment, live security test or application test was run to prepare this guide.')
+p('This guide describes the implementation and release reviewed on 28 October 2026. It is intended for developers, solution architects, administrators, testers and support owners. Phase 6 is deployed and published, with all 150 Apex tests passing. Six live pilot checks passed for actual imports, private receipts, goals, approvals, insights and authenticated phone-width browser workflows. Disposable families were removed and existing family switches remain off. Native Android/iOS installation still requires a real device.')
 table(['Document control', 'Value'], [
     ['Document', 'VK Finance - Detailed Implementation Document'],
-    ['Edition / date', '1.1 / 28 October 2026; expanded diagrams'],
+    ['Edition / date', '1.2 / 28 October 2026; Phase 6 enhancements'],
     ['Scope', 'Repository implementation, metadata, UI, API, security, operations and handover'],
     ['Evidence boundary', 'Local source review; live org state and current scheduled jobs were not independently verified'],
     ['Outputs', BASE + '.docx and ' + BASE + '.pdf; Markdown, generator and 12 SVG/PNG diagrams included'],
@@ -121,6 +121,12 @@ p('Versions above are manifest declarations, not a statement about the currently
 
 h('5. Data model and relationships')
 object_purpose = {
+    'Statement_Import__c': 'Phase 6: personal statement staging, async job state, result counters and history.',
+    'Statement_Row__c': 'Phase 6: reviewed row JSON, duplicate fingerprint and per-row result; 30-day staging retention.',
+    'Transaction_Receipt__c': 'Phase 6: private transaction-to-Attachment mapping, creator, MIME type and byte count; legacy Files reference fields retained.',
+    'Spend_Request__c': 'Phase 6: child request, administrator decision, expiry and explicitly recorded expense.',
+    'Savings_Goal__c': 'Phase 6: exclusive account allocation, savings baseline, target and target date.',
+    'Insight_Preference__c': 'Phase 6: per-viewer insight dismissal and snooze state.',
     'Family__c': 'Tenant root; family configuration, status, currency, time zone and member cap.',
     'Portal_User__c': 'Custom portal identity, family membership, role, password state, MFA and dashboard layout.',
     'Portal_Session__c': 'Hashed session token, user/family linkage, scope, activity and revocation.',
@@ -396,7 +402,7 @@ p('Demo credentials are intentionally not reproduced here. Use the existing Demo
 source('README.md; scripts/apex/*.apex; config/hardening; VKF_Platform_Admin.permissionset-meta.xml; VKF_Guest_Api_Access.permissionset-meta.xml.')
 
 h('14. Verification strategy and existing evidence')
-p('This documentation task validates generated artifacts and repository-derived tables. It does not certify runtime correctness. The figures below are recorded claims from docs/Security_Checklist.md dated 28 October 2026, not test results produced during this task.')
+p('The figures below are historical claims from docs/Security_Checklist.md dated 28 October 2026. Fresh Phase 6 verification is recorded separately in section 16 and docs/Phase6_Enhancements.md; published-site runtime behavior is not certified by the local and validation-only checks.')
 table(['Existing evidence', 'Recorded result', 'Interpretation'], [
     ['Live black-box security checks', '20 / 20 passed', 'Historical published-site checks of isolation, auth, guest data access and response hygiene.'],
     ['Apex tests', 'All pass; 93% org-wide coverage', 'Historical org test run; this guide does not include a newly generated test report.'],
@@ -457,6 +463,45 @@ table(['Owner', 'Required handover item'], [
     ['Operations', 'Storage/email monitoring, failed jobs, purge backlog, snapshot freshness and backup/restore procedure.'],
     ['Tester', 'Two-family test dataset, all five roles and fresh unit/integration/browser/security results.'],
 ])
+
+h('16. Phase 6: optional enhancements')
+p('Phase 6 adds six optional modules below the Discover navigation entry. Existing families begin with every feature disabled because Family__c.Enhancements__c is blank. A Family Admin can enable selected features with password/MFA step-up. EnhancementService checks the family switch and additive role/action grants on the server. Existing ledger, authentication, family isolation, reports and scheduled-job class implementations are unchanged.')
+table(['Module', 'Implementation', 'Behavior and safeguards'], [
+    ['Statement import', 'StatementImportService; StatementImportWorker; Statement_Import__c / Statement_Row__c', 'CSV upload, column/date/sign mapping, review and draft; explicit start; three rows per async execution; conservative duplicate checks against imports and manual entries; retry failed rows.'],
+    ['Receipt photos', 'ReceiptService; Transaction_Receipt__c; private Attachment', 'Browser resize/compression, MIME/signature/size validation and private internal ownership. Live guest upload/download, direct-download denial and cross-family privacy passed. ContentVersion queries were platform-blocked for the guest, so the private Attachment path is used.'],
+    ['Child spend requests', 'SpendRequestService; Spend_Request__c', 'Pending -> Approved/Declined/Cancelled; approved purchases are explicitly recorded once. Approval does not reserve money or enforce a new gate on existing manual child transactions.'],
+    ['Savings goals', 'SavingsGoalService; Savings_Goal__c', 'One active goal/account; progress = max(0, current balance - baseline); optional existing savings; target/date/monthly amount; archive without moving funds.'],
+    ['Phone installation', 'Manifest/icons, InstallPage, scoped worker and public offline notice', 'Checks hosting responses and worker scope before setup. Caches only a marked public offline page. Financial data and write requests stay online. Published Experience Cloud paths require verification.'],
+    ['Smart insights', 'SmartInsightService; Insight_Preference__c', 'Scoped category spending pace and recurring-expense review; explanations, seven-day snooze and dismiss. No external AI call, automatic cancellation or financial write.'],
+])
+h('16.1 API and access model', 2)
+p('VkfEnhancementsResource exposes /services/apexrest/vkf/v1/enhancements/*. It authenticates through SessionService and uses the existing VkfRest error/rollback conventions. New paths cover settings, imports, goals, requests, receipts and insights. Existing API contracts remain intact. Imports are personal even for administrators; receipts inherit transaction visibility/editability; goals require visible accounts and restrict creation to owned accounts for non-admins; requests are visible to the child and family administrators; insights always use current viewer scope.')
+table(['Path after /enhancements', 'Verbs / action'], [
+    ['/settings', 'GET; PATCH selected switches with currentPassword and optional MFA code'],
+    ['/imports; /imports/{id}; /imports/{id}/{commit|cancel}', 'GET/POST staging; GET detail; POST start/retry or cancel'],
+    ['/goals; /goals/{id}', 'GET/POST; PATCH; DELETE archives the goal'],
+    ['/requests; /requests/{id}/{approve|decline|cancel|record}', 'GET/POST; POST explicit decision or purchase recording'],
+    ['/transactions/{id}/receipts; /receipts/{id}', 'GET/POST photos; GET protected image data; DELETE photo and attachment'],
+    ['/insights; /insights/dismiss', 'GET explainable suggestions; POST personal snooze/dismiss'],
+])
+h('16.2 Capacity and maintenance', 2)
+table(['Concern', 'Enforced limit / operation'], [
+    ['Import file / staged rows', '1 MB CSV; 500 rows per import; 20 new imports/family/day; at most three active imports/person'],
+    ['Background work', 'Three statement rows per batch execution, independent savepoints, current member access rechecked'],
+    ['Receipt storage', '350,000 decoded bytes/photo; five photos/transaction; browser source <=10 MB and <=40 megapixels'],
+    ['Child requests / goals', '20 current pending requests/child; request expiry <=90 days; 50 active goals/family; unique active account allocation'],
+    ['Maintenance', 'Optional VKF Enhancement Maintenance: Sunday 03:20; archives old inactive staging after 30 days; removes expired insight preferences; preserves ledger, files and decision history'],
+])
+p('The retention schedule is created separately by scripts/apex/schedule-phase6.apex and leaves existing schedules untouched. Processing imports need operator review if a system-level async failure prevents normal completion; inspect Job_Id__c and AsyncApexJob before restarting. Financial and Files storage quotas still constrain the Developer Edition deployment. Feature disablement and source rollback do not undo completed ledger entries.')
+h('16.3 Verification and release boundary', 2)
+table(['Verification', 'Evidence / remaining boundary'], [
+    ['Apex backend deployment', 'Deployment 0AfjV000005BI3ZSAW succeeded with 150 tests passing; metadata saved. Release and publication IDs are recorded in docs/phase6/Deployment.json.'],
+    ['Frontend', '32 unit tests pass, including generic Salesforce manifest MIME handling; production build and targeted ESLint pass.'],
+    ['Browser fixtures', 'Four desktop/mobile workflow tests; a test-only SDK alias supplies deterministic local data and is absent from production'],
+    ['Published-site checks', 'Six authenticated live pilot checks passed, including real import jobs, receipt privacy and phone-width browser compression/preview/install setup. Test families removed; only native Android/iOS installation remains a manual device check.'],
+])
+p('Release instructions and detailed tradeoffs are in docs/Phase6_Enhancements.md. The requested deployment and publication are complete. A read-only release check found zero enabled families and one enhancement-maintenance schedule; existing schedules were retained. Enable features for a pilot family after the relevant authenticated checks. The existing Security_Checklist.md remains historical v1 evidence, not a new Phase 6 penetration-test report.')
+source('EnhancementService.cls; StatementImportService.cls; StatementImportWorker.cls; ReceiptService.cls; SpendRequestService.cls; SavingsGoalService.cls; SmartInsightService.cls; EnhancementMaintenanceJob.cls; src/features/enhancements; docs/Phase6_Enhancements.md.')
 
 h('Appendix A. Complete custom-field dictionary')
 p('This appendix is generated from every checked-in objects/*/fields/*.field-meta.xml file. It lists custom fields only; standard Salesforce fields such as Id, Name, CreatedDate and system audit fields are omitted. Required means the metadata required flag, not every conditional requirement enforced by Apex. Relationship targets, formulas, enumerated values and uniqueness are included where present. No runtime records or credential values are included.')
@@ -524,7 +569,7 @@ blocks = illustrated_blocks
 
 
 def markdown():
-    lines = ['# VK Finance - Detailed Implementation Document', '', 'Version 1.1 | 28 October 2026', '']
+    lines = ['# VK Finance - Detailed Implementation Document', '', 'Version 1.2 | 28 October 2026', '']
     for kind, payload in blocks:
         if kind == 'h':
             level, txt = payload
@@ -564,12 +609,12 @@ def docx():
     header.text = 'VK FINANCE  /  IMPLEMENTATION GUIDE'
     header.style = doc.styles['Caption']
     footer = sec.footer.paragraphs[0]
-    footer.text = '28 October 2026  |  v1.1                                      Page '
+    footer.text = '28 October 2026  |  v1.2                                      Page '
     fld = OxmlElement('w:fldSimple'); fld.set(qn('w:instr'), 'PAGE'); footer._p.append(fld)
     doc.add_paragraph('VK FINANCE', 'Subtitle')
     doc.add_paragraph('Detailed Implementation\nDocument', 'Title')
     doc.add_paragraph('Architecture, security, data model, APIs and operations', 'Subtitle')
-    doc.add_paragraph('Version 1.1  |  28 October 2026')
+    doc.add_paragraph('Version 1.2  |  28 October 2026')
     doc.add_paragraph('A source-based guide to the Salesforce finance platform and React Experience Cloud portal.')
     doc.add_paragraph('Includes 12 architecture, use-case, workflow and sequence diagrams, generated role/action tables, REST catalogs and the complete custom-field dictionary.')
     doc.add_page_break()
@@ -661,7 +706,7 @@ def pdf():
     styles.add(ParagraphStyle(name='CoverTitle', fontName='GuideBold', fontSize=34, leading=40, textColor=colors.HexColor('#12334B'), spaceAfter=20))
     styles.add(ParagraphStyle(name='CodeGuide', fontName='Courier', fontSize=7.1, leading=10, backColor=colors.HexColor('#F1F4F7'), borderPadding=7, spaceAfter=10))
     safe = lambda txt: escape(str(txt)).replace('\n', '<br/>')
-    story = [Spacer(1, 60), Paragraph('VK FINANCE', styles['Heading2']), Spacer(1, 16), Paragraph('Detailed<br/>Implementation<br/>Document', styles['CoverTitle']), Paragraph('Architecture, security, data model, APIs and operations', styles['Body']), Spacer(1, 25), Paragraph('Version 1.1 | 28 October 2026', styles['Body']), Paragraph('A source-based guide to the Salesforce finance platform and React Experience Cloud portal.', styles['Body']), Spacer(1, 20), Paragraph('Includes 12 architecture, use-case, workflow and sequence diagrams, generated role/action tables, REST catalogs and the complete custom-field dictionary.', styles['Body']), PageBreak(), Paragraph('Contents', styles['Heading1'])]
+    story = [Spacer(1, 60), Paragraph('VK FINANCE', styles['Heading2']), Spacer(1, 16), Paragraph('Detailed<br/>Implementation<br/>Document', styles['CoverTitle']), Paragraph('Architecture, security, data model, APIs and operations', styles['Body']), Spacer(1, 25), Paragraph('Version 1.2 | 28 October 2026', styles['Body']), Paragraph('A source-based guide to the Salesforce finance platform and React Experience Cloud portal.', styles['Body']), Spacer(1, 20), Paragraph('Includes 12 architecture, use-case, workflow and sequence diagrams, generated role/action tables, REST catalogs and the complete custom-field dictionary.', styles['Body']), PageBreak(), Paragraph('Contents', styles['Heading1'])]
     for kind, payload in blocks:
         if kind == 'h' and payload[0] == 1: story.append(Paragraph(safe(payload[1]), styles['Body']))
     story += [PageBreak(), Paragraph('List of figures', styles['Heading1'])]
@@ -714,7 +759,7 @@ def pdf():
         canvas.drawString(46, A4[1] - 28, 'VK FINANCE / IMPLEMENTATION GUIDE')
         canvas.setStrokeColor(colors.HexColor('#D5E1E8'))
         canvas.line(46, 35, A4[0] - 46, 35)
-        canvas.drawString(46, 23, '28 October 2026 | v1.1')
+        canvas.drawString(46, 23, '28 October 2026 | v1.2')
         canvas.drawRightString(A4[0] - 46, 23, 'Page ' + str(doc.page))
         canvas.restoreState()
     class GuideDoc(SimpleDocTemplate):

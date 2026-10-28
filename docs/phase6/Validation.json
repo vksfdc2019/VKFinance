@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-28",
+  "phase": 6,
+  "releaseState": "deployed and published; see Deployment.json",
+  "salesforce": {
+    "targetAlias": "VKFinance",
+    "checkOnly": true,
+    "deploymentId": "0AfjV000005BGBRSA4",
+    "testLevel": "RunLocalTests",
+    "testsPassed": 150,
+    "componentFailures": 0,
+    "testFailures": 0,
+    "coverageWarnings": 0,
+    "receiptFixDeploymentId": "0AfjV000005BWT7SAO"
+  },
+  "frontend": {
+    "unitTestsPassed": 32,
+    "unitTestFiles": 5,
+    "browserTestsPassed": 4,
+    "browserBackend": "deterministic test-only SDK fixtures",
+    "phoneViewport": "390x844",
+    "targetedEslint": "passed",
+    "productionBuild": "passed; existing large entry chunk advisory"
+  },
+  "liveSiteChecksPending": [
+    "Native Android/iOS home-screen installation on a real device"
+  ],
+  "liveAuthenticatedPilot": {
+    "checksPassed": 6,
+    "cleanupComplete": true,
+    "report": "docs/phase6/Pilot_Checks.json"
+  }
+}

@@ -24,6 +24,15 @@ const RecurringPage = lazy(() => import("./features/commitments/RecurringPage"))
 const ReportsPage = lazy(() => import("./features/reports/ReportsPage"));
 const ReportView = lazy(() => import("./features/reports/ReportView"));
 const HelpPage = lazy(() => import("./features/help/HelpPage"));
+const EnhancementsLayout = lazy(() => import("./features/enhancements/EnhancementsLayout"));
+const EnhancementsHome = lazy(() => import("./features/enhancements/EnhancementsLayout").then(m => ({ default: m.EnhancementsHome })));
+const ImportsPage = lazy(() => import("./features/enhancements/ImportsPage"));
+const ReceiptsPage = lazy(() => import("./features/enhancements/ReceiptsPage"));
+const RequestsPage = lazy(() => import("./features/enhancements/RequestsPage"));
+const GoalsPage = lazy(() => import("./features/enhancements/GoalsPage"));
+const InstallPage = lazy(() => import("./features/enhancements/InstallPage"));
+const InsightsPage = lazy(() => import("./features/enhancements/InsightsPage"));
+
 
 function Root() {
 	return (
@@ -57,6 +66,18 @@ export const routes: RouteObject[] = [
 							{ index: true, element: <HomePage /> },
 							{ path: "/profile", element: <ProfilePage /> },
 							{ path: "/help", element: <HelpPage /> },
+							{
+								element: <RequirePermission permission="ENHANCEMENTS:READ" />,
+								children: [{ path: "/enhancements", element: <EnhancementsLayout />, children: [
+									{ index: true, element: <EnhancementsHome /> },
+									{ path: "imports", element: <ImportsPage /> },
+									{ path: "receipts", element: <ReceiptsPage /> },
+									{ path: "requests", element: <RequestsPage /> },
+									{ path: "goals", element: <GoalsPage /> },
+									{ path: "install", element: <InstallPage /> },
+									{ path: "insights", element: <InsightsPage /> },
+								] }],
+							},
 							{
 								element: <RequirePermission permission="TRANSACTIONS:READ" />,
 								children: [{ path: "/transactions", element: <TransactionsPage /> }],
