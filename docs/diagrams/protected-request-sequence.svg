@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg
+  PUBLIC '-//W3C//DTD SVG 1.0//EN'
+  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="720" height="560" preserveAspectRatio="xMinYMin meet" viewBox="0 0 720 560" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>...</title>
+	<desc>...</desc>
+	<clipPath id="clip">
+		<rect x="0" y="0" width="720" height="560"/>
+	</clipPath>
+	<g id="group" transform="scale(1,-1) translate(0,-560)" style="clip-path: url(#clip)">
+		<g transform="">
+			<rect x="8" y="492" width="130" height="48" rx="9" ry="9" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(91%,95%,97%); fill-rule: evenodd;"/>
+			<text x="57.413" y="512.15" style="font-family: Helvetica-Bold; font-size: 11px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,1024) scale(1,-1)">Portal</text>
+			<path d="M 73,492 L 73,45 Z" style="stroke: rgb(82%,87%,90%); stroke-linecap: butt; stroke-width: 1.25; stroke-dasharray: 5, 3;"/>
+			<rect x="151" y="492" width="130" height="48" rx="9" ry="9" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(91%,95%,97%); fill-rule: evenodd;"/>
+			<text x="176.57049999999998" y="512.15" style="font-family: Helvetica-Bold; font-size: 11px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,1024) scale(1,-1)">REST resource</text>
+			<path d="M 216,492 L 216,45 Z" style="stroke: rgb(82%,87%,90%); stroke-linecap: butt; stroke-width: 1.25; stroke-dasharray: 5, 3;"/>
+			<rect x="295" y="492" width="130" height="48" rx="9" ry="9" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(91%,95%,97%); fill-rule: evenodd;"/>
+			<text x="319.3385" y="512.15" style="font-family: Helvetica-Bold; font-size: 11px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,1024) scale(1,-1)">SessionService</text>
+			<path d="M 360,492 L 360,45 Z" style="stroke: rgb(82%,87%,90%); stroke-linecap: butt; stroke-width: 1.25; stroke-dasharray: 5, 3;"/>
+			<rect x="439" y="492" width="130" height="48" rx="9" ry="9" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(91%,95%,97%); fill-rule: evenodd;"/>
+			<text x="459.824" y="512.15" style="font-family: Helvetica-Bold; font-size: 11px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,1024) scale(1,-1)">Service + guards</text>
+			<path d="M 504,492 L 504,45 Z" style="stroke: rgb(82%,87%,90%); stroke-linecap: butt; stroke-width: 1.25; stroke-dasharray: 5, 3;"/>
+			<rect x="583" y="492" width="130" height="48" rx="9" ry="9" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(91%,95%,97%); fill-rule: evenodd;"/>
+			<text x="607.344" y="512.15" style="font-family: Helvetica-Bold; font-size: 11px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,1024) scale(1,-1)">Salesforce data</text>
+			<path d="M 648,492 L 648,45 Z" style="stroke: rgb(82%,87%,90%); stroke-linecap: butt; stroke-width: 1.25; stroke-dasharray: 5, 3;"/>
+			<path d="M 73,452 L 216,452 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<polygon points="216 452, 209.6969 448.9552, 209.6969 455.0448" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1; fill: rgb(8%,49%,54%); fill-rule: evenodd;"/>
+			<rect x="81.73" y="456.0" width="125.53999999999998" height="16.0" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="85.73" y="460.0" style="font-family: Helvetica; font-size: 10px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,920) scale(1,-1)">1. JSON + X-VKF-Session</text>
+			<path d="M 216,398 L 360,398 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<polygon points="360 398, 353.6969 394.9552, 353.6969 401.0448" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1; fill: rgb(8%,49%,54%); fill-rule: evenodd;"/>
+			<rect x="232.03" y="402.0" width="111.94000000000003" height="16.0" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="236.03" y="406.0" style="font-family: Helvetica; font-size: 10px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,812) scale(1,-1)">2. require(token, agent)</text>
+			<path d="M 360,347 L 648,347 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<polygon points="648 347, 641.6969 343.9552, 641.6969 350.0448" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1; fill: rgb(8%,49%,54%); fill-rule: evenodd;"/>
+			<rect x="416.08000000000004" y="351.0" width="175.84000000000003" height="16.0" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="420.08000000000004" y="355.0" style="font-family: Helvetica; font-size: 10px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,710) scale(1,-1)">3. Read current user / session / family</text>
+			<path d="M 648,313 L 360,313 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25; stroke-dasharray: 5, 3;"/>
+			<polygon points="360 313, 366.3031 316.0448, 366.3031 309.9552" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1; fill: rgb(8%,49%,54%); fill-rule: evenodd;"/>
+			<rect x="466.09000000000003" y="317.0" width="75.82000000000005" height="16.0" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="470.09000000000003" y="321.0" style="font-family: Helvetica; font-size: 10px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,642) scale(1,-1)">4. Identity state</text>
+			<path d="M 360,275 L 216,275 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25; stroke-dasharray: 5, 3;"/>
+			<polygon points="216 275, 222.3031 278.0448, 222.3031 271.9552" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1; fill: rgb(8%,49%,54%); fill-rule: evenodd;"/>
+			<rect x="250.655" y="279.0" width="74.69000000000003" height="16.0" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="254.655" y="283.0" style="font-family: Helvetica; font-size: 10px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,566) scale(1,-1)">5. UserContext</text>
+			<path d="M 216,235 L 504,235 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<polygon points="504 235, 497.6969 231.9552, 497.6969 238.0448" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1; fill: rgb(8%,49%,54%); fill-rule: evenodd;"/>
+			<rect x="283.33500000000004" y="239.0" width="153.32999999999998" height="16.0" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="287.33500000000004" y="243.0" style="font-family: Helvetica; font-size: 10px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,486) scale(1,-1)">6. Permission + business checks</text>
+			<path d="M 504,194 L 648,194 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<polygon points="648 194, 641.6969 190.9552, 641.6969 197.0448" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1; fill: rgb(8%,49%,54%); fill-rule: evenodd;"/>
+			<rect x="520.865" y="198.0" width="110.26999999999998" height="16.0" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="524.865" y="202.0" style="font-family: Helvetica; font-size: 10px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,404) scale(1,-1)">7. Scoped query / write</text>
+			<path d="M 648,151 L 504,151 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25; stroke-dasharray: 5, 3;"/>
+			<polygon points="504 151, 510.3031 154.0448, 510.3031 147.9552" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1; fill: rgb(8%,49%,54%); fill-rule: evenodd;"/>
+			<rect x="510.025" y="155.0" width="131.94999999999993" height="16.0" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="514.025" y="159.0" style="font-family: Helvetica; font-size: 10px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,318) scale(1,-1)">8. Scoped data / write result</text>
+			<path d="M 504,107 L 216,107 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25; stroke-dasharray: 5, 3;"/>
+			<polygon points="216 107, 222.3031 110.0448, 222.3031 103.9552" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1; fill: rgb(8%,49%,54%); fill-rule: evenodd;"/>
+			<rect x="317.095" y="111.0" width="85.81" height="16.0" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="321.095" y="115.0" style="font-family: Helvetica; font-size: 10px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,230) scale(1,-1)">9. Approved DTO</text>
+			<path d="M 216,59 L 73,59 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25; stroke-dasharray: 5, 3;"/>
+			<polygon points="73 59, 79.30313 62.04476, 79.30313 55.95524" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1; fill: rgb(8%,49%,54%); fill-rule: evenodd;"/>
+			<rect x="64.64" y="63.0" width="159.72000000000003" height="16.0" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="68.64" y="67.0" style="font-family: Helvetica; font-size: 10px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,134) scale(1,-1)">10. Flush activity; JSON / no-store</text>
+			<text x="16" y="15.0" style="font-family: Helvetica; font-size: 10px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,30) scale(1,-1)">Write handlers normally use a savepoint. Rejected checks stop before business data access.</text>
+		</g>
+	</g>
+</svg>

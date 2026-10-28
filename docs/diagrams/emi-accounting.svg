@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg
+  PUBLIC '-//W3C//DTD SVG 1.0//EN'
+  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="720" height="435" preserveAspectRatio="xMinYMin meet" viewBox="0 0 720 435" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>...</title>
+	<desc>...</desc>
+	<clipPath id="clip">
+		<rect x="0" y="0" width="720" height="435"/>
+	</clipPath>
+	<g id="group" transform="scale(1,-1) translate(0,-435)" style="clip-path: url(#clip)">
+		<g transform="">
+			<rect x="235" y="350" width="250" height="60" rx="9" ry="9" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(90%,95%,93%); fill-rule: evenodd;"/>
+			<text x="303.804" y="386.45" style="font-family: Helvetica-Bold; font-size: 12px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,772) scale(1,-1)">EMI = INR 20,758.36</text>
+			<text x="285.85450000000003" y="363.85" style="font-family: Helvetica; font-size: 11px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,727) scale(1,-1)">P = 1,000,000; 9%; 60 months</text>
+			<rect x="35" y="210" width="280" height="65" rx="9" ry="9" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(91%,95%,97%); fill-rule: evenodd;"/>
+			<text x="104.128" y="248.95" style="font-family: Helvetica-Bold; font-size: 12px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,497) scale(1,-1)">Principal = INR 13,258.36</text>
+			<text x="92.467" y="226.35" style="font-family: Helvetica; font-size: 11px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,452) scale(1,-1)">Linked EMI Payment transfer legs</text>
+			<rect x="405" y="210" width="280" height="65" rx="9" ry="9" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(91%,95%,97%); fill-rule: evenodd;"/>
+			<text x="481.13599999999997" y="248.95" style="font-family: Helvetica-Bold; font-size: 12px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,497) scale(1,-1)">Interest = INR 7,500.00</text>
+			<text x="461.5375" y="226.35" style="font-family: Helvetica; font-size: 11px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,452) scale(1,-1)">Expense in Loan Interest category</text>
+			<path d="M 360,350 L 360,315 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 360,315 L 175,315 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 175,315 L 175,275 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<polygon points="175 275, 171.9552 281.3031, 178.0448 281.3031" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1; fill: rgb(8%,49%,54%); fill-rule: evenodd;"/>
+			<path d="M 360,315 L 545,315 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 545,315 L 545,275 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<polygon points="545 275, 541.9552 281.3031, 548.0448 281.3031" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1; fill: rgb(8%,49%,54%); fill-rule: evenodd;"/>
+			<rect x="20" y="70" width="180" height="65" rx="9" ry="9" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(91%,95%,97%); fill-rule: evenodd;"/>
+			<text x="79.328" y="108.94999999999999" style="font-family: Helvetica-Bold; font-size: 12px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,217) scale(1,-1)">Bank debit</text>
+			<text x="54.67549999999999" y="86.34999999999997" style="font-family: Helvetica; font-size: 11px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,172) scale(1,-1)">Principal reduces cash</text>
+			<rect x="235" y="70" width="180" height="65" rx="9" ry="9" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(91%,95%,97%); fill-rule: evenodd;"/>
+			<text x="292.66" y="108.94999999999999" style="font-family: Helvetica-Bold; font-size: 12px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,217) scale(1,-1)">Loan credit</text>
+			<text x="268.7515" y="86.34999999999997" style="font-family: Helvetica; font-size: 11px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,172) scale(1,-1)">Reduces amount owed</text>
+			<rect x="500" y="70" width="200" height="65" rx="9" ry="9" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(100%,95%,87%); fill-rule: evenodd;"/>
+			<text x="569.328" y="108.94999999999999" style="font-family: Helvetica-Bold; font-size: 12px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,217) scale(1,-1)">Bank debit</text>
+			<text x="547.42" y="86.34999999999997" style="font-family: Helvetica; font-size: 11px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,172) scale(1,-1)">Interest reduces cash</text>
+			<path d="M 175,210 L 175,175 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 175,175 L 110,175 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 110,175 L 110,135 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<polygon points="110 135, 106.9552 141.3031, 113.0448 141.3031" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1; fill: rgb(8%,49%,54%); fill-rule: evenodd;"/>
+			<path d="M 175,175 L 325,175 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 325,175 L 325,135 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<polygon points="325 135, 321.9552 141.3031, 328.0448 141.3031" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1; fill: rgb(8%,49%,54%); fill-rule: evenodd;"/>
+			<path d="M 545,210 L 545,170 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 545,170 L 600,170 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 600,170 L 600,135 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<polygon points="600 135, 596.9552 141.3031, 603.0448 141.3031" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1; fill: rgb(8%,49%,54%); fill-rule: evenodd;"/>
+			<text x="16" y="15.0" style="font-family: Helvetica; font-size: 10px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,30) scale(1,-1)">First-installment example. Principal is debt reduction; only interest is expense. The bank loses the full EMI.</text>
+		</g>
+	</g>
+</svg>

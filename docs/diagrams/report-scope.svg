@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg
+  PUBLIC '-//W3C//DTD SVG 1.0//EN'
+  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="720" height="480" preserveAspectRatio="xMinYMin meet" viewBox="0 0 720 480" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>...</title>
+	<desc>...</desc>
+	<clipPath id="clip">
+		<rect x="0" y="0" width="720" height="480"/>
+	</clipPath>
+	<g id="group" transform="scale(1,-1) translate(0,-480)" style="clip-path: url(#clip)">
+		<g transform="">
+			<rect x="20" y="385" width="215" height="65" rx="9" ry="9" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(91%,95%,97%); fill-rule: evenodd;"/>
+			<text x="55.812" y="423.95" style="font-family: Helvetica-Bold; font-size: 12px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,847) scale(1,-1)">Run report or saved view</text>
+			<text x="69.112" y="401.35" style="font-family: Helvetica; font-size: 11px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,802) scale(1,-1)">Type + dates + filter IDs</text>
+			<rect x="280" y="385" width="205" height="65" rx="9" ry="9" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(90%,95%,93%); fill-rule: evenodd;"/>
+			<text x="314.826" y="423.95" style="font-family: Helvetica-Bold; font-size: 12px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,847) scale(1,-1)">Check REPORTS:READ</text>
+			<text x="327.478" y="401.35" style="font-family: Helvetica; font-size: 11px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,802) scale(1,-1)">Admin-only type guard</text>
+			<path d="M 235,418 L 280,418 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<polygon points="280 418, 273.6969 414.9552, 273.6969 421.0448" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1; fill: rgb(8%,49%,54%); fill-rule: evenodd;"/>
+			<rect x="280" y="260" width="205" height="65" rx="9" ry="9" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(90%,95%,93%); fill-rule: evenodd;"/>
+			<text x="321.144" y="298.95" style="font-family: Helvetica-Bold; font-size: 12px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,597) scale(1,-1)">Rebuild viewer scope</text>
+			<text x="310.989" y="276.35" style="font-family: Helvetica; font-size: 11px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,552) scale(1,-1)">Current family / role / visibility</text>
+			<path d="M 382,385 L 382,325 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<polygon points="382 325, 378.9552 331.3031, 385.0448 331.3031" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1; fill: rgb(8%,49%,54%); fill-rule: evenodd;"/>
+			<rect x="20" y="260" width="215" height="65" rx="9" ry="9" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(100%,95%,87%); fill-rule: evenodd;"/>
+			<text x="70.482" y="298.95" style="font-family: Helvetica-Bold; font-size: 12px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,597) scale(1,-1)">Saved report record</text>
+			<text x="39.15350000000001" y="276.35" style="font-family: Helvetica; font-size: 11px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,552) scale(1,-1)">Filters only; no owner data snapshot</text>
+			<path d="M 235,293 L 280,293 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<polygon points="280 293, 273.6969 289.9552, 273.6969 296.0448" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1; fill: rgb(8%,49%,54%); fill-rule: evenodd;"/>
+			<rect x="220.435" y="330.0" width="69.13" height="16.0" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="224.435" y="334.0" style="font-family: Helvetica; font-size: 10px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,668) scale(1,-1)">revalidate IDs</text>
+			<rect x="280" y="135" width="205" height="65" rx="9" ry="9" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(91%,95%,97%); fill-rule: evenodd;"/>
+			<text x="324.822" y="173.95" style="font-family: Helvetica-Bold; font-size: 12px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,347) scale(1,-1)">Read permitted data</text>
+			<text x="292.92150000000004" y="151.34999999999997" style="font-family: Helvetica; font-size: 11px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,302) scale(1,-1)">Ledger aggregates / older snapshots</text>
+			<path d="M 382,260 L 382,200 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<polygon points="382 200, 378.9552 206.3031, 385.0448 206.3031" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1; fill: rgb(8%,49%,54%); fill-rule: evenodd;"/>
+			<rect x="530" y="135" width="170" height="65" rx="9" ry="9" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(91%,95%,97%); fill-rule: evenodd;"/>
+			<text x="566.316" y="173.95" style="font-family: Helvetica-Bold; font-size: 12px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,347) scale(1,-1)">Shared response</text>
+			<text x="563.9435" y="151.34999999999997" style="font-family: Helvetica; font-size: 11px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,302) scale(1,-1)">KPIs + chart + tables</text>
+			<path d="M 485,168 L 530,168 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<polygon points="530 168, 523.6969 164.9552, 523.6969 171.0448" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1; fill: rgb(8%,49%,54%); fill-rule: evenodd;"/>
+			<rect x="530" y="45" width="170" height="50" rx="9" ry="9" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(91%,95%,97%); fill-rule: evenodd;"/>
+			<text x="558.654" y="65.80000000000001" style="font-family: Helvetica-Bold; font-size: 12px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,131) scale(1,-1)">Render / CSV / print</text>
+			<path d="M 615,135 L 615,95 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<polygon points="615 95, 611.9552 101.3031, 618.0448 101.3031" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1; fill: rgb(8%,49%,54%); fill-rule: evenodd;"/>
+			<text x="16" y="15.0" style="font-family: Helvetica; font-size: 10px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,30) scale(1,-1)">Sharing a saved view shares the filter configuration. Each execution uses the current viewer's access.</text>
+		</g>
+	</g>
+</svg>

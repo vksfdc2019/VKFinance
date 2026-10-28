@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg
+  PUBLIC '-//W3C//DTD SVG 1.0//EN'
+  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="720" height="470" preserveAspectRatio="xMinYMin meet" viewBox="0 0 720 470" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>...</title>
+	<desc>...</desc>
+	<clipPath id="clip">
+		<rect x="0" y="0" width="720" height="470"/>
+	</clipPath>
+	<g id="group" transform="scale(1,-1) translate(0,-470)" style="clip-path: url(#clip)">
+		<g transform="">
+			<rect x="170" y="30" width="350" height="420" rx="10" ry="10" style="stroke: rgb(82%,87%,90%); stroke-linecap: butt; stroke-width: 1; fill: rgb(96%,98%,98%); fill-rule: evenodd; stroke-dasharray: 5, 4;"/>
+			<text x="182" y="430.0" style="font-family: Helvetica-Bold; font-size: 11px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,860) scale(1,-1)">VK FINANCE PORTAL - USER USE CASES</text>
+			<circle cx="75" cy="280" r="10" style="stroke: rgb(7%,20%,29%); stroke-linecap: butt; stroke-width: 1.5; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<path d="M 75,270 L 75,241 Z" style="stroke: rgb(7%,20%,29%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 56,259 L 94,259 Z" style="stroke: rgb(7%,20%,29%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 75,241 L 59,223 Z" style="stroke: rgb(7%,20%,29%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 75,241 L 91,223 Z" style="stroke: rgb(7%,20%,29%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<text x="36.489000000000004" y="204.0" style="font-family: Helvetica-Bold; font-size: 11px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,408) scale(1,-1)">Portal member</text>
+			<ellipse cx="345.0" cy="377.5" rx="125.0" ry="27.5" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(91%,95%,97%); fill-rule: evenodd;"/>
+			<text x="269.298" y="373.5" style="font-family: Helvetica; font-size: 12px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,747) scale(1,-1)">Sign in and manage security</text>
+			<path d="M 95,259 L 150,259 Z" style="stroke: rgb(32%,40%,47%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 150,259 L 150,378 Z" style="stroke: rgb(32%,40%,47%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 150,378 L 220,378 Z" style="stroke: rgb(32%,40%,47%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<text x="537" y="383.0" style="font-family: Helvetica; font-size: 11px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,766) scale(1,-1)">All roles; MFA optional</text>
+			<ellipse cx="345.0" cy="302.5" rx="125.0" ry="27.5" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(91%,95%,97%); fill-rule: evenodd;"/>
+			<text x="254.298" y="298.5" style="font-family: Helvetica; font-size: 12px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,597) scale(1,-1)">View eligible balances and activity</text>
+			<path d="M 95,259 L 150,259 Z" style="stroke: rgb(32%,40%,47%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 150,259 L 150,303 Z" style="stroke: rgb(32%,40%,47%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 150,303 L 220,303 Z" style="stroke: rgb(32%,40%,47%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<text x="537" y="308.0" style="font-family: Helvetica; font-size: 11px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,616) scale(1,-1)">Role and row scope apply</text>
+			<ellipse cx="345.0" cy="227.5" rx="125.0" ry="27.5" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(91%,95%,97%); fill-rule: evenodd;"/>
+			<text x="254.964" y="223.5" style="font-family: Helvetica; font-size: 12px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,447) scale(1,-1)">Record transactions and transfers</text>
+			<path d="M 95,259 L 150,259 Z" style="stroke: rgb(32%,40%,47%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 150,259 L 150,228 Z" style="stroke: rgb(32%,40%,47%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 150,228 L 220,228 Z" style="stroke: rgb(32%,40%,47%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<text x="537" y="233.0" style="font-family: Helvetica; font-size: 11px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,466) scale(1,-1)">Requires create permission</text>
+			<ellipse cx="345.0" cy="152.5" rx="125.0" ry="27.5" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(91%,95%,97%); fill-rule: evenodd;"/>
+			<text x="250.968" y="148.5" style="font-family: Helvetica; font-size: 12px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,297) scale(1,-1)">Pay bills / manage recurring entries</text>
+			<path d="M 95,259 L 150,259 Z" style="stroke: rgb(32%,40%,47%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 150,259 L 150,153 Z" style="stroke: rgb(32%,40%,47%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 150,153 L 220,153 Z" style="stroke: rgb(32%,40%,47%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<text x="537" y="158.0" style="font-family: Helvetica; font-size: 11px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,316) scale(1,-1)">Eligible grants and scope</text>
+			<ellipse cx="345.0" cy="77.5" rx="125.0" ry="27.5" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(91%,95%,97%); fill-rule: evenodd;"/>
+			<text x="264.3" y="73.5" style="font-family: Helvetica; font-size: 12px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,147) scale(1,-1)">Run reports and export results</text>
+			<path d="M 95,259 L 150,259 Z" style="stroke: rgb(32%,40%,47%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 150,259 L 150,78 Z" style="stroke: rgb(32%,40%,47%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 150,78 L 220,78 Z" style="stroke: rgb(32%,40%,47%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<text x="537" y="83.0" style="font-family: Helvetica; font-size: 11px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,166) scale(1,-1)">Admin-only types restricted</text>
+			<text x="16" y="15.0" style="font-family: Helvetica; font-size: 10px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,30) scale(1,-1)">Associations show available use cases; the role/action matrix determines which members may execute them.</text>
+		</g>
+	</g>
+</svg>

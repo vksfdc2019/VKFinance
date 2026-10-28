@@ -22,6 +22,7 @@ family can see another family's data. The full design is in
 
 | Document | For |
 | --- | --- |
+| [Implementation guide (PDF)](docs/VKFinance_Implementation_Document.pdf) / [Word](docs/VKFinance_Implementation_Document.docx) | Developers and administrators: 12 diagrams, architecture, security, APIs, full data dictionary, deployment and operations |
 | [docs/User_Guide.md](docs/User_Guide.md) | Families using the portal (also in the app under **Help**) |
 | [docs/Security_Checklist.md](docs/Security_Checklist.md) | The go-live security pass: live checks, Code Analyzer triage, Health Check |
 | [docs/Demo_Access.md](docs/Demo_Access.md) | Demo sign-ins and what to try |

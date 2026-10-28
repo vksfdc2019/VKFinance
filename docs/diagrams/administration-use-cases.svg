@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg
+  PUBLIC '-//W3C//DTD SVG 1.0//EN'
+  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="720" height="455" preserveAspectRatio="xMinYMin meet" viewBox="0 0 720 455" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>...</title>
+	<desc>...</desc>
+	<clipPath id="clip">
+		<rect x="0" y="0" width="720" height="455"/>
+	</clipPath>
+	<g id="group" transform="scale(1,-1) translate(0,-455)" style="clip-path: url(#clip)">
+		<g transform="">
+			<rect x="185" y="35" width="350" height="400" rx="10" ry="10" style="stroke: rgb(82%,87%,90%); stroke-linecap: butt; stroke-width: 1; fill: rgb(96%,98%,98%); fill-rule: evenodd; stroke-dasharray: 5, 4;"/>
+			<text x="197" y="415.0" style="font-family: Helvetica-Bold; font-size: 11px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,830) scale(1,-1)">VK FINANCE - ADMINISTRATIVE USE CASES</text>
+			<circle cx="75" cy="390" r="10" style="stroke: rgb(7%,20%,29%); stroke-linecap: butt; stroke-width: 1.5; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<path d="M 75,380 L 75,351 Z" style="stroke: rgb(7%,20%,29%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 56,369 L 94,369 Z" style="stroke: rgb(7%,20%,29%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 75,351 L 59,333 Z" style="stroke: rgb(7%,20%,29%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 75,351 L 91,333 Z" style="stroke: rgb(7%,20%,29%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<text x="34.9655" y="314.0" style="font-family: Helvetica-Bold; font-size: 11px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,628) scale(1,-1)">Platform owner</text>
+			<circle cx="638" cy="230" r="10" style="stroke: rgb(7%,20%,29%); stroke-linecap: butt; stroke-width: 1.5; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<path d="M 638,220 L 638,191 Z" style="stroke: rgb(7%,20%,29%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 619,209 L 657,209 Z" style="stroke: rgb(7%,20%,29%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 638,191 L 622,173 Z" style="stroke: rgb(7%,20%,29%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 638,191 L 654,173 Z" style="stroke: rgb(7%,20%,29%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<text x="598.8785" y="154.0" style="font-family: Helvetica-Bold; font-size: 11px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,308) scale(1,-1)">Family Admin /</text>
+			<text x="611.7265" y="139.7" style="font-family: Helvetica-Bold; font-size: 11px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,279) scale(1,-1)">Co-Admin</text>
+			<ellipse cx="360.5" cy="367.5" rx="142.5" ry="27.5" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(91%,95%,97%); fill-rule: evenodd;"/>
+			<text x="273.8" y="363.5" style="font-family: Helvetica; font-size: 12px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,727) scale(1,-1)">Onboard a family and first admin</text>
+			<ellipse cx="360.5" cy="292.5" rx="142.5" ry="27.5" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(91%,95%,97%); fill-rule: evenodd;"/>
+			<text x="278.81" y="288.5" style="font-family: Helvetica; font-size: 12px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,577) scale(1,-1)">Reset portal password (owner)</text>
+			<ellipse cx="360.5" cy="202.5" rx="142.5" ry="27.5" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(91%,95%,97%); fill-rule: evenodd;"/>
+			<text x="265.13599999999997" y="198.5" style="font-family: Helvetica; font-size: 12px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,397) scale(1,-1)">Manage family members and resets</text>
+			<ellipse cx="360.5" cy="127.5" rx="142.5" ry="27.5" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(91%,95%,97%); fill-rule: evenodd;"/>
+			<text x="262.46000000000004" y="123.5" style="font-family: Helvetica; font-size: 12px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,247) scale(1,-1)">Configure budgets and commitments</text>
+			<path d="M 94,369 L 153,369 Z" style="stroke: rgb(32%,40%,47%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 153,369 L 153,368 Z" style="stroke: rgb(32%,40%,47%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 153,368 L 218,368 Z" style="stroke: rgb(32%,40%,47%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 94,369 L 153,369 Z" style="stroke: rgb(32%,40%,47%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 153,369 L 153,293 Z" style="stroke: rgb(32%,40%,47%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 153,293 L 218,293 Z" style="stroke: rgb(32%,40%,47%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 619,209 L 566,209 Z" style="stroke: rgb(32%,40%,47%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 566,209 L 566,203 Z" style="stroke: rgb(32%,40%,47%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 566,203 L 503,203 Z" style="stroke: rgb(32%,40%,47%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 619,209 L 566,209 Z" style="stroke: rgb(32%,40%,47%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 566,209 L 566,128 Z" style="stroke: rgb(32%,40%,47%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<path d="M 566,128 L 503,128 Z" style="stroke: rgb(32%,40%,47%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<text x="245.5085" y="66.0" style="font-family: Helvetica; font-size: 11px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,132) scale(1,-1)">Sensitive changes require step-up verification.</text>
+			<text x="16" y="15.0" style="font-family: Helvetica; font-size: 10px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,30) scale(1,-1)">Platform owner uses an internal Salesforce permission. Co-Admin actions retain Family Admin protections.</text>
+		</g>
+	</g>
+</svg>

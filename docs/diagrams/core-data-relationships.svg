@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE svg
+  PUBLIC '-//W3C//DTD SVG 1.0//EN'
+  'http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd'>
+<svg width="720" height="500" preserveAspectRatio="xMinYMin meet" viewBox="0 0 720 500" xmlns="http://www.w3.org/2000/svg" version="1.0" fill-rule="evenodd" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>...</title>
+	<desc>...</desc>
+	<clipPath id="clip">
+		<rect x="0" y="0" width="720" height="500"/>
+	</clipPath>
+	<g id="group" transform="scale(1,-1) translate(0,-500)" style="clip-path: url(#clip)">
+		<g transform="">
+			<rect x="15" y="400" width="155" height="55" rx="9" ry="9" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(91%,95%,97%); fill-rule: evenodd;"/>
+			<text x="60.49" y="433.95" style="font-family: Helvetica-Bold; font-size: 12px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,867) scale(1,-1)">Portal User</text>
+			<text x="54.5995" y="411.35" style="font-family: Helvetica; font-size: 11px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,822) scale(1,-1)">Portal_User__c</text>
+			<rect x="280" y="400" width="160" height="55" rx="9" ry="9" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(90%,95%,93%); fill-rule: evenodd;"/>
+			<text x="340.992" y="433.95" style="font-family: Helvetica-Bold; font-size: 12px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,867) scale(1,-1)">Family</text>
+			<text x="334.942" y="411.35" style="font-family: Helvetica; font-size: 11px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,822) scale(1,-1)">Family__c</text>
+			<rect x="545" y="400" width="160" height="55" rx="9" ry="9" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(91%,95%,97%); fill-rule: evenodd;"/>
+			<text x="601.99" y="433.95" style="font-family: Helvetica-Bold; font-size: 12px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,867) scale(1,-1)">Session</text>
+			<text x="579.1465000000001" y="411.35" style="font-family: Helvetica; font-size: 11px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,822) scale(1,-1)">Portal_Session__c</text>
+			<rect x="15" y="245" width="180" height="60" rx="9" ry="9" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(91%,95%,97%); fill-rule: evenodd;"/>
+			<text x="81.0" y="281.45" style="font-family: Helvetica-Bold; font-size: 12px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,562) scale(1,-1)">Account</text>
+			<text x="51.199" y="258.85" style="font-family: Helvetica; font-size: 11px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,517) scale(1,-1)">Financial_Account__c</text>
+			<rect x="270" y="245" width="180" height="60" rx="9" ry="9" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(90%,95%,93%); fill-rule: evenodd;"/>
+			<text x="325.992" y="281.45" style="font-family: Helvetica-Bold; font-size: 12px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,562) scale(1,-1)">Transaction</text>
+			<text x="322.402" y="258.85" style="font-family: Helvetica; font-size: 11px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,517) scale(1,-1)">Transaction__c</text>
+			<rect x="525" y="245" width="180" height="60" rx="9" ry="9" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(91%,95%,97%); fill-rule: evenodd;"/>
+			<text x="588.996" y="281.45" style="font-family: Helvetica-Bold; font-size: 12px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,562) scale(1,-1)">Category</text>
+			<text x="583.8205" y="258.85" style="font-family: Helvetica; font-size: 11px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,517) scale(1,-1)">Category__c</text>
+			<rect x="15" y="85" width="180" height="60" rx="9" ry="9" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(91%,95%,97%); fill-rule: evenodd;"/>
+			<text x="53.988" y="121.44999999999999" style="font-family: Helvetica-Bold; font-size: 12px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,242) scale(1,-1)">Loan / installment</text>
+			<text x="31.019499999999994" y="98.84999999999997" style="font-family: Helvetica; font-size: 11px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,197) scale(1,-1)">Loan__c / EMI_Installment__c</text>
+			<rect x="270" y="85" width="180" height="60" rx="9" ry="9" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(91%,95%,97%); fill-rule: evenodd;"/>
+			<text x="321.318" y="121.44999999999999" style="font-family: Helvetica-Bold; font-size: 12px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,242) scale(1,-1)">Bill / instance</text>
+			<text x="299.17" y="98.84999999999997" style="font-family: Helvetica; font-size: 11px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,197) scale(1,-1)">Bill__c / Bill_Instance__c</text>
+			<rect x="525" y="85" width="180" height="60" rx="9" ry="9" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.2; fill: rgb(91%,95%,97%); fill-rule: evenodd;"/>
+			<text x="578.994" y="121.44999999999999" style="font-family: Helvetica-Bold; font-size: 12px;fill: rgb(7%,20%,29%); stroke:none;" transform="translate(0,242) scale(1,-1)">Budget / line</text>
+			<text x="544.369" y="98.84999999999997" style="font-family: Helvetica; font-size: 11px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,197) scale(1,-1)">Budget__c / Budget_Line__c</text>
+			<path d="M 280,428 L 170,428 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<polygon points="170 428, 176.3031 431.0448, 176.3031 424.9552" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1; fill: rgb(8%,49%,54%); fill-rule: evenodd;"/>
+			<rect x="201.825" y="434.0" width="46.349999999999994" height="16.0" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="205.825" y="438.0" style="font-family: Helvetica; font-size: 10px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,876) scale(1,-1)">1 : many</text>
+			<path d="M 440,428 L 545,428 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<polygon points="545 428, 538.6969 424.9552, 538.6969 431.0448" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1; fill: rgb(8%,49%,54%); fill-rule: evenodd;"/>
+			<rect x="469.825" y="434.0" width="46.349999999999966" height="16.0" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="473.825" y="438.0" style="font-family: Helvetica; font-size: 10px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,876) scale(1,-1)">1 : many</text>
+			<path d="M 360,400 L 360,305 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<polygon points="360 305, 356.9552 311.3031, 363.0448 311.3031" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1; fill: rgb(8%,49%,54%); fill-rule: evenodd;"/>
+			<rect x="319.865" y="343.0" width="80.26999999999998" height="16.0" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="323.865" y="347.0" style="font-family: Helvetica; font-size: 10px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,694) scale(1,-1)">tenant boundary</text>
+			<path d="M 195,275 L 270,275 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<polygon points="270 275, 263.6969 271.9552, 263.6969 278.0448" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1; fill: rgb(8%,49%,54%); fill-rule: evenodd;"/>
+			<rect x="209.825" y="282.0" width="46.35000000000002" height="16.0" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="213.825" y="286.0" style="font-family: Helvetica; font-size: 10px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,572) scale(1,-1)">1 : many</text>
+			<path d="M 525,275 L 450,275 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<polygon points="450 275, 456.3031 278.0448, 456.3031 271.9552" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1; fill: rgb(8%,49%,54%); fill-rule: evenodd;"/>
+			<rect x="463.825" y="282.0" width="46.35000000000002" height="16.0" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="467.825" y="286.0" style="font-family: Helvetica; font-size: 10px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,572) scale(1,-1)">1 : many</text>
+			<path d="M 105,400 L 105,305 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<polygon points="105 305, 101.9552 311.3031, 108.0448 311.3031" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1; fill: rgb(8%,49%,54%); fill-rule: evenodd;"/>
+			<rect x="110.385" y="346.0" width="35.230000000000004" height="16.0" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="114.385" y="350.0" style="font-family: Helvetica; font-size: 10px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,700) scale(1,-1)">owner</text>
+			<path d="M 105,145 L 105,245 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<polygon points="105 245, 108.0448 238.6969, 101.9552 238.6969" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1; fill: rgb(8%,49%,54%); fill-rule: evenodd;"/>
+			<rect x="72.65" y="181.0" width="64.70000000000002" height="16.0" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="76.65" y="185.0" style="font-family: Helvetica; font-size: 10px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,370) scale(1,-1)">loan account</text>
+			<path d="M 360,145 L 360,245 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<polygon points="360 245, 363.0448 238.6969, 356.9552 238.6969" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1; fill: rgb(8%,49%,54%); fill-rule: evenodd;"/>
+			<rect x="327.935" y="181.0" width="64.13" height="16.0" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="331.935" y="185.0" style="font-family: Helvetica; font-size: 10px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,370) scale(1,-1)">payment link</text>
+			<path d="M 615,145 L 615,245 Z" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1.25;"/>
+			<polygon points="615 245, 618.0448 238.6969, 611.9552 238.6969" style="stroke: rgb(8%,49%,54%); stroke-linecap: butt; stroke-width: 1; fill: rgb(8%,49%,54%); fill-rule: evenodd;"/>
+			<rect x="582.935" y="181.0" width="64.13" height="16.0" style="stroke: none; stroke-linecap: butt; stroke-width: 1; fill: rgb(100%,100%,100%); fill-rule: evenodd;"/>
+			<text x="586.935" y="185.0" style="font-family: Helvetica; font-size: 10px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,370) scale(1,-1)">category link</text>
+			<text x="16" y="40.0" style="font-family: Helvetica; font-size: 10px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,80) scale(1,-1)">Selected logical relationships. Arrows follow the named relation, not a complete foreign-key or cascade map.</text>
+			<text x="16" y="22.0" style="font-family: Helvetica; font-size: 10px;fill: rgb(32%,40%,47%); stroke:none;" transform="translate(0,44) scale(1,-1)">Family predicates also apply to the operational entities; see Appendix A for exact lookup definitions.</text>
+		</g>
+	</g>
+</svg>
