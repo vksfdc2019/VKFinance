@@ -6,6 +6,7 @@ import {
 	KeyRound,
 	LifeBuoy,
 	LockKeyhole,
+	Palette,
 	ReceiptText,
 	Search,
 	ShieldCheck,
@@ -36,7 +37,7 @@ const TOPICS: Topic[] = [
 		id: "start",
 		title: "Signing in",
 		icon: KeyRound,
-		tint: "bg-teal-50 text-teal-700",
+		tint: "bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-300",
 		items: [
 			{
 				q: "How do I sign in the first time?",
@@ -60,7 +61,7 @@ const TOPICS: Topic[] = [
 		id: "two-step",
 		title: "Two-step verification",
 		icon: ShieldCheck,
-		tint: "bg-emerald-50 text-emerald-700",
+		tint: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300",
 		items: [
 			{
 				q: "What is it, and should I turn it on?",
@@ -88,7 +89,7 @@ const TOPICS: Topic[] = [
 		id: "money",
 		title: "Recording money",
 		icon: ArrowLeftRight,
-		tint: "bg-sky-50 text-sky-700",
+		tint: "bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300",
 		items: [
 			{
 				q: "How do I add a transaction?",
@@ -112,7 +113,7 @@ const TOPICS: Topic[] = [
 		id: "accounts",
 		title: "Accounts and cards",
 		icon: Wallet,
-		tint: "bg-indigo-50 text-indigo-700",
+		tint: "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300",
 		items: [
 			{
 				q: "What should I add as an account?",
@@ -132,7 +133,7 @@ const TOPICS: Topic[] = [
 		id: "plans",
 		title: "Budgets, bills and loans",
 		icon: Target,
-		tint: "bg-amber-50 text-amber-700",
+		tint: "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300",
 		items: [
 			{
 				q: "How do budgets work?",
@@ -156,7 +157,7 @@ const TOPICS: Topic[] = [
 		id: "reports",
 		title: "Reports",
 		icon: BarChart3,
-		tint: "bg-violet-50 text-violet-700",
+		tint: "bg-violet-50 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300",
 		items: [
 			{
 				q: "Which reports are there?",
@@ -176,7 +177,7 @@ const TOPICS: Topic[] = [
 		id: "family",
 		title: "Managing the family",
 		icon: Users,
-		tint: "bg-rose-50 text-rose-700",
+		tint: "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300",
 		adminOnly: true,
 		items: [
 			{
@@ -198,10 +199,30 @@ const TOPICS: Topic[] = [
 		],
 	},
 	{
+		id: "appearance",
+		title: "Appearance",
+		icon: Palette,
+		tint: "bg-violet-50 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300",
+		items: [
+			{
+				q: "Can I change the colours or use dark mode?",
+				a: "Yes. Open Appearance from the menu: choose light, dark or match your device, pick one of nine colour themes or any colour of your own, and set rounder or sharper corners. Changes preview straight away and are saved when you press Save. The sun or moon button at the top switches light and dark in one tap.",
+			},
+			{
+				q: "Can our whole family share one look?",
+				a: "Family Admins and Co-Admins can set a family theme under Appearance, Family default. Everyone starts with it, and you can stop members choosing their own colours. Light or dark and text size always stay each person's choice.",
+			},
+			{
+				q: "The text is too small for me.",
+				a: "Choose Large under Appearance, Text size. Every page gets bigger, on this and every other device you sign in on.",
+			},
+		],
+	},
+	{
 		id: "privacy",
 		title: "Privacy and safety",
 		icon: LockKeyhole,
-		tint: "bg-slate-100 text-slate-700",
+		tint: "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300",
 		items: [
 			{
 				q: "How is my password stored?",
@@ -251,7 +272,7 @@ export default function HelpPage() {
 					value={query}
 					onChange={(e) => setQuery(e.target.value)}
 					placeholder="Search help, e.g. recovery code"
-					className="h-11 rounded-xl bg-white pl-9"
+					className="h-11 rounded-xl bg-white dark:bg-slate-900 pl-9"
 					aria-label="Search help"
 				/>
 			</div>
@@ -260,26 +281,26 @@ export default function HelpPage() {
 					<a
 						key={t.id}
 						href={`#${t.id}`}
-						className="rounded-full bg-white px-3 py-1.5 text-sm text-slate-700 shadow-sm ring-1 ring-slate-900/5 hover:text-teal-800"
+						className="rounded-full bg-white dark:bg-slate-900 px-3 py-1.5 text-sm text-slate-700 dark:text-slate-300 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 hover:text-brand-800 dark:hover:text-brand-200"
 					>
 						{t.title}
 					</a>
 				))}
 			</nav>
 			{topics.length === 0 && (
-				<p className="py-10 text-center text-sm text-slate-500">No help matches “{query}”. Try another word, or ask your Family Admin.</p>
+				<p className="py-10 text-center text-sm text-slate-500 dark:text-slate-400">No help matches “{query}”. Try another word, or ask your Family Admin.</p>
 			)}
 			<div className="grid gap-6 lg:grid-cols-2">
 				{topics.map((t, ti) => (
 					<Reveal key={t.id} index={ti}>
-						<section id={t.id} className="scroll-mt-6 rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-900/5">
-							<h2 className="mb-3 flex items-center gap-3 text-base font-semibold text-slate-900">
+						<section id={t.id} className="scroll-mt-6 rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10">
+							<h2 className="mb-3 flex items-center gap-3 text-base font-semibold text-slate-900 dark:text-slate-100">
 								<span className={cn("flex size-9 items-center justify-center rounded-xl", t.tint)}>
 									<t.icon className="size-5" aria-hidden="true" />
 								</span>
 								{t.title}
 							</h2>
-							<ul className="divide-y divide-slate-100">
+							<ul className="divide-y divide-slate-100 dark:divide-slate-800">
 								{t.items.map((item) => {
 									const key = `${t.id}:${item.q}`;
 									const expanded = open === key || query.trim().length > 0;
@@ -287,14 +308,14 @@ export default function HelpPage() {
 										<li key={key}>
 											<button
 												type="button"
-												className="flex w-full items-center justify-between gap-3 py-3 text-left text-sm font-medium text-slate-800 hover:text-teal-800"
+												className="flex w-full items-center justify-between gap-3 py-3 text-left text-sm font-medium text-slate-800 dark:text-slate-200 hover:text-brand-800 dark:hover:text-brand-200"
 												aria-expanded={expanded}
 												onClick={() => setOpen(open === key ? null : key)}
 											>
 												{item.q}
 												<ChevronDown className={cn("size-4 shrink-0 text-slate-400 transition-transform", expanded && "rotate-180")} aria-hidden="true" />
 											</button>
-											{expanded && <p className="vk-rise pb-3 text-sm leading-relaxed text-slate-600">{item.a}</p>}
+											{expanded && <p className="vk-rise pb-3 text-sm leading-relaxed text-slate-600 dark:text-slate-400">{item.a}</p>}
 										</li>
 									);
 								})}
@@ -304,8 +325,8 @@ export default function HelpPage() {
 				))}
 			</div>
 			<div className="mt-6 grid gap-6 lg:grid-cols-2">
-				<section className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-900/5">
-					<h2 className="mb-3 flex items-center gap-2 text-base font-semibold text-slate-900">
+				<section className="rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10">
+					<h2 className="mb-3 flex items-center gap-2 text-base font-semibold text-slate-900 dark:text-slate-100">
 						<ReceiptText className="size-5 text-slate-400" aria-hidden="true" />
 						Keyboard shortcuts
 					</h2>
@@ -313,19 +334,19 @@ export default function HelpPage() {
 						{SHORTCUTS.map(([keys, action]) => (
 							<div key={keys} className="contents">
 								<dt>
-									<kbd className="rounded-md bg-slate-100 px-2 py-0.5 font-mono text-xs text-slate-700 ring-1 ring-slate-900/10">{keys}</kbd>
+									<kbd className="rounded-md bg-slate-100 dark:bg-slate-800 px-2 py-0.5 font-mono text-xs text-slate-700 dark:text-slate-300 ring-1 ring-slate-900/10 dark:ring-white/20">{keys}</kbd>
 								</dt>
-								<dd className="text-slate-600">{action}</dd>
+								<dd className="text-slate-600 dark:text-slate-400">{action}</dd>
 							</div>
 						))}
 					</dl>
 				</section>
-				<section className="flex items-start gap-4 rounded-2xl bg-gradient-to-br from-teal-50 to-white p-5 shadow-sm ring-1 ring-slate-900/5">
-					<LifeBuoy className="mt-0.5 size-6 shrink-0 text-teal-700" aria-hidden="true" />
-					<div className="text-sm text-slate-700">
-						<h2 className="mb-1 text-base font-semibold text-slate-900">Still stuck?</h2>
+				<section className="flex items-start gap-4 rounded-2xl bg-gradient-to-br from-brand-50 dark:from-brand-950/40 to-white dark:to-slate-900 p-5 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10">
+					<LifeBuoy className="mt-0.5 size-6 shrink-0 text-brand-700 dark:text-brand-300" aria-hidden="true" />
+					<div className="text-sm text-slate-700 dark:text-slate-300">
+						<h2 className="mb-1 text-base font-semibold text-slate-900 dark:text-slate-100">Still stuck?</h2>
 						Ask your Family Admin - they can unlock accounts, reset passwords and two-step, and change roles. To keep your own account safe, visit{" "}
-						<Link to="/profile" className="font-medium text-teal-800 underline-offset-4 hover:underline">
+						<Link to="/profile" className="font-medium text-brand-800 dark:text-brand-200 underline-offset-4 hover:underline">
 							Security
 						</Link>
 						.

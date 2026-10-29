@@ -92,9 +92,9 @@ export function OtpInput({
 					aria-label={`Digit ${i + 1}`}
 					maxLength={1}
 					className={cn(
-						"size-12 rounded-xl border bg-white text-center text-xl font-semibold tabular-nums text-slate-900 shadow-sm transition-all outline-none",
-						"focus:border-teal-600 focus:ring-4 focus:ring-teal-600/15 disabled:opacity-50 sm:size-13",
-						digit ? "border-teal-300 bg-teal-50/40" : invalid && !value ? "border-red-300" : "border-slate-200",
+						"size-12 rounded-xl border bg-white dark:bg-slate-900 text-center text-xl font-semibold tabular-nums text-slate-900 dark:text-slate-100 shadow-sm transition-all outline-none",
+						"focus:border-brand-600 focus:ring-4 focus:ring-brand-600/15 disabled:opacity-50 sm:size-13",
+						digit ? "border-brand-300 dark:border-brand-700 bg-brand-50/40 dark:bg-brand-950/40" : invalid && !value ? "border-red-300 dark:border-red-700" : "border-slate-200 dark:border-slate-800",
 					)}
 				/>
 			))}

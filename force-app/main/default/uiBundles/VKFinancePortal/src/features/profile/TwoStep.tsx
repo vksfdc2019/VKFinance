@@ -22,24 +22,24 @@ export function TwoStepCard({ status, onChanged }: { status: MfaStatus; onChange
 	const low = status.enabled && status.recoveryCodesLeft <= 3;
 
 	return (
-		<section id="two-step" className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-900/5">
+		<section id="two-step" className="overflow-hidden rounded-2xl bg-white dark:bg-slate-900 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10">
 			<div
 				className={cn(
 					"flex flex-wrap items-center gap-4 p-5",
-					status.enabled ? "bg-gradient-to-r from-emerald-50 to-white" : "bg-gradient-to-r from-amber-50 to-white",
+					status.enabled ? "bg-gradient-to-r from-emerald-50 dark:from-emerald-950/40 to-white dark:to-slate-900" : "bg-gradient-to-r from-amber-50 dark:from-amber-950/40 to-white dark:to-slate-900",
 				)}
 			>
 				<span
 					className={cn(
 						"flex size-12 shrink-0 items-center justify-center rounded-2xl shadow-sm ring-1",
-						status.enabled ? "bg-emerald-600 text-white ring-emerald-700/20" : "bg-white text-amber-600 ring-amber-200",
+						status.enabled ? "bg-emerald-600 text-white ring-emerald-700/20" : "bg-white dark:bg-slate-900 text-amber-600 dark:text-amber-400 ring-amber-200 dark:ring-amber-800",
 					)}
 				>
 					{status.enabled ? <ShieldCheck className="size-6" aria-hidden="true" /> : <ShieldOff className="size-6" aria-hidden="true" />}
 				</span>
 				<div className="min-w-0 flex-1">
-					<h2 className="text-base font-semibold text-slate-900">Two-step verification</h2>
-					<p className="text-sm text-slate-600">
+					<h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">Two-step verification</h2>
+					<p className="text-sm text-slate-600 dark:text-slate-400">
 						{status.enabled
 							? `On since ${formatDate(status.enrolledAt)}. Signing in needs your password and a code from your phone.`
 							: "Off. Anyone who learns your password can sign in. Add a code from your phone as a second lock."}
@@ -53,12 +53,12 @@ export function TwoStepCard({ status, onChanged }: { status: MfaStatus; onChange
 				)}
 			</div>
 			{status.enabled && (
-				<div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 p-5">
+				<div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 dark:border-slate-800 p-5">
 					<div className="flex items-center gap-3 text-sm">
-						<KeyRound className={cn("size-5", low ? "text-amber-600" : "text-slate-400")} aria-hidden="true" />
+						<KeyRound className={cn("size-5", low ? "text-amber-600 dark:text-amber-400" : "text-slate-400")} aria-hidden="true" />
 						<div>
-							<p className="font-medium text-slate-900">{status.recoveryCodesLeft} of 10 recovery codes left</p>
-							<p className={cn("text-xs", low ? "text-amber-700" : "text-slate-500")}>
+							<p className="font-medium text-slate-900 dark:text-slate-100">{status.recoveryCodesLeft} of 10 recovery codes left</p>
+							<p className={cn("text-xs", low ? "text-amber-700 dark:text-amber-300" : "text-slate-500 dark:text-slate-400")}>
 								{low ? "Running low - make a fresh set." : "Use one if you can't reach your phone. Each works once."}
 							</p>
 						</div>
@@ -67,7 +67,7 @@ export function TwoStepCard({ status, onChanged }: { status: MfaStatus; onChange
 						<Button variant="outline" onClick={() => setConfirm("renew")}>
 							New recovery codes
 						</Button>
-						<Button variant="ghost" className="text-red-700 hover:bg-red-50 hover:text-red-800" onClick={() => setConfirm("disable")}>
+						<Button variant="ghost" className="text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-800 dark:hover:text-red-200" onClick={() => setConfirm("disable")}>
 							Turn off
 						</Button>
 					</div>
@@ -178,9 +178,9 @@ function SetupDialog({ onClose, onDone }: { onClose(): void; onDone(): void }) {
 				<ol className="mb-1 grid grid-cols-3 gap-2" aria-label="Progress">
 					{STEPS.map((s, i) => (
 						<li key={s.key} className="grid gap-1.5" aria-current={i === index ? "step" : undefined}>
-							<span className={cn("h-1.5 rounded-full transition-colors duration-500", i <= index ? "bg-teal-600" : "bg-slate-200")} />
-							<span className={cn("text-xs", i === index ? "font-medium text-slate-900" : "text-slate-500")}>
-								{i < index ? <Check className="mr-1 inline size-3 text-teal-700" aria-hidden="true" /> : null}
+							<span className={cn("h-1.5 rounded-full transition-colors duration-500", i <= index ? "bg-brand-600" : "bg-slate-200 dark:bg-slate-700")} />
+							<span className={cn("text-xs", i === index ? "font-medium text-slate-900 dark:text-slate-100" : "text-slate-500 dark:text-slate-400")}>
+								{i < index ? <Check className="mr-1 inline size-3 text-brand-700 dark:text-brand-300" aria-hidden="true" /> : null}
 								{s.label}
 							</span>
 						</li>
@@ -223,10 +223,10 @@ function SetupDialog({ onClose, onDone }: { onClose(): void; onDone(): void }) {
 						noValidate
 					>
 						<div className="grid items-center gap-5 sm:grid-cols-[auto_1fr]">
-							<div className="mx-auto rounded-2xl bg-white p-2 shadow-sm ring-1 ring-slate-900/10">
+							<div className="mx-auto rounded-2xl bg-white dark:bg-slate-900 p-2 shadow-sm ring-1 ring-slate-900/10 dark:ring-white/20">
 								<QrCode text={setup.otpauthUri} size={176} label="QR code to add VK Finance to your authenticator app" />
 							</div>
-							<ol className="grid gap-3 text-sm text-slate-700">
+							<ol className="grid gap-3 text-sm text-slate-700 dark:text-slate-300">
 								<Instruction n={1}>
 									Install an authenticator app - <span className="font-medium">Google Authenticator</span>,{" "}
 									<span className="font-medium">Microsoft Authenticator</span> or similar.
@@ -239,7 +239,7 @@ function SetupDialog({ onClose, onDone }: { onClose(): void; onDone(): void }) {
 							{manual ? (
 								<SecretKey secret={setup.secret} />
 							) : (
-								<button type="button" className="text-teal-800 underline-offset-4 hover:underline" onClick={() => setManual(true)}>
+								<button type="button" className="text-brand-800 dark:text-brand-200 underline-offset-4 hover:underline" onClick={() => setManual(true)}>
 									Can't scan? Enter a key instead
 								</button>
 							)}
@@ -259,13 +259,13 @@ function SetupDialog({ onClose, onDone }: { onClose(): void; onDone(): void }) {
 
 				{step === "codes" && (
 					<div key="codes" className="vk-rise grid gap-4">
-						<div className="flex items-center gap-3 rounded-xl bg-emerald-50 p-3 text-sm text-emerald-900">
+						<div className="flex items-center gap-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 p-3 text-sm text-emerald-900 dark:text-emerald-100">
 							<span className="vk-pop flex size-9 shrink-0 items-center justify-center rounded-full bg-emerald-600 text-white">
 								<Check className="size-5" aria-hidden="true" />
 							</span>
 							Two-step verification is on. Other devices have been signed out.
 						</div>
-						<p className="text-sm text-slate-600">
+						<p className="text-sm text-slate-600 dark:text-slate-400">
 							Save these recovery codes somewhere safe, away from your phone. If you lose your phone, each code lets you sign in once.
 						</p>
 						<RecoveryCodes codes={codes} onDone={onDone} />
@@ -279,7 +279,7 @@ function SetupDialog({ onClose, onDone }: { onClose(): void; onDone(): void }) {
 function Instruction({ n, children }: { n: number; children: ReactNode }) {
 	return (
 		<li className="flex gap-3">
-			<span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-teal-50 text-xs font-semibold text-teal-800">{n}</span>
+			<span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-brand-50 dark:bg-brand-950/40 text-xs font-semibold text-brand-800 dark:text-brand-200">{n}</span>
 			<span>{children}</span>
 		</li>
 	);
@@ -288,11 +288,11 @@ function Instruction({ n, children }: { n: number; children: ReactNode }) {
 function SecretKey({ secret }: { secret: string }) {
 	const grouped = secret.match(/.{1,4}/g)?.join(" ") ?? secret;
 	return (
-		<div className="vk-rise flex flex-wrap items-center gap-2 rounded-xl bg-slate-50 p-3">
-			<span className="text-slate-600">Key:</span>
-			<code className="font-mono text-sm tracking-wider text-slate-900 select-all">{grouped}</code>
+		<div className="vk-rise flex flex-wrap items-center gap-2 rounded-xl bg-slate-50 dark:bg-slate-800/40 p-3">
+			<span className="text-slate-600 dark:text-slate-400">Key:</span>
+			<code className="font-mono text-sm tracking-wider text-slate-900 dark:text-slate-100 select-all">{grouped}</code>
 			<CopyButton text={secret} label="Copy key" />
-			<p className="w-full text-xs text-slate-500">Choose "time-based" if the app asks.</p>
+			<p className="w-full text-xs text-slate-500 dark:text-slate-400">Choose "time-based" if the app asks.</p>
 		</div>
 	);
 }
@@ -313,11 +313,11 @@ export function RecoveryCodes({ codes, onDone }: { codes: string[]; onDone(): vo
 
 	return (
 		<div className="grid gap-4">
-			<ul className="grid grid-cols-2 gap-2 rounded-xl bg-slate-50 p-4" data-testid="recovery-codes">
+			<ul className="grid grid-cols-2 gap-2 rounded-xl bg-slate-50 dark:bg-slate-800/40 p-4" data-testid="recovery-codes">
 				{codes.map((c, i) => (
 					<li
 						key={c}
-						className="vk-rise rounded-lg bg-white px-3 py-2 text-center font-mono text-sm tracking-wider text-slate-900 ring-1 ring-slate-900/5"
+						className="vk-rise rounded-lg bg-white dark:bg-slate-900 px-3 py-2 text-center font-mono text-sm tracking-wider text-slate-900 dark:text-slate-100 ring-1 ring-slate-900/5 dark:ring-white/10"
 						style={{ animationDelay: `${i * 30}ms` }}
 					>
 						{c}
@@ -331,7 +331,7 @@ export function RecoveryCodes({ codes, onDone }: { codes: string[]; onDone(): vo
 					Download
 				</Button>
 			</div>
-			<label className="flex items-center gap-2 text-sm text-slate-700">
+			<label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300">
 				<Checkbox checked={saved} onCheckedChange={(v) => setSaved(v === true)} />
 				I've saved my recovery codes
 			</label>
@@ -432,7 +432,7 @@ export function ConfirmWithCodeDialog({
 								<span className="text-sm font-medium">{recovery ? "Recovery code" : "Code from your authenticator app"}</span>
 								<button
 									type="button"
-									className="text-xs text-teal-800 underline-offset-4 hover:underline"
+									className="text-xs text-brand-800 dark:text-brand-200 underline-offset-4 hover:underline"
 									onClick={() => {
 										setRecovery((r) => !r);
 										setCode("");

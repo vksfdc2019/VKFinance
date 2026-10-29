@@ -84,31 +84,31 @@ export default function LoansPage() {
 				loans && (
 					<>
 						<div className="mb-6 grid gap-3 sm:grid-cols-3">
-							<Reveal index={0} className="rounded-2xl bg-slate-900 px-5 py-4 text-white">
+							<Reveal index={0} className="rounded-2xl bg-slate-900 dark:bg-slate-700 px-5 py-4 text-white">
 								<p className="text-xs text-slate-300">Total outstanding</p>
 								<AnimatedMoney value={active.reduce((s, l) => s + l.outstanding, 0)} currency={currency} className="mt-1 block text-2xl font-semibold tabular-nums" />
 							</Reveal>
-							<Reveal index={1} className="rounded-2xl bg-white px-5 py-4 shadow-sm ring-1 ring-slate-900/5">
-								<p className="text-xs text-slate-500">EMIs every month</p>
+							<Reveal index={1} className="rounded-2xl bg-white dark:bg-slate-900 px-5 py-4 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10">
+								<p className="text-xs text-slate-500 dark:text-slate-400">EMIs every month</p>
 								<AnimatedMoney value={active.reduce((s, l) => s + l.emi, 0)} currency={currency} className="mt-1 block text-2xl font-semibold tabular-nums" />
 							</Reveal>
-							<Reveal index={2} className="rounded-2xl bg-white px-5 py-4 shadow-sm ring-1 ring-slate-900/5">
-								<p className="text-xs text-slate-500">Interest still to pay</p>
+							<Reveal index={2} className="rounded-2xl bg-white dark:bg-slate-900 px-5 py-4 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10">
+								<p className="text-xs text-slate-500 dark:text-slate-400">Interest still to pay</p>
 								<AnimatedMoney value={active.reduce((s, l) => s + l.interestRemaining, 0)} currency={currency} className="mt-1 block text-2xl font-semibold tabular-nums" />
 							</Reveal>
 						</div>
 						<div className="grid gap-4 lg:grid-cols-2">
 							{loans.map((l, i) => (
 								<Reveal key={l.id} index={i + 3}>
-									<article className="vk-lift rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-900/5">
+									<article className="vk-lift rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10">
 										<div className="flex items-start gap-4">
 											<ProgressRing value={l.repaidPct} size={84} label={`${l.repaidPct}% repaid`} color="var(--status-good)">
-												<span className="text-base font-semibold tabular-nums text-slate-900">{Math.round(l.repaidPct)}%</span>
-												<span className="text-[10px] text-slate-500">repaid</span>
+												<span className="text-base font-semibold tabular-nums text-slate-900 dark:text-slate-100">{Math.round(l.repaidPct)}%</span>
+												<span className="text-[10px] text-slate-500 dark:text-slate-400">repaid</span>
 											</ProgressRing>
 											<div className="min-w-0 flex-1">
 												<div className="flex flex-wrap items-center gap-2">
-													<h2 className="truncate text-lg font-semibold text-slate-900">{l.name}</h2>
+													<h2 className="truncate text-lg font-semibold text-slate-900 dark:text-slate-100">{l.name}</h2>
 													{l.autoDebit && (
 														<Badge variant="secondary" className="gap-1">
 															<Zap className="size-3" aria-hidden="true" />
@@ -117,37 +117,37 @@ export default function LoansPage() {
 													)}
 													{l.status === "Closed" && <Badge variant="outline">Closed</Badge>}
 												</div>
-												<p className="text-xs text-slate-500">
+												<p className="text-xs text-slate-500 dark:text-slate-400">
 													{l.loanType} loan{l.lender ? ` · ${l.lender}` : ""} · {l.annualRate}% · {l.borrowerName}
 												</p>
 												<dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
 													<div>
-														<dt className="text-xs text-slate-500">Outstanding</dt>
+														<dt className="text-xs text-slate-500 dark:text-slate-400">Outstanding</dt>
 														<dd className="font-semibold tabular-nums">{formatMoney(l.outstanding, currency)}</dd>
 													</div>
 													<div>
-														<dt className="text-xs text-slate-500">EMI</dt>
+														<dt className="text-xs text-slate-500 dark:text-slate-400">EMI</dt>
 														<dd className="font-semibold tabular-nums">{formatMoney(l.emi, currency)}</dd>
 													</div>
 													<div>
-														<dt className="text-xs text-slate-500">EMIs left</dt>
+														<dt className="text-xs text-slate-500 dark:text-slate-400">EMIs left</dt>
 														<dd className="font-semibold tabular-nums">{l.installmentsLeft}</dd>
 													</div>
 													<div>
-														<dt className="text-xs text-slate-500">Debt-free by</dt>
+														<dt className="text-xs text-slate-500 dark:text-slate-400">Debt-free by</dt>
 														<dd className="font-semibold">{l.payoffDate ? formatDate(l.payoffDate) : "—"}</dd>
 													</div>
 												</dl>
 											</div>
 										</div>
 										{l.next && l.status === "Active" && (
-											<div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-slate-50 px-3 py-2.5">
+											<div className="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-slate-50 dark:bg-slate-800/40 px-3 py-2.5">
 												<div className="text-sm">
-													<span className="font-medium text-slate-900">EMI {l.next.no}</span>
-													<span className="text-slate-500"> · {formatDate(l.next.dueDate)} · </span>
-													<span className="tabular-nums text-emerald-700">{formatMoney(l.next.principal, currency)} principal</span>
+													<span className="font-medium text-slate-900 dark:text-slate-100">EMI {l.next.no}</span>
+													<span className="text-slate-500 dark:text-slate-400"> · {formatDate(l.next.dueDate)} · </span>
+													<span className="tabular-nums text-emerald-700 dark:text-emerald-300">{formatMoney(l.next.principal, currency)} principal</span>
 													<span className="text-slate-400"> + </span>
-													<span className="tabular-nums text-orange-700">{formatMoney(l.next.interest, currency)} interest</span>
+													<span className="tabular-nums text-orange-700 dark:text-orange-300">{formatMoney(l.next.interest, currency)} interest</span>
 												</div>
 												<DueBadge status={l.next.status} daysLeft={Math.round((new Date(l.next.dueDate).getTime() - Date.now()) / 86400000)} />
 											</div>
@@ -226,7 +226,7 @@ function ScheduleDialog({ loan, currency, onClose }: { loan: Loan; currency: str
 					</DialogDescription>
 				</DialogHeader>
 				<FormErrors errors={errors} />
-				<div className="mb-2 flex items-center gap-4 text-xs text-slate-600" aria-label="Legend">
+				<div className="mb-2 flex items-center gap-4 text-xs text-slate-600 dark:text-slate-400" aria-label="Legend">
 					<span className="inline-flex items-center gap-1.5">
 						<span className="size-2.5 rounded-sm" style={{ backgroundColor: "var(--series-magnitude)" }} />
 						Principal
@@ -236,9 +236,9 @@ function ScheduleDialog({ loan, currency, onClose }: { loan: Loan; currency: str
 						Interest
 					</span>
 				</div>
-				<div className="max-h-[60vh] overflow-y-auto rounded-xl ring-1 ring-slate-900/5">
+				<div className="max-h-[60vh] overflow-y-auto rounded-xl ring-1 ring-slate-900/5 dark:ring-white/10">
 					<table className="w-full text-sm">
-						<thead className="sticky top-0 bg-slate-50 text-left text-xs text-slate-500">
+						<thead className="sticky top-0 bg-slate-50 dark:bg-slate-800/40 text-left text-xs text-slate-500 dark:text-slate-400">
 							<tr>
 								<th className="px-3 py-2 font-medium">#</th>
 								<th className="px-3 py-2 font-medium">Due</th>
@@ -251,7 +251,7 @@ function ScheduleDialog({ loan, currency, onClose }: { loan: Loan; currency: str
 						</thead>
 						<tbody className="tabular-nums">
 							{(data?.rows ?? []).map((r) => (
-								<tr key={r.no} className={r.status === "Paid" ? "bg-emerald-50/40 text-slate-500" : "border-t border-slate-100"}>
+								<tr key={r.no} className={r.status === "Paid" ? "bg-emerald-50/40 dark:bg-emerald-950/40 text-slate-500 dark:text-slate-400" : "border-t border-slate-100 dark:border-slate-800"}>
 									<td className="px-3 py-1.5">{r.no}</td>
 									<td className="px-3 py-1.5 whitespace-nowrap">{formatDate(r.dueDate)}</td>
 									<td className="px-3 py-1.5 text-right">{formatMoney(r.emi, currency)}</td>
@@ -318,7 +318,7 @@ function PrepayDialog({ loan, currency, onClose, onDone }: { loan: Loan; currenc
 								Pays down principal only. Your EMI stays the same, so the loan finishes sooner. Outstanding: {formatMoney(loan.outstanding, currency)}.
 							</DialogDescription>
 						</DialogHeader>
-						<div className="flex items-center gap-2 rounded-2xl bg-slate-50 px-4 py-3 ring-1 ring-slate-900/5 focus-within:ring-2 focus-within:ring-teal-600">
+						<div className="flex items-center gap-2 rounded-2xl bg-slate-50 dark:bg-slate-800/40 px-4 py-3 ring-1 ring-slate-900/5 dark:ring-white/10 focus-within:ring-2 focus-within:ring-brand-600">
 							<span className="text-2xl text-slate-400">{currencySymbol(currency)}</span>
 							<input
 								aria-label="Prepayment amount"
@@ -493,12 +493,12 @@ function LoanDialog({ currency, onClose, onSaved }: { currency: string; onClose:
 								<Checkbox checked={form.autoDebit} onCheckedChange={(v) => set("autoDebit")(v === true)} className="mt-0.5" />
 								<span>
 									Auto-debit
-									<span className="block text-xs text-slate-500">Records each EMI automatically on its due date.</span>
+									<span className="block text-xs text-slate-500 dark:text-slate-400">Records each EMI automatically on its due date.</span>
 								</span>
 							</label>
 						</div>
-						<div className="rounded-2xl bg-gradient-to-br from-slate-900 to-teal-900 p-5 text-white">
-							<p className="flex items-center gap-1.5 text-xs text-teal-100/80">
+						<div className="rounded-2xl bg-gradient-to-br from-slate-900 to-brand-900 p-5 text-white">
+							<p className="flex items-center gap-1.5 text-xs text-brand-100/80">
 								<CalendarRange className="size-3.5" aria-hidden="true" />
 								Your EMI
 							</p>
@@ -511,11 +511,11 @@ function LoanDialog({ currency, onClose, onSaved }: { currency: string; onClose:
 							</div>
 							<dl className="mt-3 space-y-1.5 text-xs">
 								<div className="flex justify-between">
-									<dt className="text-teal-100/80">Principal</dt>
+									<dt className="text-brand-100/80">Principal</dt>
 									<dd className="tabular-nums">{formatMoney(principal, currency)}</dd>
 								</div>
 								<div className="flex justify-between">
-									<dt className="text-teal-100/80">Total interest</dt>
+									<dt className="text-brand-100/80">Total interest</dt>
 									<dd className="tabular-nums">{formatMoney(Math.round(preview.interest), currency)}</dd>
 								</div>
 								<div className="flex justify-between border-t border-white/15 pt-1.5 font-medium">

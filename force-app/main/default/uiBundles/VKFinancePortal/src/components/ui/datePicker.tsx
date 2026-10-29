@@ -38,7 +38,7 @@ function DatePickerTrigger({
         data-slot="date-picker-trigger"
         data-empty={!date}
         className={cn(
-          'w-[280px] justify-start text-left font-normal data-[empty=true]:text-gray-600',
+          'w-[280px] justify-start text-left font-normal data-[empty=true]:text-gray-600 dark:data-[empty=true]:text-slate-400',
           className
         )}
         {...props}
@@ -87,7 +87,7 @@ function DatePickerRangeTrigger({
         data-slot="date-picker-range-trigger"
         data-empty={!hasDate}
         className={cn(
-          'justify-start text-left font-normal data-[empty=true]:text-gray-600',
+          'justify-start text-left font-normal data-[empty=true]:text-gray-600 dark:data-[empty=true]:text-slate-400',
           className
         )}
         {...props}

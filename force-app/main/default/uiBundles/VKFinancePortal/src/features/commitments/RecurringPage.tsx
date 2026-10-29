@@ -85,8 +85,8 @@ export default function RecurringPage() {
 			) : (
 				rules && (
 					<>
-						<p className="mb-4 text-sm text-slate-600">
-							About <span className="font-semibold tabular-nums text-slate-900">{formatMoney(Math.round(monthlyOut), currency)}</span> goes out on repeat each month.
+						<p className="mb-4 text-sm text-slate-600 dark:text-slate-400">
+							About <span className="font-semibold tabular-nums text-slate-900 dark:text-slate-100">{formatMoney(Math.round(monthlyOut), currency)}</span> goes out on repeat each month.
 						</p>
 						<ul className="grid gap-3 lg:grid-cols-2">
 							{rules.map((r, i) => {
@@ -94,27 +94,27 @@ export default function RecurringPage() {
 								const due = days !== undefined && days <= 0 && r.active;
 								return (
 									<Reveal as="li" key={r.id} index={i}>
-										<div className={cn("vk-lift rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-900/5", !r.active && "opacity-60", due && "ring-amber-300")}>
+										<div className={cn("vk-lift rounded-2xl bg-white dark:bg-slate-900 p-4 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10", !r.active && "opacity-60", due && "ring-amber-300 dark:ring-amber-700")}>
 											<div className="flex items-start gap-3">
 												<CategoryChip icon={r.icon} color={r.color} size="lg" />
 												<div className="min-w-0 flex-1">
 													<div className="flex flex-wrap items-center gap-2">
-														<p className="truncate font-semibold text-slate-900">{r.name}</p>
+														<p className="truncate font-semibold text-slate-900 dark:text-slate-100">{r.name}</p>
 														<Badge variant={r.mode === "Auto-post" ? "secondary" : "outline"}>{r.mode}</Badge>
 														{!r.active && <Badge variant="outline">Paused</Badge>}
 													</div>
-													<p className="truncate text-xs text-slate-500">
+													<p className="truncate text-xs text-slate-500 dark:text-slate-400">
 														{r.type === "Transfer" ? `${r.accountName} → ${r.toAccountName}` : `${r.categoryName ?? r.type} · ${r.accountName}`} · {r.frequency}
 														{r.memberName ? ` · ${r.memberName}` : ""}
 													</p>
 												</div>
-												<p className={cn("font-semibold tabular-nums", r.type === "Income" ? "text-emerald-700" : "text-slate-900")}>
+												<p className={cn("font-semibold tabular-nums", r.type === "Income" ? "text-emerald-700 dark:text-emerald-300" : "text-slate-900 dark:text-slate-100")}>
 													{r.type === "Income" ? "+" : ""}
 													{formatMoney(r.amount, currency)}
 												</p>
 											</div>
 											<div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-												<p className={cn("text-xs", due ? "font-medium text-amber-800" : "text-slate-500")}>
+												<p className={cn("text-xs", due ? "font-medium text-amber-800 dark:text-amber-200" : "text-slate-500 dark:text-slate-400")}>
 													{r.active && r.nextRunDate ? `${days !== undefined ? dueText(days) : ""} · ${formatDate(r.nextRunDate)}` : "Finished or paused"}
 												</p>
 												{r.canEdit && (
@@ -286,7 +286,7 @@ function RuleDialog({ rule, currency, onClose, onSaved }: { rule?: RecurringRule
 							{refs ? (
 								<CategoryPicker id="rule-category" categories={refs.categories} kind={type === "Income" ? "Income" : "Expense"} value={categoryId} onChange={setCategoryId} />
 							) : (
-								<div className="h-10 animate-pulse rounded-lg bg-slate-100" />
+								<div className="h-10 animate-pulse rounded-lg bg-slate-100 dark:bg-slate-800" />
 							)}
 						</div>
 					)}

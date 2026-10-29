@@ -162,7 +162,7 @@ export default function AccountsPage() {
 					))}
 				</div>
 			) : accounts && accounts.length === 0 ? (
-				<div className="rounded-2xl bg-white shadow-sm ring-1 ring-slate-900/5">
+				<div className="rounded-2xl bg-white dark:bg-slate-900 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10">
 					<EmptyState
 						icon={<Wallet />}
 						title="No accounts yet"
@@ -186,8 +186,8 @@ export default function AccountsPage() {
 					return (
 						<section key={group.title} className="mb-8">
 							<div className="mb-3 flex items-baseline justify-between">
-								<h2 className="text-sm font-semibold text-slate-700">{group.title}</h2>
-								<span className="text-sm tabular-nums text-slate-500">{formatMoney(total, currency)}</span>
+								<h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">{group.title}</h2>
+								<span className="text-sm tabular-nums text-slate-500 dark:text-slate-400">{formatMoney(total, currency)}</span>
 							</div>
 							<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
 								{rows.map((a) => (
@@ -199,7 +199,7 @@ export default function AccountsPage() {
 				})
 			)}
 
-			<label className="inline-flex items-center gap-2 text-sm text-slate-600">
+			<label className="inline-flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
 				<Checkbox checked={showClosed} onCheckedChange={(v) => setShowClosed(v === true)} />
 				Show closed accounts
 			</label>
@@ -233,8 +233,8 @@ export default function AccountsPage() {
 
 function Summary({ label, value, strong }: { label: string; value: string; strong?: boolean }) {
 	return (
-		<div className={strong ? "rounded-2xl bg-slate-900 px-5 py-4 text-white" : "rounded-2xl bg-white px-5 py-4 shadow-sm ring-1 ring-slate-900/5"}>
-			<p className={strong ? "text-xs text-slate-300" : "text-xs text-slate-500"}>{label}</p>
+		<div className={strong ? "rounded-2xl bg-slate-900 dark:bg-slate-700 px-5 py-4 text-white" : "rounded-2xl bg-white dark:bg-slate-900 px-5 py-4 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10"}>
+			<p className={strong ? "text-xs text-slate-300" : "text-xs text-slate-500 dark:text-slate-400"}>{label}</p>
 			<p className="mt-1 text-xl font-semibold tabular-nums">{value}</p>
 		</div>
 	);

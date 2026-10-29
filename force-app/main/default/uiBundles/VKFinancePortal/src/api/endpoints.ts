@@ -39,6 +39,7 @@ import type {
 	Statement,
 } from "./commitmentTypes";
 import type { LayoutWidget, Report, ReportFilters, ReportType, SavedReport } from "./reportTypes";
+import type { Appearance, FamilyTheme, PersonalTheme } from "@/theme/themes";
 
 type Message = { message: string };
 
@@ -65,6 +66,14 @@ export const profileApi = {
 	disableMfa: (currentPassword: string, code: string) => vkf<void>("POST", "/profile/mfa/disable", { currentPassword, code }),
 	renewRecoveryCodes: (currentPassword: string, code: string) =>
 		vkf<{ recoveryCodes: string[] }>("POST", "/profile/mfa/recovery-codes", { currentPassword, code }),
+};
+
+/** Themes: your own (anyone) and the family default (Family Admin or Co-Admin). */
+export const appearanceApi = {
+	savePersonal: (theme: PersonalTheme) => vkf<Appearance>("PUT", "/profile/appearance", theme),
+	resetPersonal: () => vkf<Appearance>("DELETE", "/profile/appearance"),
+	saveFamily: (theme: FamilyTheme) => vkf<Appearance>("PUT", "/family/appearance", theme),
+	resetFamily: () => vkf<Appearance>("DELETE", "/family/appearance"),
 };
 
 export const familyApi = {

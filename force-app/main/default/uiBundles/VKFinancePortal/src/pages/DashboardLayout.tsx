@@ -94,7 +94,7 @@ export function CustomiseDialog({
 				</DialogHeader>
 				<ul className="space-y-1.5">
 					{draft.map((w, i) => (
-						<li key={w.key} className={cn("flex items-center gap-2 rounded-xl px-3 py-2 ring-1 ring-slate-900/5 transition-colors", w.hidden ? "bg-slate-50 text-slate-400" : "bg-white")}>
+						<li key={w.key} className={cn("flex items-center gap-2 rounded-xl px-3 py-2 ring-1 ring-slate-900/5 dark:ring-white/10 transition-colors", w.hidden ? "bg-slate-50 dark:bg-slate-800/40 text-slate-400" : "bg-white dark:bg-slate-900")}>
 							<span className="flex-1 text-sm font-medium">{WIDGET_LABELS[w.key]}</span>
 							<Button variant="ghost" size="icon-sm" aria-label={`Move ${WIDGET_LABELS[w.key]} up`} disabled={i === 0} onClick={() => move(i, -1)}>
 								<ArrowUp />

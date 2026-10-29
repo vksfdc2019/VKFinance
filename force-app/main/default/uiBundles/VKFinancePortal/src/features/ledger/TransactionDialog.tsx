@@ -213,7 +213,7 @@ export function TransactionDialog({
 		<Dialog open onOpenChange={(open) => !open && onClose()}>
 			<DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-lg">
 				<form onSubmit={onSubmit} noValidate>
-					<DialogHeader className="space-y-3 border-b bg-gradient-to-b from-slate-50 to-white px-6 pt-6 pb-4">
+					<DialogHeader className="space-y-3 border-b bg-gradient-to-b from-slate-50 dark:from-slate-800/40 to-white dark:to-slate-900 px-6 pt-6 pb-4">
 						<DialogTitle className="text-lg">{title}</DialogTitle>
 						<DialogDescription className="sr-only">Record money in, money out, or a move between accounts.</DialogDescription>
 						{!txn ? (
@@ -229,7 +229,7 @@ export function TransactionDialog({
 								]}
 							/>
 						) : (
-							<p className="text-sm text-slate-500">
+							<p className="text-sm text-slate-500 dark:text-slate-400">
 								{txn.type}
 								{txn.accountName ? ` · ${txn.accountName}` : ""}
 								{txn.counterAccountName ? ` ↔ ${txn.counterAccountName}` : ""}
@@ -242,7 +242,7 @@ export function TransactionDialog({
 							<Label htmlFor="txn-amount" className="sr-only">
 								Amount
 							</Label>
-							<div className="flex items-center gap-2 rounded-2xl bg-slate-50 px-4 py-3 ring-1 ring-slate-900/5 focus-within:ring-2 focus-within:ring-teal-600">
+							<div className="flex items-center gap-2 rounded-2xl bg-slate-50 dark:bg-slate-800/40 px-4 py-3 ring-1 ring-slate-900/5 dark:ring-white/10 focus-within:ring-2 focus-within:ring-brand-600">
 								<span className="text-2xl font-medium text-slate-400">{symbol}</span>
 								<input
 									id="txn-amount"
@@ -252,7 +252,7 @@ export function TransactionDialog({
 									placeholder="0"
 									value={amount}
 									onChange={(e) => setAmount(e.target.value.replace(/[^0-9.,]/g, ""))}
-									className="w-full bg-transparent text-3xl font-semibold tabular-nums text-slate-900 outline-none placeholder:text-slate-300"
+									className="w-full bg-transparent text-3xl font-semibold tabular-nums text-slate-900 dark:text-slate-100 outline-none placeholder:text-slate-300"
 									aria-label="Amount"
 								/>
 							</div>
@@ -268,13 +268,13 @@ export function TransactionDialog({
 									onChange={setAccountId}
 								/>
 								<div className="flex justify-center">
-									<span className="flex size-7 items-center justify-center rounded-full bg-slate-100 text-slate-500">
+									<span className="flex size-7 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400">
 										<ArrowDown className="size-4" aria-hidden="true" />
 									</span>
 								</div>
 								<AccountSelect id="txn-to" label="To" accounts={targets} value={toAccountId} onChange={setToAccountId} showOwner />
 								{selectedTarget?.type === "Credit Card" && (
-									<p className="flex gap-2 rounded-xl bg-sky-50 p-3 text-xs text-sky-900">
+									<p className="flex gap-2 rounded-xl bg-sky-50 dark:bg-sky-950/40 p-3 text-xs text-sky-900 dark:text-sky-100">
 										<Info className="size-4 shrink-0" aria-hidden="true" />
 										This pays the card bill. It isn&apos;t counted as spending - the card purchases already were.
 									</p>
@@ -295,7 +295,7 @@ export function TransactionDialog({
 												onChange={setCategoryId}
 											/>
 										) : (
-											<div className="h-10 animate-pulse rounded-lg bg-slate-100" />
+											<div className="h-10 animate-pulse rounded-lg bg-slate-100 dark:bg-slate-800" />
 										)}
 									</div>
 								</>
@@ -370,14 +370,14 @@ export function TransactionDialog({
 						)}
 
 						{mode === "expense" && !lockedShape && (
-							<label className="flex items-center gap-2.5 text-sm text-slate-700">
+							<label className="flex items-center gap-2.5 text-sm text-slate-700 dark:text-slate-300">
 								<Checkbox checked={refund} onCheckedChange={(v) => setRefund(v === true)} />
 								This is a refund or cashback (reduces spending in the category)
 							</label>
 						)}
 
 						{readOnly && (
-							<p className="rounded-xl bg-amber-50 p-3 text-xs text-amber-900">
+							<p className="rounded-xl bg-amber-50 dark:bg-amber-950/40 p-3 text-xs text-amber-900 dark:text-amber-100">
 								{txn?.status === "Void"
 									? "This transaction is void."
 									: txn?.isPayment
@@ -388,7 +388,7 @@ export function TransactionDialog({
 						<FormErrors errors={errors} />
 					</fieldset>
 
-					<DialogFooter className="flex-row items-center gap-2 border-t bg-slate-50/60 px-6 py-4 sm:justify-between">
+					<DialogFooter className="flex-row items-center gap-2 border-t bg-slate-50/60 dark:bg-slate-800/60 px-6 py-4 sm:justify-between">
 						<div>
 							{canVoid &&
 								(confirmVoid ? (
@@ -396,7 +396,7 @@ export function TransactionDialog({
 										Confirm void
 									</Button>
 								) : (
-									<Button type="button" variant="ghost" className="text-red-700" onClick={() => setConfirmVoid(true)}>
+									<Button type="button" variant="ghost" className="text-red-700 dark:text-red-300" onClick={() => setConfirmVoid(true)}>
 										<Trash2 />
 										Void
 									</Button>

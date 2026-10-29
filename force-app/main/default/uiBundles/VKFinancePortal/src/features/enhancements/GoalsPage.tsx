@@ -83,18 +83,18 @@ function Goals() {
           {data?.map(goal => (
             <article
               key={goal.id}
-              className="relative overflow-hidden rounded-3xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5"
+              className="relative overflow-hidden rounded-3xl bg-white dark:bg-slate-900 p-6 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10"
             >
-              <div className="absolute right-0 top-0 size-32 rounded-bl-full bg-gradient-to-bl from-teal-50 to-white" />
+              <div className="absolute right-0 top-0 size-32 rounded-bl-full bg-gradient-to-bl from-brand-50 dark:from-brand-950/40 to-white dark:to-slate-900" />
               <div className="relative flex items-start justify-between gap-4">
                 <div>
-                  <span className="inline-flex rounded-xl bg-teal-50 p-3 text-teal-700">
+                  <span className="inline-flex rounded-xl bg-brand-50 dark:bg-brand-950/40 p-3 text-brand-700 dark:text-brand-300">
                     <Sprout className="size-6" />
                   </span>
-                  <h2 className="mt-4 text-xl font-semibold text-slate-900">
+                  <h2 className="mt-4 text-xl font-semibold text-slate-900 dark:text-slate-100">
                     {goal.title}
                   </h2>
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                     {goal.accountName}
                     {goal.targetDate ? ` · ${formatDate(goal.targetDate)}` : ''}
                   </p>
@@ -110,7 +110,7 @@ function Goals() {
                       cy="40"
                       r="34"
                       fill="none"
-                      stroke="#f1f5f9"
+                      className="stroke-slate-100 dark:stroke-slate-800"
                       strokeWidth="6"
                     />
                     <circle
@@ -118,13 +118,13 @@ function Goals() {
                       cy="40"
                       r="34"
                       fill="none"
-                      stroke="#0f766e"
+                      className="stroke-brand-700 dark:stroke-brand-400"
                       strokeWidth="6"
                       strokeLinecap="round"
                       strokeDasharray={`${(213.63 * goal.percent) / 100} 213.63`}
                     />
                   </svg>
-                  <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-teal-900">
+                  <span className="absolute inset-0 flex items-center justify-center text-sm font-bold text-brand-900 dark:text-brand-100">
                     {goal.percent >= 100 ? (
                       <Check className="size-6" />
                     ) : (
@@ -133,15 +133,15 @@ function Goals() {
                   </span>
                 </div>
               </div>
-              <p className="mt-7 text-3xl font-semibold tracking-tight text-slate-900">
+              <p className="mt-7 text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
                 {formatMoney(goal.progress, currency)}
               </p>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                 of {formatMoney(goal.target, currency)} saved
               </p>
-              <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-4">
-                <p className="flex items-center gap-1.5 text-xs text-slate-500">
-                  <TrendingUp className="size-3.5 text-teal-600" />
+              <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 dark:border-slate-800 pt-4">
+                <p className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+                  <TrendingUp className="size-3.5 text-brand-600 dark:text-brand-400" />
                   {goal.percent >= 100
                     ? 'You reached your target!'
                     : goal.monthlyNeeded != null
@@ -342,9 +342,9 @@ function GoalDialog({
             />
           </label>
           {!goal && (
-            <label className="flex items-start gap-2 text-sm text-slate-600">
+            <label className="flex items-start gap-2 text-sm text-slate-600 dark:text-slate-400">
               <input
-                className="mt-1 accent-teal-700"
+                className="mt-1 accent-brand-700"
                 type="checkbox"
                 checked={includeExisting}
                 onChange={e => setIncludeExisting(e.target.checked)}

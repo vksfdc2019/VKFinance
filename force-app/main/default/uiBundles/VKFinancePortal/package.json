@@ -12,6 +12,7 @@
     "build": "tsc -b && vite build",
     "build:e2e": "npm run build && node scripts/rewrite-e2e-assets.mjs",
     "lint": "eslint .",
+    "theme:check": "node scripts/theme-classes.mjs --check",
     "preview": "vite preview",
     "test": "vitest",
     "graphql:codegen": "graphql-codegen",

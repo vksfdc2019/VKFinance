@@ -34,10 +34,10 @@ export function DueBadge({ status, daysLeft }: { status: DueStatus; daysLeft?: n
 			variant="outline"
 			className={cn(
 				"gap-1 border-0 font-medium",
-				late && "bg-red-50 text-red-700",
-				soon && "bg-amber-50 text-amber-800",
-				done && "bg-emerald-50 text-emerald-800",
-				!late && !soon && !done && "bg-slate-100 text-slate-600",
+				late && "bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300",
+				soon && "bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200",
+				done && "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200",
+				!late && !soon && !done && "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400",
 			)}
 		>
 			<Icon className="size-3" aria-hidden="true" />
@@ -122,7 +122,7 @@ export function PayBillDialog({
 							<DialogTitle>Pay {instance.billName}</DialogTitle>
 							<DialogDescription>Due {formatDate(instance.dueDate)}. The payment is recorded as spending in this bill&apos;s category.</DialogDescription>
 						</DialogHeader>
-						<div className="flex items-center gap-2 rounded-2xl bg-slate-50 px-4 py-3 ring-1 ring-slate-900/5 focus-within:ring-2 focus-within:ring-teal-600">
+						<div className="flex items-center gap-2 rounded-2xl bg-slate-50 dark:bg-slate-800/40 px-4 py-3 ring-1 ring-slate-900/5 dark:ring-white/10 focus-within:ring-2 focus-within:ring-brand-600">
 							<span className="text-2xl text-slate-400">{currencySymbol(currency)}</span>
 							<input
 								aria-label="Amount paid"
@@ -201,18 +201,18 @@ export function PayEmiDialog({ loan, currency, onClose, onPaid }: { loan: Loan; 
 							</DialogDescription>
 						</DialogHeader>
 						{next && (
-							<dl className="grid grid-cols-3 gap-2 rounded-2xl bg-slate-50 p-4 text-center ring-1 ring-slate-900/5">
+							<dl className="grid grid-cols-3 gap-2 rounded-2xl bg-slate-50 dark:bg-slate-800/40 p-4 text-center ring-1 ring-slate-900/5 dark:ring-white/10">
 								<div>
-									<dt className="text-xs text-slate-500">EMI</dt>
+									<dt className="text-xs text-slate-500 dark:text-slate-400">EMI</dt>
 									<dd className="text-lg font-semibold tabular-nums">{formatMoney(next.emi, currency)}</dd>
 								</div>
 								<div>
-									<dt className="text-xs text-slate-500">Principal</dt>
-									<dd className="text-lg font-semibold tabular-nums text-emerald-700">{formatMoney(next.principal, currency)}</dd>
+									<dt className="text-xs text-slate-500 dark:text-slate-400">Principal</dt>
+									<dd className="text-lg font-semibold tabular-nums text-emerald-700 dark:text-emerald-300">{formatMoney(next.principal, currency)}</dd>
 								</div>
 								<div>
-									<dt className="text-xs text-slate-500">Interest</dt>
-									<dd className="text-lg font-semibold tabular-nums text-orange-700">{formatMoney(next.interest, currency)}</dd>
+									<dt className="text-xs text-slate-500 dark:text-slate-400">Interest</dt>
+									<dd className="text-lg font-semibold tabular-nums text-orange-700 dark:text-orange-300">{formatMoney(next.interest, currency)}</dd>
 								</div>
 							</dl>
 						)}
@@ -226,7 +226,7 @@ export function PayEmiDialog({ loan, currency, onClose, onPaid }: { loan: Loan; 
 								<Input id="emi-date" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
 							</div>
 						</div>
-						<p className="text-xs text-slate-500">Interest is recorded as spending; the principal reduces what you owe.</p>
+						<p className="text-xs text-slate-500 dark:text-slate-400">Interest is recorded as spending; the principal reduces what you owe.</p>
 						<FormErrors errors={errors} />
 						<DialogFooter>
 							<Button type="button" variant="outline" onClick={onClose}>

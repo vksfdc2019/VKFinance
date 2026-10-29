@@ -3,6 +3,7 @@ import { Outlet, type RouteObject } from "react-router";
 import { Toaster } from "./components/ui/sonner";
 import AppLayout from "./components/layout/AppLayout";
 import { AuthProvider } from "./features/auth/AuthContext";
+import { ThemeProvider } from "./theme/ThemeProvider";
 import { PublicOnly, RequireAuth, RequirePermission } from "./features/auth/RouteGuards";
 import LoginPage from "./features/auth/pages/LoginPage";
 import FirstLoginPage from "./features/auth/pages/FirstLoginPage";
@@ -34,13 +35,16 @@ const GoalsPage = lazy(() => import("./features/enhancements/GoalsPage"));
 const InstallPage = lazy(() => import("./features/enhancements/InstallPage"));
 const InsightsPage = lazy(() => import("./features/enhancements/InsightsPage"));
 const ArchivePage = lazy(() => import("./features/archive/ArchivePage"));
+const AppearancePage = lazy(() => import("./features/appearance/AppearancePage"));
 
 
 function Root() {
 	return (
 		<AuthProvider>
-			<Outlet />
-			<Toaster />
+			<ThemeProvider>
+				<Outlet />
+				<Toaster />
+			</ThemeProvider>
 		</AuthProvider>
 	);
 }
@@ -69,6 +73,7 @@ export const routes: RouteObject[] = [
 						children: [
 							{ index: true, element: <HomePage /> },
 							{ path: "/profile", element: <ProfilePage /> },
+							{ path: "/appearance", element: <AppearancePage /> },
 							{ path: "/help", element: <HelpPage /> },
 							{
 								element: <RequirePermission permission="ENHANCEMENTS:READ" />,

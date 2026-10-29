@@ -80,7 +80,7 @@ function Receipts() {
         description="Choose a transaction to add a photo, check a receipt or download a copy. Images are compressed before upload and remain behind your family’s access controls."
       />
       <div className="mb-5 flex flex-wrap gap-3">
-        <label className="grid gap-1 text-xs text-slate-500">
+        <label className="grid gap-1 text-xs text-slate-500 dark:text-slate-400">
           Month
           <Input
             type="month"
@@ -88,7 +88,7 @@ function Receipts() {
             onChange={e => setMonth(e.target.value || monthKey())}
           />
         </label>
-        <label className="grid min-w-56 flex-1 gap-1 text-xs text-slate-500">
+        <label className="grid min-w-56 flex-1 gap-1 text-xs text-slate-500 dark:text-slate-400">
           Find a transaction
           <span className="relative">
             <Search className="absolute left-3 top-3 size-4 text-slate-400" />
@@ -120,10 +120,10 @@ function Receipts() {
                   key={txn.id}
                   type="button"
                   onClick={() => setSelected(txn)}
-                  className={`flex w-full items-center justify-between gap-4 rounded-xl p-3 text-left transition-colors ${selected?.id === txn.id ? 'bg-teal-50 ring-1 ring-teal-100' : 'hover:bg-slate-50'}`}
+                  className={`flex w-full items-center justify-between gap-4 rounded-xl p-3 text-left transition-colors ${selected?.id === txn.id ? 'bg-brand-50 dark:bg-brand-950/40 ring-1 ring-brand-100 dark:ring-brand-900' : 'hover:bg-slate-50 dark:hover:bg-slate-800/60'}`}
                 >
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-slate-800">
+                    <p className="truncate text-sm font-semibold text-slate-800 dark:text-slate-200">
                       {txn.payee || txn.categoryName || txn.type}
                     </p>
                     <p className="mt-1 text-xs text-slate-400">
@@ -233,9 +233,9 @@ function ReceiptCollection({ transaction }: { transaction: Txn }) {
       {loading && !data ? (
         <Skeleton className="h-40" />
       ) : data?.length === 0 ? (
-        <div className="rounded-xl bg-violet-50/60 py-8 text-center">
+        <div className="rounded-xl bg-violet-50/60 dark:bg-violet-950/40 py-8 text-center">
           <Camera className="mx-auto mb-2 size-8 text-violet-400" />
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-slate-500 dark:text-slate-400">
             The story behind this purchase starts here.
           </p>
         </div>
@@ -244,16 +244,16 @@ function ReceiptCollection({ transaction }: { transaction: Txn }) {
           {data?.map(receipt => (
             <li
               key={receipt.id}
-              className="flex items-center gap-3 rounded-xl border border-slate-100 p-3"
+              className="flex items-center gap-3 rounded-xl border border-slate-100 dark:border-slate-800 p-3"
             >
-              <Camera className="size-5 shrink-0 text-violet-500" />
+              <Camera className="size-5 shrink-0 text-violet-500 dark:text-violet-400" />
               <button
                 type="button"
                 disabled={busy}
                 onClick={() => void view(receipt)}
                 className="min-w-0 flex-1 text-left"
               >
-                <p className="truncate text-sm font-medium text-slate-800">
+                <p className="truncate text-sm font-medium text-slate-800 dark:text-slate-200">
                   {receipt.fileName}
                 </p>
                 <p className="mt-1 text-xs text-slate-400">
@@ -280,7 +280,7 @@ function ReceiptCollection({ transaction }: { transaction: Txn }) {
         can('RECEIPTS:CREATE') &&
         (data?.length ?? 0) < 5 && (
           <label
-            className={`mt-5 flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-violet-200 bg-violet-50/40 p-4 text-sm font-medium text-violet-800 ${busy ? 'pointer-events-none opacity-50' : 'hover:bg-violet-50'}`}
+            className={`mt-5 flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-violet-200 dark:border-violet-800 bg-violet-50/40 dark:bg-violet-950/40 p-4 text-sm font-medium text-violet-800 dark:text-violet-200 ${busy ? 'pointer-events-none opacity-50' : 'hover:bg-violet-50 dark:hover:bg-violet-950/40'}`}
           >
             <ImagePlus className="size-4" />
             {busy ? 'Processing photo…' : 'Take or choose a photo'}
@@ -323,7 +323,7 @@ function ReceiptCollection({ transaction }: { transaction: Txn }) {
               <img
                 src={url}
                 alt={`Receipt: ${photo?.fileName}`}
-                className="max-h-[65svh] w-full rounded-xl bg-slate-50 object-contain"
+                className="max-h-[65svh] w-full rounded-xl bg-slate-50 dark:bg-slate-800/40 object-contain"
               />
               <Button asChild variant="outline">
                 <a href={url} download={photo?.fileName}>

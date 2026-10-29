@@ -42,17 +42,17 @@ export function CategoryBars({
 						<CategoryChip icon={row.icon} color={row.color} size="sm" />
 						<div className="min-w-0 flex-1">
 							<div className="flex items-baseline justify-between gap-2">
-								<span className="truncate text-sm font-medium text-slate-800">{row.name}</span>
-								<span className="shrink-0 text-sm font-semibold tabular-nums text-slate-900">{formatMoney(row.amount, currency)}</span>
+								<span className="truncate text-sm font-medium text-slate-800 dark:text-slate-200">{row.name}</span>
+								<span className="shrink-0 text-sm font-semibold tabular-nums text-slate-900 dark:text-slate-100">{formatMoney(row.amount, currency)}</span>
 							</div>
 							<div className="mt-1.5 flex items-center gap-2">
-								<div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100">
+								<div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
 									<div
 										className="h-full rounded-full transition-[width] duration-500"
 										style={{ width: `${(row.amount / largest) * 100}%`, backgroundColor: "var(--series-magnitude)" }}
 									/>
 								</div>
-								<span className="w-9 shrink-0 text-right text-xs tabular-nums text-slate-500">{share.toFixed(0)}%</span>
+								<span className="w-9 shrink-0 text-right text-xs tabular-nums text-slate-500 dark:text-slate-400">{share.toFixed(0)}%</span>
 							</div>
 						</div>
 					</>
@@ -60,7 +60,7 @@ export function CategoryBars({
 				return (
 					<li key={row.categoryId ?? row.name}>
 						{row.categoryId && linkTo ? (
-							<Link to={linkTo(row.categoryId)} className="-m-1.5 flex items-center gap-3 rounded-xl p-1.5 hover:bg-slate-50">
+							<Link to={linkTo(row.categoryId)} className="-m-1.5 flex items-center gap-3 rounded-xl p-1.5 hover:bg-slate-50 dark:hover:bg-slate-800/60">
 								{content}
 							</Link>
 						) : (
@@ -81,16 +81,16 @@ export function NeedsWantsBar({ needs, wants, currency }: { needs: number; wants
 		<div>
 			<div className="flex h-2.5 gap-0.5 overflow-hidden rounded-full" aria-hidden="true">
 				<div className="h-full rounded-l-full" style={{ width: `${needsPct}%`, backgroundColor: "var(--series-magnitude)" }} />
-				<div className="h-full flex-1 rounded-r-full bg-slate-200" />
+				<div className="h-full flex-1 rounded-r-full bg-slate-200 dark:bg-slate-700" />
 			</div>
 			<dl className="mt-2.5 grid grid-cols-2 gap-2 text-xs">
 				<div>
-					<dt className="text-slate-500">Needs · {needsPct.toFixed(0)}%</dt>
-					<dd className="font-semibold tabular-nums text-slate-900">{formatMoney(needs, currency)}</dd>
+					<dt className="text-slate-500 dark:text-slate-400">Needs · {needsPct.toFixed(0)}%</dt>
+					<dd className="font-semibold tabular-nums text-slate-900 dark:text-slate-100">{formatMoney(needs, currency)}</dd>
 				</div>
 				<div className="text-right">
-					<dt className="text-slate-500">Wants · {total > 0 ? (100 - needsPct).toFixed(0) : 0}%</dt>
-					<dd className="font-semibold tabular-nums text-slate-900">{formatMoney(wants, currency)}</dd>
+					<dt className="text-slate-500 dark:text-slate-400">Wants · {total > 0 ? (100 - needsPct).toFixed(0) : 0}%</dt>
+					<dd className="font-semibold tabular-nums text-slate-900 dark:text-slate-100">{formatMoney(wants, currency)}</dd>
 				</div>
 			</dl>
 		</div>

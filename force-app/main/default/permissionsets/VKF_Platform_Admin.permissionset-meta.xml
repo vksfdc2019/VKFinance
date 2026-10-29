@@ -830,6 +830,9 @@
     </fieldPermissions>
     <!-- Phase 6 support fields -->
     <fieldPermissions><editable>false</editable><field>Family__c.Enhancements__c</field><readable>true</readable></fieldPermissions>
+    <!-- Appearance (portal themes) -->
+    <fieldPermissions><editable>false</editable><field>Family__c.Theme__c</field><readable>true</readable></fieldPermissions>
+    <fieldPermissions><editable>false</editable><field>Portal_User__c.Theme__c</field><readable>true</readable></fieldPermissions>
     <fieldPermissions><editable>false</editable><field>Transaction__c.Import_Key__c</field><readable>true</readable></fieldPermissions>
     <fieldPermissions><editable>false</editable><field>Statement_Import__c.Duplicates__c</field><readable>true</readable></fieldPermissions>
     <fieldPermissions><editable>false</editable><field>Statement_Import__c.Error__c</field><readable>true</readable></fieldPermissions>

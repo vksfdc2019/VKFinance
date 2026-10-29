@@ -48,14 +48,14 @@ export function TxnRow({
 			onClick={() => onOpen?.(txn)}
 			disabled={!onOpen}
 			className={cn(
-				"flex w-full items-center gap-3 rounded-xl text-left transition-colors enabled:hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:outline-none",
+				"flex w-full items-center gap-3 rounded-xl text-left transition-colors enabled:hover:bg-slate-50 dark:enabled:hover:bg-slate-800/60 focus-visible:bg-slate-50 dark:focus-visible:bg-slate-800/40 focus-visible:outline-none",
 				compact ? "px-1.5 py-2" : "px-3 py-2.5",
 			)}
 		>
 			<CategoryChip icon={txn.icon} color={txn.color} />
 			<div className="min-w-0 flex-1">
-				<p className={cn("truncate text-sm font-medium text-slate-900", isVoid && "text-slate-400 line-through")}>{txnTitle(txn)}</p>
-				<p className="truncate text-xs text-slate-500">{detail}</p>
+				<p className={cn("truncate text-sm font-medium text-slate-900 dark:text-slate-100", isVoid && "text-slate-400 line-through")}>{txnTitle(txn)}</p>
+				<p className="truncate text-xs text-slate-500 dark:text-slate-400">{detail}</p>
 			</div>
 			<div className="flex shrink-0 flex-col items-end gap-0.5">
 				<Amount value={txn.amount} currency={currency} direction={txn.direction} muted={isVoid} className="text-sm" />

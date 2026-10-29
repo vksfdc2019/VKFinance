@@ -176,14 +176,14 @@ export default function TransactionsPage() {
 						onChange={(e) => setSearch(e.target.value)}
 						placeholder="Search payee, notes, reference"
 						aria-label="Search transactions"
-						className="h-9 rounded-xl bg-white pl-9"
+						className="h-9 rounded-xl bg-white dark:bg-slate-900 pl-9"
 					/>
 				</div>
 			</div>
 
 			<div className="mb-4 flex flex-wrap items-center gap-2">
 				<Select value={accountId ?? "all"} onValueChange={(v) => setParam("account", v === "all" ? undefined : v)}>
-					<SelectTrigger className="h-9 w-48 rounded-xl bg-white" aria-label="Account">
+					<SelectTrigger className="h-9 w-48 rounded-xl bg-white dark:bg-slate-900" aria-label="Account">
 						<SelectValue />
 					</SelectTrigger>
 					<SelectContent>
@@ -197,7 +197,7 @@ export default function TransactionsPage() {
 					</SelectContent>
 				</Select>
 				<Select value={categoryId ?? "all"} onValueChange={(v) => setParam("category", v === "all" ? undefined : v)}>
-					<SelectTrigger className="h-9 w-52 rounded-xl bg-white" aria-label="Category">
+					<SelectTrigger className="h-9 w-52 rounded-xl bg-white dark:bg-slate-900" aria-label="Category">
 						<SelectValue />
 					</SelectTrigger>
 					<SelectContent className="max-h-80">
@@ -221,7 +221,7 @@ export default function TransactionsPage() {
 				</Select>
 				{isAdmin && filters && filters.members.length > 1 && (
 					<Select value={memberId ?? "all"} onValueChange={(v) => setParam("member", v === "all" ? undefined : v)}>
-						<SelectTrigger className="h-9 w-44 rounded-xl bg-white" aria-label="Member">
+						<SelectTrigger className="h-9 w-44 rounded-xl bg-white dark:bg-slate-900" aria-label="Member">
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
@@ -234,7 +234,7 @@ export default function TransactionsPage() {
 						</SelectContent>
 					</Select>
 				)}
-				<label className="ml-1 flex items-center gap-2 text-sm text-slate-600">
+				<label className="ml-1 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
 					<Checkbox checked={includeVoid} onCheckedChange={(v) => setParam("void", v === true ? "1" : undefined)} />
 					Show void
 				</label>
@@ -294,8 +294,8 @@ export default function TransactionsPage() {
 							}, 0);
 							return (
 								<section key={day} className="mb-1">
-									<header className="sticky top-14 z-10 flex items-center justify-between bg-white/90 px-3 py-2 backdrop-blur lg:top-0">
-										<h2 className="text-xs font-semibold tracking-wide text-slate-500 uppercase">{dayHeading(day)}</h2>
+									<header className="sticky top-14 z-10 flex items-center justify-between bg-white/90 dark:bg-slate-900/90 px-3 py-2 backdrop-blur lg:top-0">
+										<h2 className="text-xs font-semibold tracking-wide text-slate-500 dark:text-slate-400 uppercase">{dayHeading(day)}</h2>
 										{net !== 0 && (
 											<span className="text-xs tabular-nums text-slate-400">{formatMoney(net, currency, { signed: true })}</span>
 										)}
@@ -326,9 +326,9 @@ export default function TransactionsPage() {
 
 function Stat({ label, value }: { label: string; value: string }) {
 	return (
-		<div className="rounded-2xl bg-white px-4 py-3 shadow-sm ring-1 ring-slate-900/5">
-			<p className="text-xs text-slate-500">{label}</p>
-			<p className="mt-0.5 text-lg font-semibold tabular-nums text-slate-900">{value}</p>
+		<div className="rounded-2xl bg-white dark:bg-slate-900 px-4 py-3 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10">
+			<p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
+			<p className="mt-0.5 text-lg font-semibold tabular-nums text-slate-900 dark:text-slate-100">{value}</p>
 		</div>
 	);
 }

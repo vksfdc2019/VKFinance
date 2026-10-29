@@ -38,7 +38,7 @@ export default function ResetPasswordPage() {
 		return (
 			<AuthCard title="Reset link missing">
 				<StatusAlert variant="error">This page needs the link from your reset email.</StatusAlert>
-				<Link to="/forgot-password" className="mt-4 block text-center text-sm text-teal-800 hover:underline">
+				<Link to="/forgot-password" className="mt-4 block text-center text-sm text-brand-800 dark:text-brand-200 hover:underline">
 					Request a new link
 				</Link>
 			</AuthCard>

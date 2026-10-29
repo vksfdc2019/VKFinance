@@ -1,8 +1,10 @@
 import { Toaster as Sonner } from 'sonner';
+import { useIsDark } from '@/theme/ThemeProvider';
 
 /**
  * Renders the toast container. Use with `toast()` from this module for messages
  * with title, description, actions, and variants (success, error, warning).
+ * Follows the app's light or dark theme.
  *
  * @example
  * toast("Event has been created", {
@@ -14,7 +16,8 @@ import { Toaster as Sonner } from 'sonner';
  * toast.warning("Please review");
  */
 export function Toaster() {
-  return <Sonner position="top-right" richColors />;
+  const dark = useIsDark();
+  return <Sonner position="top-right" richColors theme={dark ? 'dark' : 'light'} />;
 }
 
 export { toast } from 'sonner';

@@ -59,6 +59,7 @@ private class LedgerServiceTest {
         Assert.areEqual('Visa', cardView.name);
         Assert.areEqual(2.0, cardView.card.utilisationPct);
         Assert.areEqual(49000, cardView.card.available);
+        Assert.isNull(cardView.card.statement, 'no bill until the statement is written');
 
         Map<String, String> params = LedgerTestData.params('month=' + LedgerUtil.monthKey(Date.today()));
         FinanceDtos.TxnPage page = TransactionService.listTransactions(admin, params);

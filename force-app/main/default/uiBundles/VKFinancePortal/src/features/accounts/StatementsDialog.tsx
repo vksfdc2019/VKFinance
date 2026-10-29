@@ -25,7 +25,7 @@ export function StatementsDialog({ account, currency, onClose }: { account: Acco
 				{!data && loading ? (
 					<Skeleton className="h-40 rounded-xl" />
 				) : data && data.length === 0 ? (
-					<p className="py-8 text-center text-sm text-slate-500">No statement has closed yet.</p>
+					<p className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">No statement has closed yet.</p>
 				) : (
 					<ul className="max-h-[60vh] space-y-2 overflow-y-auto">
 						{data?.map((s, i) => {
@@ -33,13 +33,13 @@ export function StatementsDialog({ account, currency, onClose }: { account: Acco
 							const days = Math.round((new Date(`${s.dueDate}T00:00:00`).getTime() - new Date(new Date().toDateString()).getTime()) / 86400000);
 							return (
 								<Reveal as="li" key={s.id} index={i}>
-									<div className="rounded-2xl bg-slate-50 p-4 ring-1 ring-slate-900/5">
+									<div className="rounded-2xl bg-slate-50 dark:bg-slate-800/40 p-4 ring-1 ring-slate-900/5 dark:ring-white/10">
 										<div className="flex items-start justify-between gap-3">
 											<div>
-												<p className="text-sm font-semibold text-slate-900">
+												<p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
 													{formatShortDate(s.cycleStart)} – {formatShortDate(s.cycleEnd)}
 												</p>
-												<p className="text-xs text-slate-500">
+												<p className="text-xs text-slate-500 dark:text-slate-400">
 													Due {formatDate(s.dueDate)} · minimum {formatMoney(s.minimumDue, currency)}
 												</p>
 											</div>

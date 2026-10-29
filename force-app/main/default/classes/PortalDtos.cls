@@ -22,6 +22,14 @@ public inherited sharing class PortalDtos {
         public String sessionScope;
         public Integer idleTimeoutMinutes;
         public List<String> permissions;
+        public Appearance appearance;
+    }
+
+    /** The caller's saved theme, the family default, and whether the family has locked its colours. */
+    public class Appearance {
+        public Map<String, Object> personal;
+        public Map<String, Object> family;
+        public Boolean locked = false;
     }
 
     public class Member {
@@ -73,6 +81,7 @@ public inherited sharing class PortalDtos {
         p.sessionScope = ctx.scope;
         p.idleTimeoutMinutes = SecurityPolicy.idleMinutes();
         p.permissions = AccessGuard.permissionsFor(ctx.role);
+        p.appearance = AppearanceService.forUser(ctx);
         return p;
     }
 

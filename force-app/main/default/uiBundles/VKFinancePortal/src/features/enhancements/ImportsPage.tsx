@@ -300,10 +300,10 @@ function Imports() {
         {['Upload', 'Match columns', 'Review', 'Import'].map((label, i) => (
           <li
             key={label}
-            className={`flex items-center gap-2 rounded-xl px-3 py-3 text-xs font-semibold ${stage === i + 1 ? 'bg-teal-900 text-white' : 'bg-white text-slate-400'}`}
+            className={`flex items-center gap-2 rounded-xl px-3 py-3 text-xs font-semibold ${stage === i + 1 ? 'bg-brand-900 text-white' : 'bg-white dark:bg-slate-900 text-slate-400'}`}
           >
             <span
-              className={`flex size-5 shrink-0 items-center justify-center rounded-full ${stage === i + 1 ? 'bg-white/15' : 'bg-slate-100'}`}
+              className={`flex size-5 shrink-0 items-center justify-center rounded-full ${stage === i + 1 ? 'bg-white/15' : 'bg-slate-100 dark:bg-slate-800'}`}
             >
               {i + 1}
             </span>
@@ -314,18 +314,18 @@ function Imports() {
       <FormErrors errors={[...choiceErrors, ...errors]} />
       {!csv && !batch && (
         <Panel>
-          <label className="flex min-h-64 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-teal-200 bg-teal-50/30 p-6 text-center transition-colors hover:bg-teal-50">
-            <span className="mb-4 rounded-2xl bg-white p-4 text-teal-700 shadow-sm">
+          <label className="flex min-h-64 cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-brand-200 dark:border-brand-800 bg-brand-50/30 dark:bg-brand-950/40 p-6 text-center transition-colors hover:bg-brand-50 dark:hover:bg-brand-950/40">
+            <span className="mb-4 rounded-2xl bg-white dark:bg-slate-900 p-4 text-brand-700 dark:text-brand-300 shadow-sm">
               <CloudUpload className="size-8" />
             </span>
-            <span className="text-lg font-semibold text-slate-900">
+            <span className="text-lg font-semibold text-slate-900 dark:text-slate-100">
               Choose a bank or card CSV
             </span>
-            <span className="mt-2 text-sm text-slate-500">
+            <span className="mt-2 text-sm text-slate-500 dark:text-slate-400">
               Up to 500 rows · 1 MB · No bank password needed
             </span>
             <input
-              className="mt-5 max-w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-teal-800 file:px-4 file:py-2 file:text-white"
+              className="mt-5 max-w-full text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-brand-800 file:px-4 file:py-2 file:text-white"
               aria-label="Upload statement CSV"
               type="file"
               accept=".csv,text/csv"
@@ -423,7 +423,7 @@ function Imports() {
               </label>
             ))}
           </div>
-          <div className="mt-5 rounded-xl bg-amber-50 p-3 text-xs leading-relaxed text-amber-900">
+          <div className="mt-5 rounded-xl bg-amber-50 dark:bg-amber-950/40 p-3 text-xs leading-relaxed text-amber-900 dark:text-amber-100">
             <AlertTriangle className="mb-1 size-4" />
             Confirm your bank’s debit/credit convention. Transfers, loan
             repayments and card payments need their existing workflows to keep
@@ -474,7 +474,7 @@ function Imports() {
           </div>
           <div className="overflow-auto">
             <table className="w-full min-w-[650px] text-left text-xs">
-              <thead className="border-b border-slate-200 text-slate-500">
+              <thead className="border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400">
                 <tr>
                   {[
                     'Row',
@@ -491,7 +491,7 @@ function Imports() {
               </thead>
               <tbody>
                 {preview.slice(0, visible).map((r, i) => (
-                  <tr key={r.row} className="border-b border-slate-100">
+                  <tr key={r.row} className="border-b border-slate-100 dark:border-slate-800">
                     <td className="p-2 text-slate-400">{r.row}</td>
                     <td className="p-2 whitespace-nowrap">
                       {r.entry.date ?? '—'}
@@ -499,7 +499,7 @@ function Imports() {
                     <td className="max-w-xs p-2">
                       <p>{r.entry.payee}</p>
                       {(r.error || r.warning) && (
-                        <p className="mt-1 text-amber-800">
+                        <p className="mt-1 text-amber-800 dark:text-amber-200">
                           {r.error || r.warning}
                         </p>
                       )}
@@ -549,7 +549,7 @@ function Imports() {
               Show more rows
             </Button>
           )}
-          <p className="mt-4 text-xs text-slate-500">
+          <p className="mt-4 text-xs text-slate-500 dark:text-slate-400">
             Use the existing transfer/card/loan payment actions for skipped
             money movements. Identical imported date, amount, type, reference
             and description are treated conservatively as duplicates.
@@ -586,39 +586,39 @@ function Imports() {
               ['Duplicates', batch.duplicates],
               ['To review', batch.failed],
             ].map(([label, count]) => (
-              <div key={String(label)} className="rounded-xl bg-slate-50 p-4">
-                <p className="text-xs text-slate-500">{label}</p>
+              <div key={String(label)} className="rounded-xl bg-slate-50 dark:bg-slate-800/40 p-4">
+                <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
                 <p className="mt-2 text-2xl font-semibold">{count ?? 0}</p>
               </div>
             ))}
           </div>
           {batch.status === 'Draft' && (
-            <p className="mt-5 text-sm text-slate-600">
+            <p className="mt-5 text-sm text-slate-600 dark:text-slate-400">
               Your reviewed rows are saved. Start the import to record them in
               the ledger.
             </p>
           )}
           {batch.status === 'Processing' && (
-            <p className="mt-5 flex items-center gap-2 text-sm text-teal-800">
+            <p className="mt-5 flex items-center gap-2 text-sm text-brand-800 dark:text-brand-200">
               <RefreshCw className="size-4 animate-spin" />
               Processing securely in the background. You can leave this page and
               return later.
             </p>
           )}
           {batch.status === 'Completed' && (
-            <p className="mt-5 flex items-center gap-2 text-sm text-teal-800">
+            <p className="mt-5 flex items-center gap-2 text-sm text-brand-800 dark:text-brand-200">
               <CheckCircle2 className="size-4" />
               Finished. Your ledger and balances now include the imported
               entries.
             </p>
           )}
           {batch.error && (
-            <p className="mt-4 text-sm text-amber-800">{batch.error}</p>
+            <p className="mt-4 text-sm text-amber-800 dark:text-amber-200">{batch.error}</p>
           )}
           {batch.rows
             ?.filter(r => r.status === 'Failed')
             .map(r => (
-              <p key={r.id} className="mt-2 text-xs text-rose-700">
+              <p key={r.id} className="mt-2 text-xs text-rose-700 dark:text-rose-300">
                 Row {r.row}: {r.error}
               </p>
             ))}
@@ -646,7 +646,7 @@ function Imports() {
         </Panel>
       )}
       <div className="mt-7">
-        <h2 className="mb-3 text-sm font-semibold text-slate-800">
+        <h2 className="mb-3 text-sm font-semibold text-slate-800 dark:text-slate-200">
           Recent imports
         </h2>
         <FormErrors errors={history.errors} />
@@ -657,13 +657,13 @@ function Imports() {
               key={item.id}
               disabled={busy}
               onClick={() => void open(item)}
-              className="flex w-full items-center gap-3 rounded-xl bg-white p-4 text-left shadow-sm ring-1 ring-slate-900/5 hover:bg-slate-50"
+              className="flex w-full items-center gap-3 rounded-xl bg-white dark:bg-slate-900 p-4 text-left shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 hover:bg-slate-50 dark:hover:bg-slate-800/60"
             >
-              <FileSpreadsheet className="size-5 text-teal-700" />
+              <FileSpreadsheet className="size-5 text-brand-700 dark:text-brand-300" />
               <span className="min-w-0 flex-1 truncate text-sm font-medium">
                 {item.fileName}
               </span>
-              <span className="text-xs text-slate-500">{item.total} rows</span>
+              <span className="text-xs text-slate-500 dark:text-slate-400">{item.total} rows</span>
               <Badge variant="outline">{item.status}</Badge>
               <ArrowRight className="size-4 text-slate-400" />
             </button>

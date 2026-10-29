@@ -8,6 +8,7 @@ import {
 	LayoutDashboard,
 	LifeBuoy,
 	LogOut,
+	Palette,
 	Plus,
 	ReceiptText,
 	Repeat,
@@ -35,6 +36,7 @@ import { SessionTimeout } from "@/features/auth/SessionTimeout";
 import { LedgerProvider, useLedger } from "@/features/ledger/LedgerContext";
 import { BrandMark } from "./BrandMark";
 import { NotificationBell } from "./NotificationBell";
+import { ModeToggle } from "./ModeToggle";
 
 interface NavItem {
 	to: string;
@@ -74,23 +76,25 @@ function Shell() {
 		{ to: "/categories", label: "Categories", icon: Tags, show: can("CATEGORIES:CREATE") },
 		{ to: "/family", label: "Family", icon: Users, show: can("MEMBERS:CREATE") },
 		{ to: "/profile", label: "Security", icon: ShieldCheck, show: true },
+		{ to: "/appearance", label: "Appearance", icon: Palette, show: true },
 		{ to: "/help", label: "Help", icon: LifeBuoy, show: true },
 	].filter((link) => link.show);
 	const avatar = initials(profile?.firstName, profile?.lastName);
 
 	return (
-		<div className="min-h-svh bg-slate-50 bg-[radial-gradient(60rem_30rem_at_100%_-10%,rgba(20,184,166,0.08),transparent),radial-gradient(40rem_20rem_at_-10%_0%,rgba(56,189,248,0.06),transparent)]">
-			<aside className="no-print sticky top-0 z-30 border-b border-slate-200/70 bg-white/85 backdrop-blur-md lg:fixed lg:inset-y-0 lg:left-0 lg:flex lg:w-64 lg:flex-col lg:border-r lg:border-b-0">
+		<div className="vk-app-bg min-h-svh">
+			<aside className="no-print sticky top-0 z-30 border-b border-slate-200/70 dark:border-slate-800/70 bg-white/85 dark:bg-slate-900/85 backdrop-blur-md lg:fixed lg:inset-y-0 lg:left-0 lg:flex lg:w-64 lg:flex-col lg:border-r lg:border-b-0">
 				<div className="flex items-center justify-between gap-3 px-4 py-3 lg:px-5 lg:pt-6 lg:pb-5">
 					<BrandMark />
 					<div className="flex items-center gap-1">
+					<ModeToggle />
 					<NotificationBell />
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
 							<button
 								type="button"
 								aria-label="Account menu"
-								className="flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-teal-600 to-emerald-700 text-xs font-semibold text-white lg:hidden"
+								className="flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-brand-600 to-brand-alt-700 text-xs font-semibold text-white lg:hidden"
 							>
 								{avatar}
 							</button>
@@ -109,6 +113,10 @@ function Shell() {
 								<UserRound />
 								Profile &amp; security
 							</DropdownMenuItem>
+							<DropdownMenuItem onSelect={() => navigate("/appearance")}>
+								<Palette />
+								Appearance
+							</DropdownMenuItem>
 							<DropdownMenuItem onSelect={() => navigate("/help")}>
 								<LifeBuoy />
 								Help
@@ -124,7 +132,7 @@ function Shell() {
 
 				{canAdd && (
 					<div className="hidden px-4 pb-4 lg:block">
-						<Button className="h-10 w-full rounded-xl shadow-sm shadow-teal-900/20" onClick={() => openEntry()}>
+						<Button className="h-10 w-full rounded-xl shadow-sm shadow-brand-900/20" onClick={() => openEntry()}>
 							<Plus />
 							Add transaction
 							<kbd className="ml-auto rounded bg-white/15 px-1.5 text-[10px] font-medium">N</kbd>
@@ -142,8 +150,8 @@ function Shell() {
 								cn(
 									"flex shrink-0 items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium whitespace-nowrap transition-colors",
 									isActive
-										? "bg-teal-50 text-teal-900 ring-1 ring-teal-600/15"
-										: "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+										? "bg-brand-50 dark:bg-brand-950/40 text-brand-900 dark:text-brand-100 ring-1 ring-brand-600/15"
+										: "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100",
 								)
 							}
 						>
@@ -153,22 +161,22 @@ function Shell() {
 					))}
 				</nav>
 
-				<div className="hidden border-t border-slate-200/70 p-4 lg:block">
+				<div className="hidden border-t border-slate-200/70 dark:border-slate-800/70 p-4 lg:block">
 					<div className="flex items-center gap-3">
-						<span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-teal-600 to-emerald-700 text-xs font-semibold text-white">
+						<span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-600 to-brand-alt-700 text-xs font-semibold text-white">
 							{avatar}
 						</span>
 						<div className="min-w-0 flex-1">
-							<p className="truncate text-sm font-medium text-slate-900">
+							<p className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
 								{profile?.firstName} {profile?.lastName}
 							</p>
-							<p className="truncate text-xs text-slate-500">{profile?.role}</p>
+							<p className="truncate text-xs text-slate-500 dark:text-slate-400">{profile?.role}</p>
 						</div>
 					</div>
 					<p className="mt-3 truncate text-xs text-slate-400">
 						{profile?.familyName} · {profile?.familyCode}
 					</p>
-					<Button variant="ghost" size="sm" className="mt-2 w-full justify-start text-slate-600" onClick={() => void logout("user")}>
+					<Button variant="ghost" size="sm" className="mt-2 w-full justify-start text-slate-600 dark:text-slate-400" onClick={() => void logout("user")}>
 						<LogOut aria-hidden="true" />
 						Sign out
 					</Button>
@@ -189,7 +197,7 @@ function Shell() {
 				<Button
 					size="icon-lg"
 					aria-label="Add transaction"
-					className="fixed right-5 bottom-5 z-30 size-14 rounded-2xl shadow-lg shadow-teal-900/25 lg:hidden [&_svg]:size-6"
+					className="fixed right-5 bottom-5 z-30 size-14 rounded-2xl shadow-lg shadow-brand-900/25 lg:hidden [&_svg]:size-6"
 					onClick={() => openEntry()}
 				>
 					<Plus />
@@ -203,8 +211,8 @@ function Shell() {
 function PageLoading() {
 	return (
 		<div className="space-y-4" aria-busy="true" aria-label="Loading">
-			<div className="h-9 w-56 animate-pulse rounded-xl bg-slate-200/70" />
-			<div className="h-64 animate-pulse rounded-2xl bg-slate-200/50" />
+			<div className="h-9 w-56 animate-pulse rounded-xl bg-slate-200/70 dark:bg-slate-700/70" />
+			<div className="h-64 animate-pulse rounded-2xl bg-slate-200/50 dark:bg-slate-700/50" />
 		</div>
 	);
 }

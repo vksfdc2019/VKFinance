@@ -129,14 +129,14 @@ function BudgetSummary({ budget, currency, progress, month }: { budget: BudgetVi
 	return (
 		<div className="space-y-4">
 			<div className="grid gap-4 lg:grid-cols-3">
-				<div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-teal-900 p-6 text-white shadow-lg lg:col-span-2">
-					<div className="pointer-events-none absolute -top-20 -right-20 size-56 rounded-full bg-teal-400/15 blur-2xl" />
+				<div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-900 via-slate-800 to-brand-900 p-6 text-white shadow-lg lg:col-span-2">
+					<div className="pointer-events-none absolute -top-20 -right-20 size-56 rounded-full bg-brand-400/15 blur-2xl" />
 					<p className="text-sm text-slate-300">Spent so far</p>
 					<p className="mt-1 text-3xl font-semibold tabular-nums">
 						{formatMoney(budget.totalSpent, currency)}
 						<span className="text-base font-normal text-slate-400"> of {formatMoney(budget.totalPlanned, currency)}</span>
 					</p>
-					<div className="mt-4 rounded-xl bg-white/95 p-3 text-slate-900">
+					<div className="mt-4 rounded-xl bg-white/95 dark:bg-slate-900/95 p-3 text-slate-900 dark:text-slate-100">
 						<StatusMeter
 							value={plannedSpent}
 							max={budget.totalPlanned}
@@ -148,17 +148,17 @@ function BudgetSummary({ budget, currency, progress, month }: { budget: BudgetVi
 				<Panel>
 					<div className="flex h-full flex-col justify-center gap-3">
 						<div className="flex items-center gap-3">
-							<span className="flex size-10 items-center justify-center rounded-xl bg-teal-50 text-teal-700">
+							<span className="flex size-10 items-center justify-center rounded-xl bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-300">
 								<CalendarRange className="size-5" aria-hidden="true" />
 							</span>
 							<div>
-								<p className="text-xs text-slate-500">{isCurrent ? `${daysLeft} days to go` : monthLabel(month)}</p>
-								<p className="text-lg font-semibold tabular-nums text-slate-900">
+								<p className="text-xs text-slate-500 dark:text-slate-400">{isCurrent ? `${daysLeft} days to go` : monthLabel(month)}</p>
+								<p className="text-lg font-semibold tabular-nums text-slate-900 dark:text-slate-100">
 									{perDay !== undefined ? `${formatMoney(Math.floor(perDay), currency)} / day` : `${Math.round(progress * 100)}% of the month`}
 								</p>
 							</div>
 						</div>
-						<p className="text-xs text-slate-500">
+						<p className="text-xs text-slate-500 dark:text-slate-400">
 							{perDay !== undefined
 								? "What the family can spend each day and still finish inside the plan."
 								: "Daily allowance shows for the current month."}
@@ -168,7 +168,7 @@ function BudgetSummary({ budget, currency, progress, month }: { budget: BudgetVi
 			</div>
 
 			<Panel title="By category" description={`${budget.lines.length} planned categories`}>
-				<ul className="divide-y divide-slate-100">
+				<ul className="divide-y divide-slate-100 dark:divide-slate-800">
 					{budget.lines.map((line) => {
 						const remaining = line.planned - line.spent;
 						const status = budgetStatus(line.spent, line.planned, progress);
@@ -177,8 +177,8 @@ function BudgetSummary({ budget, currency, progress, month }: { budget: BudgetVi
 								<div className="flex items-center gap-3">
 									<CategoryChip icon={line.icon} color={line.color} />
 									<div className="min-w-0">
-										<p className="truncate text-sm font-medium text-slate-900">{line.name}</p>
-										<p className="text-xs text-slate-500">{line.planned > 0 ? `${Math.round((line.spent / line.planned) * 100)}% used` : "Not planned"}</p>
+										<p className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">{line.name}</p>
+										<p className="text-xs text-slate-500 dark:text-slate-400">{line.planned > 0 ? `${Math.round((line.spent / line.planned) * 100)}% used` : "Not planned"}</p>
 									</div>
 								</div>
 								<StatusMeter
@@ -194,7 +194,7 @@ function BudgetSummary({ budget, currency, progress, month }: { budget: BudgetVi
 									}
 								/>
 								<p className="text-right text-sm tabular-nums">
-									<span className="font-semibold text-slate-900">{formatMoney(line.spent, currency)}</span>
+									<span className="font-semibold text-slate-900 dark:text-slate-100">{formatMoney(line.spent, currency)}</span>
 									<span className="text-slate-400"> / {formatMoney(line.planned, currency)}</span>
 								</p>
 							</li>
@@ -209,11 +209,11 @@ function BudgetSummary({ budget, currency, progress, month }: { budget: BudgetVi
 
 function Unbudgeted({ lines, currency }: { lines: BudgetLine[]; currency: string }) {
 	return (
-		<div className="mt-5 rounded-xl bg-amber-50/60 p-4 ring-1 ring-amber-900/10">
-			<p className="text-sm font-medium text-amber-950">Spending outside the plan</p>
+		<div className="mt-5 rounded-xl bg-amber-50/60 dark:bg-amber-950/40 p-4 ring-1 ring-amber-900/10">
+			<p className="text-sm font-medium text-amber-950 dark:text-amber-100">Spending outside the plan</p>
 			<ul className="mt-2 flex flex-wrap gap-2">
 				{lines.map((l) => (
-					<li key={l.categoryId} className="inline-flex items-center gap-2 rounded-full bg-white py-1 pr-3 pl-1 text-xs ring-1 ring-slate-900/5">
+					<li key={l.categoryId} className="inline-flex items-center gap-2 rounded-full bg-white dark:bg-slate-900 py-1 pr-3 pl-1 text-xs ring-1 ring-slate-900/5 dark:ring-white/10">
 						<CategoryChip icon={l.icon} color={l.color} size="sm" className="size-6 rounded-full" />
 						{l.name}
 						<span className="font-semibold tabular-nums">{formatMoney(l.spent, currency)}</span>
@@ -277,19 +277,19 @@ function BudgetEditor({
 		<Panel
 			title={`Plan for ${monthLabel(budget.month)}`}
 			description="Leave a category empty to keep it out of the plan."
-			action={<p className="text-sm font-semibold tabular-nums text-slate-900">Total {formatMoney(total, currency)}</p>}
+			action={<p className="text-sm font-semibold tabular-nums text-slate-900 dark:text-slate-100">Total {formatMoney(total, currency)}</p>}
 		>
 			{!categories ? (
 				<Skeleton className="h-64 rounded-xl" />
 			) : (
 				<div className="grid gap-x-6 gap-y-2 md:grid-cols-2">
 					{categories.map((c) => (
-						<label key={c.id} className="flex items-center gap-3 rounded-xl px-2 py-1.5 hover:bg-slate-50">
+						<label key={c.id} className="flex items-center gap-3 rounded-xl px-2 py-1.5 hover:bg-slate-50 dark:hover:bg-slate-800/60">
 							<CategoryChip icon={c.icon} color={c.color} size="sm" />
 							<span className="min-w-0 flex-1">
-								<span className="block truncate text-sm font-medium text-slate-800">{c.name}</span>
+								<span className="block truncate text-sm font-medium text-slate-800 dark:text-slate-200">{c.name}</span>
 								{spent.get(c.id) ? (
-									<span className="text-xs text-slate-500">Spent {formatMoney(spent.get(c.id), currency)} so far</span>
+									<span className="text-xs text-slate-500 dark:text-slate-400">Spent {formatMoney(spent.get(c.id), currency)} so far</span>
 								) : null}
 							</span>
 							<span className="relative w-32">

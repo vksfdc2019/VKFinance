@@ -65,7 +65,7 @@ export default function HomePage() {
 				<>
 					{data && data.members.length > 1 && (
 						<Select value={memberId ?? "all"} onValueChange={(v) => setParam("member", v === "all" ? undefined : v)}>
-							<SelectTrigger className="h-9 w-44 rounded-xl bg-white" aria-label="Whose money">
+							<SelectTrigger className="h-9 w-44 rounded-xl bg-white dark:bg-slate-900" aria-label="Whose money">
 								<SelectValue />
 							</SelectTrigger>
 							<SelectContent>
@@ -79,7 +79,7 @@ export default function HomePage() {
 						</Select>
 					)}
 					<MonthSwitcher value={month} onChange={(m) => setParam("month", m === monthKey() ? undefined : m)} />
-					<Button variant="outline" size="icon" className="rounded-xl bg-white" aria-label="Customise dashboard" onClick={() => setCustomising(true)}>
+					<Button variant="outline" size="icon" className="rounded-xl bg-white dark:bg-slate-900" aria-label="Customise dashboard" onClick={() => setCustomising(true)}>
 						<SlidersHorizontal />
 					</Button>
 					{customising && <CustomiseDialog layout={layout} onClose={() => setCustomising(false)} onSave={saveLayout} />}
@@ -127,7 +127,7 @@ export default function HomePage() {
 					index={1}
 					label="Income"
 					icon={<ArrowDownLeft />}
-					tint="bg-emerald-50 text-emerald-700"
+					tint="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300"
 					value={<AnimatedMoney value={kpis.income} currency={currency} />}
 					footer={<DeltaPill change={percentChange(kpis.income, kpis.prevIncome)} goodWhenUp />}
 				/>
@@ -135,7 +135,7 @@ export default function HomePage() {
 					index={2}
 					label="Spending"
 					icon={<ArrowUpRight />}
-					tint="bg-orange-50 text-orange-700"
+					tint="bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-300"
 					value={<AnimatedMoney value={kpis.expenses} currency={currency} />}
 					footer={<DeltaPill change={percentChange(kpis.expenses, kpis.prevExpenses)} goodWhenUp={false} />}
 				/>
@@ -143,10 +143,10 @@ export default function HomePage() {
 					index={3}
 					label="Saved"
 					icon={<PiggyBank />}
-					tint="bg-sky-50 text-sky-700"
+					tint="bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300"
 					value={<AnimatedMoney value={kpis.net} currency={currency} />}
 					footer={
-						<span className="text-xs text-slate-500">
+						<span className="text-xs text-slate-500 dark:text-slate-400">
 							{kpis.savingsRate !== undefined ? `${formatPercent(kpis.savingsRate)} of income` : "No income recorded yet"}
 						</span>
 					}
@@ -160,7 +160,7 @@ export default function HomePage() {
 						title="Coming up"
 						description="Bills, EMIs and card bills in the next 30 days"
 						action={
-							<span className="text-xs font-medium tabular-nums text-slate-600">
+							<span className="text-xs font-medium tabular-nums text-slate-600 dark:text-slate-400">
 								{formatMoney(data.upcoming.reduce((s, d) => s + d.amount, 0), currency)} in total
 							</span>
 						}
@@ -169,17 +169,17 @@ export default function HomePage() {
 						<ul className="flex snap-x gap-3 overflow-x-auto px-2 pb-1">
 							{data.upcoming.map((d, i) => (
 								<li key={d.id} className="vk-rise w-60 shrink-0 snap-start" style={{ animationDelay: `${200 + i * 50}ms` }}>
-									<div className="vk-lift flex h-full flex-col rounded-2xl bg-slate-50 p-3.5 ring-1 ring-slate-900/5">
+									<div className="vk-lift flex h-full flex-col rounded-2xl bg-slate-50 dark:bg-slate-800/40 p-3.5 ring-1 ring-slate-900/5 dark:ring-white/10">
 										<div className="flex items-center gap-2.5">
 											<CategoryChip icon={d.icon} color={d.color} size="sm" />
 											<div className="min-w-0 flex-1">
-												<p className="truncate text-sm font-semibold text-slate-900">{d.title}</p>
-												<p className="truncate text-[11px] text-slate-500">{d.subtitle}</p>
+												<p className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">{d.title}</p>
+												<p className="truncate text-[11px] text-slate-500 dark:text-slate-400">{d.subtitle}</p>
 											</div>
 										</div>
 										<div className="mt-3 flex items-end justify-between gap-2">
 											<div>
-												<p className="text-lg font-semibold tabular-nums text-slate-900">{formatMoney(d.amount, currency)}</p>
+												<p className="text-lg font-semibold tabular-nums text-slate-900 dark:text-slate-100">{formatMoney(d.amount, currency)}</p>
 												<DueBadge status={d.status} daysLeft={d.daysLeft} />
 											</div>
 											{d.kind === "bill" && can("BILLS:PAY") ? (
@@ -223,7 +223,7 @@ export default function HomePage() {
 					description={`Spending by category · ${monthLabel(month)}`}
 					action={
 						data.byCategory.length > 0 && (
-							<Link to={txnLink("&type=Expense")} className="text-xs font-medium text-teal-700 hover:underline">
+							<Link to={txnLink("&type=Expense")} className="text-xs font-medium text-brand-700 dark:text-brand-300 hover:underline">
 								Details
 							</Link>
 						)
@@ -232,7 +232,7 @@ export default function HomePage() {
 					{data.byCategory.length ? (
 						<CategoryBars items={data.byCategory} currency={currency} linkTo={(id) => txnLink(`&category=${id}`)} />
 					) : (
-						<p className="py-10 text-center text-sm text-slate-500">No spending recorded in {monthLabel(month)}.</p>
+						<p className="py-10 text-center text-sm text-slate-500 dark:text-slate-400">No spending recorded in {monthLabel(month)}.</p>
 					)}
 				</Panel>
 				</Widget>
@@ -244,7 +244,7 @@ export default function HomePage() {
 					description={monthLabel(month)}
 					action={
 						can("BUDGETS:READ") && (
-							<Link to={`/budgets?month=${month}`} className="text-xs font-medium text-teal-700 hover:underline">
+							<Link to={`/budgets?month=${month}`} className="text-xs font-medium text-brand-700 dark:text-brand-300 hover:underline">
 								{data.budget ? "Open" : can("BUDGETS:EDIT") ? "Plan" : "View"}
 							</Link>
 						)
@@ -252,9 +252,9 @@ export default function HomePage() {
 				>
 					{data.budget ? (
 						<div>
-							<p className="text-2xl font-semibold tabular-nums text-slate-900">
+							<p className="text-2xl font-semibold tabular-nums text-slate-900 dark:text-slate-100">
 								{formatMoney(data.budget.spent, currency)}
-								<span className="text-sm font-normal text-slate-500"> of {formatMoney(data.budget.planned, currency)}</span>
+								<span className="text-sm font-normal text-slate-500 dark:text-slate-400"> of {formatMoney(data.budget.planned, currency)}</span>
 							</p>
 							<StatusMeter
 								className="mt-3"
@@ -271,15 +271,15 @@ export default function HomePage() {
 							/>
 						</div>
 					) : (
-						<div className="flex items-center gap-3 rounded-xl bg-slate-50 p-3">
-							<Target className="size-5 shrink-0 text-teal-700" aria-hidden="true" />
-							<p className="text-sm text-slate-600">
+						<div className="flex items-center gap-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 p-3">
+							<Target className="size-5 shrink-0 text-brand-700 dark:text-brand-300" aria-hidden="true" />
+							<p className="text-sm text-slate-600 dark:text-slate-400">
 								{data.wholeFamily && !memberId ? "No budget for this month yet." : "The family budget shows in the whole-family view."}
 							</p>
 						</div>
 					)}
 					<div className="mt-6">
-						<p className="mb-2 text-sm font-medium text-slate-800">Needs vs wants</p>
+						<p className="mb-2 text-sm font-medium text-slate-800 dark:text-slate-200">Needs vs wants</p>
 						<NeedsWantsBar needs={kpis.essential} wants={kpis.discretionary} currency={currency} />
 					</div>
 				</Panel>
@@ -291,7 +291,7 @@ export default function HomePage() {
 					title="Accounts"
 					description={`${data.accounts.length} active`}
 					action={
-						<Link to="/accounts" className="text-xs font-medium text-teal-700 hover:underline">
+						<Link to="/accounts" className="text-xs font-medium text-brand-700 dark:text-brand-300 hover:underline">
 							Manage
 						</Link>
 					}
@@ -300,12 +300,12 @@ export default function HomePage() {
 					<ul className="space-y-0.5">
 						{data.accounts.slice(0, 6).map((a) => (
 							<li key={a.id}>
-								<Link to={`/transactions?account=${a.id}`} className="flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-slate-50">
+								<Link to={`/transactions?account=${a.id}`} className="flex items-center gap-3 rounded-xl px-2 py-2 hover:bg-slate-50 dark:hover:bg-slate-800/60">
 									<AccountChip account={a} />
 									<div className="min-w-0 flex-1">
-										<p className="truncate text-sm font-medium text-slate-900">{a.name}</p>
+										<p className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">{a.name}</p>
 										{a.card?.utilisationPct !== undefined ? (
-											<div className="mt-1 h-1 w-full max-w-32 overflow-hidden rounded-full bg-slate-100">
+											<div className="mt-1 h-1 w-full max-w-32 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
 												<div
 													className="h-full rounded-full"
 													style={{
@@ -315,11 +315,11 @@ export default function HomePage() {
 												/>
 											</div>
 										) : (
-											<p className="truncate text-xs text-slate-500">{a.ownerName ? `${a.type} · ${a.ownerName}` : a.type}</p>
+											<p className="truncate text-xs text-slate-500 dark:text-slate-400">{a.ownerName ? `${a.type} · ${a.ownerName}` : a.type}</p>
 										)}
 									</div>
 									<div className="text-right">
-										<p className={cn("text-sm font-semibold tabular-nums", a.isLiability ? "text-slate-700" : "text-slate-900")}>
+										<p className={cn("text-sm font-semibold tabular-nums", a.isLiability ? "text-slate-700 dark:text-slate-300" : "text-slate-900 dark:text-slate-100")}>
 											{formatMoney(a.balance, currency)}
 										</p>
 										{a.isLiability && <p className="text-[11px] text-slate-400">owed</p>}
@@ -336,7 +336,7 @@ export default function HomePage() {
 					className="h-full"
 					title="Recent activity"
 					action={
-						<Link to={txnLink("")} className="text-xs font-medium text-teal-700 hover:underline">
+						<Link to={txnLink("")} className="text-xs font-medium text-brand-700 dark:text-brand-300 hover:underline">
 							See all
 						</Link>
 					}
@@ -349,7 +349,7 @@ export default function HomePage() {
 							))}
 						</div>
 					) : (
-						<p className="py-10 text-center text-sm text-slate-500">Nothing recorded yet.</p>
+						<p className="py-10 text-center text-sm text-slate-500 dark:text-slate-400">Nothing recorded yet.</p>
 					)}
 				</Panel>
 				</Widget>
@@ -362,14 +362,14 @@ function NetWorthCard({ data, currency, className }: { data: Dashboard; currency
 	return (
 		<div
 			className={cn(
-				"relative overflow-hidden rounded-2xl bg-gradient-to-br from-teal-800 via-teal-900 to-slate-900 p-5 text-white shadow-lg shadow-teal-900/20",
+				"relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-800 via-brand-900 to-slate-900 p-5 text-white shadow-lg shadow-brand-900/20",
 				className,
 			)}
 		>
-			<div className="pointer-events-none absolute -top-16 -right-10 size-48 rounded-full bg-teal-400/20 blur-2xl" />
+			<div className="pointer-events-none absolute -top-16 -right-10 size-48 rounded-full bg-brand-400/20 blur-2xl" />
 			<div className="pointer-events-none absolute -bottom-20 -left-10 size-48 rounded-full bg-sky-400/10 blur-2xl" />
 			<div className="relative">
-				<p className="flex items-center gap-2 text-sm text-teal-100/80">
+				<p className="flex items-center gap-2 text-sm text-brand-100/80">
 					<Landmark className="size-4" aria-hidden="true" />
 					{data.wholeFamily && !data.memberId ? "Family net worth" : "Net worth"}
 				</p>
@@ -378,11 +378,11 @@ function NetWorthCard({ data, currency, className }: { data: Dashboard; currency
 				</p>
 				<dl className="mt-4 grid grid-cols-2 gap-3 text-xs">
 					<div className="rounded-xl bg-white/10 px-3 py-2">
-						<dt className="text-teal-100/70">You have</dt>
+						<dt className="text-brand-100/70">You have</dt>
 						<dd className="mt-0.5 text-sm font-semibold tabular-nums">{formatMoney(data.netWorth.assets, currency)}</dd>
 					</div>
 					<div className="rounded-xl bg-white/10 px-3 py-2">
-						<dt className="text-teal-100/70">You owe</dt>
+						<dt className="text-brand-100/70">You owe</dt>
 						<dd className="mt-0.5 text-sm font-semibold tabular-nums">{formatMoney(data.netWorth.liabilities, currency)}</dd>
 					</div>
 				</dl>
@@ -407,14 +407,14 @@ function KpiCard({
 	index: number;
 }) {
 	return (
-		<div className="vk-rise vk-lift rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-900/5" style={{ animationDelay: `${index * 60}ms` }}>
+		<div className="vk-rise vk-lift rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10" style={{ animationDelay: `${index * 60}ms` }}>
 			<div className="flex items-center justify-between">
-				<p className="text-sm font-medium text-slate-500">{label}</p>
+				<p className="text-sm font-medium text-slate-500 dark:text-slate-400">{label}</p>
 				<span className={cn("flex size-8 items-center justify-center rounded-xl [&_svg]:size-4", tint)} aria-hidden="true">
 					{icon}
 				</span>
 			</div>
-			<p className="mt-3 text-2xl font-semibold tracking-tight tabular-nums text-slate-900">{value}</p>
+			<p className="mt-3 text-2xl font-semibold tracking-tight tabular-nums text-slate-900 dark:text-slate-100">{value}</p>
 			<div className="mt-2">{footer}</div>
 		</div>
 	);
@@ -463,10 +463,10 @@ function GettingStarted({ canAddAccounts, canAdd, onAdd }: { canAddAccounts: boo
 			</EmptyState>
 			<ol className="mx-auto grid max-w-4xl gap-4 pb-6 md:grid-cols-3">
 				{steps.map((step, i) => (
-					<li key={step.title} className="rounded-2xl bg-slate-50 p-5 ring-1 ring-slate-900/5">
-						<span className="flex size-7 items-center justify-center rounded-full bg-teal-700 text-xs font-semibold text-white">{i + 1}</span>
-						<h3 className="mt-3 font-semibold text-slate-900">{step.title}</h3>
-						<p className="mt-1 text-sm text-slate-500">{step.text}</p>
+					<li key={step.title} className="rounded-2xl bg-slate-50 dark:bg-slate-800/40 p-5 ring-1 ring-slate-900/5 dark:ring-white/10">
+						<span className="flex size-7 items-center justify-center rounded-full bg-brand-700 text-xs font-semibold text-white">{i + 1}</span>
+						<h3 className="mt-3 font-semibold text-slate-900 dark:text-slate-100">{step.title}</h3>
+						<p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{step.text}</p>
 						{step.action && <div className="mt-4">{step.action}</div>}
 					</li>
 				))}

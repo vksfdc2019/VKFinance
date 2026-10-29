@@ -131,8 +131,8 @@ export default function MembersPage() {
 			<title>Family · VK Finance</title>
 			<div className="flex flex-wrap items-end justify-between gap-4">
 				<div>
-					<h1 className="text-2xl font-semibold text-slate-900">Family members</h1>
-					<p className="text-slate-600">
+					<h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">Family members</h1>
+					<p className="text-slate-600 dark:text-slate-400">
 						{profile?.familyName} · {profile?.familyCode}
 					</p>
 				</div>
@@ -172,9 +172,9 @@ export default function MembersPage() {
 									<TableRow key={member.id}>
 										<TableCell className="font-medium">
 											{member.firstName} {member.lastName}
-											{member.mfaEnabled && <ShieldCheck className="ml-1.5 inline size-4 text-emerald-600" aria-label="Two-step on" />}
-											{member.isSelf && <span className="ml-2 text-xs text-slate-500">(you)</span>}
-											{member.relationship && <div className="text-xs text-slate-500">{member.relationship}</div>}
+											{member.mfaEnabled && <ShieldCheck className="ml-1.5 inline size-4 text-emerald-600 dark:text-emerald-400" aria-label="Two-step on" />}
+											{member.isSelf && <span className="ml-2 text-xs text-slate-500 dark:text-slate-400">(you)</span>}
+											{member.relationship && <div className="text-xs text-slate-500 dark:text-slate-400">{member.relationship}</div>}
 										</TableCell>
 										<TableCell className="font-mono text-sm">{member.username}</TableCell>
 										<TableCell>{member.role}</TableCell>

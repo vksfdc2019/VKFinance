@@ -161,6 +161,7 @@ let insights = [
   },
 ];
 let batches: Record<string, unknown>[] = [];
+let appearance: { personal?: unknown; family?: unknown; locked?: boolean } = {};
 export async function createDataSDK() {
   return {
     fetch: async (url: string, options: RequestInit) => {
@@ -169,8 +170,21 @@ export async function createDataSDK() {
       const body = options.body ? JSON.parse(String(options.body)) : {};
       let data: unknown;
       let status = 200;
-      if (path === '/auth/session' || path === '/profile/me') data = profile;
-      else if (path === '/notifications') data = { items: [], unread: 0 };
+      if (path === '/auth/session' || path === '/profile/me')
+        data = { ...profile, appearance };
+      else if (path === '/profile/appearance') {
+        appearance = {
+          ...appearance,
+          personal: method === 'DELETE' ? undefined : body,
+        };
+        data = appearance;
+      } else if (path === '/family/appearance') {
+        appearance =
+          method === 'DELETE'
+            ? { ...appearance, family: undefined, locked: false }
+            : { ...appearance, family: body, locked: body.locked === true };
+        data = appearance;
+      } else if (path === '/notifications') data = { items: [], unread: 0 };
       else if (path === '/accounts') data = accounts;
       else if (path === '/categories') data = categories;
       else if (path === '/enhancements/settings')

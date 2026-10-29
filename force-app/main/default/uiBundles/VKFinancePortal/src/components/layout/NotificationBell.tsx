@@ -12,10 +12,10 @@ import { useLedger } from "@/features/ledger/LedgerContext";
 const POLL_MS = 60_000;
 const ICONS = { info: Info, success: CheckCircle2, warning: AlertTriangle, critical: OctagonAlert } as const;
 const TINTS = {
-	info: "bg-sky-50 text-sky-700",
-	success: "bg-emerald-50 text-emerald-700",
-	warning: "bg-amber-50 text-amber-700",
-	critical: "bg-red-50 text-red-700",
+	info: "bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300",
+	success: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300",
+	warning: "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300",
+	critical: "bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300",
 } as const;
 
 /** The bell: polls quietly, wiggles when something new arrives, and opens a list of alerts. */
@@ -86,7 +86,7 @@ export function NotificationBell({ className }: { className?: string }) {
 			</PopoverTrigger>
 			<PopoverContent align="end" className="w-[22rem] max-w-[calc(100vw-1.5rem)] p-0">
 				<div className="flex items-center justify-between border-b px-4 py-3">
-					<p className="font-semibold text-slate-900">Notifications</p>
+					<p className="font-semibold text-slate-900 dark:text-slate-100">Notifications</p>
 					{unread > 0 && (
 						<Button variant="ghost" size="xs" onClick={() => void markAll()}>
 							<CheckCheck />
@@ -95,7 +95,7 @@ export function NotificationBell({ className }: { className?: string }) {
 					)}
 				</div>
 				<ul className="max-h-[26rem] overflow-y-auto p-1.5">
-					{items.length === 0 && <li className="px-3 py-10 text-center text-sm text-slate-500">You&apos;re all caught up.</li>}
+					{items.length === 0 && <li className="px-3 py-10 text-center text-sm text-slate-500 dark:text-slate-400">You&apos;re all caught up.</li>}
 					{items.map((n, i) => {
 						const Icon = n.type === "security" ? ShieldCheck : (ICONS[n.severity] ?? Info);
 						return (
@@ -103,17 +103,17 @@ export function NotificationBell({ className }: { className?: string }) {
 								<button
 									type="button"
 									onClick={() => void openItem(n)}
-									className={cn("flex w-full gap-3 rounded-xl px-2.5 py-2.5 text-left hover:bg-slate-50", !n.read && "bg-teal-50/50")}
+									className={cn("flex w-full gap-3 rounded-xl px-2.5 py-2.5 text-left hover:bg-slate-50 dark:hover:bg-slate-800/60", !n.read && "bg-brand-50/50 dark:bg-brand-950/40")}
 								>
 									<span className={cn("flex size-8 shrink-0 items-center justify-center rounded-lg", TINTS[n.severity] ?? TINTS.info)}>
 										<Icon className="size-4" aria-hidden="true" />
 									</span>
 									<span className="min-w-0 flex-1">
-										<span className={cn("block text-sm text-slate-900", !n.read && "font-semibold")}>{n.title}</span>
-										{n.message && <span className="block text-xs text-slate-500">{n.message}</span>}
+										<span className={cn("block text-sm text-slate-900 dark:text-slate-100", !n.read && "font-semibold")}>{n.title}</span>
+										{n.message && <span className="block text-xs text-slate-500 dark:text-slate-400">{n.message}</span>}
 										<span className="mt-0.5 block text-[11px] text-slate-400">{formatRelative(n.createdAt)}</span>
 									</span>
-									{!n.read && <span className="mt-1.5 size-2 shrink-0 rounded-full bg-teal-600" aria-label="Unread" />}
+									{!n.read && <span className="mt-1.5 size-2 shrink-0 rounded-full bg-brand-600" aria-label="Unread" />}
 								</button>
 							</li>
 						);

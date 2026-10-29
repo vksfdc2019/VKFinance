@@ -103,16 +103,23 @@ export function AccountDialog({
 		}
 	}
 
+	const previewBalance = account ? account.balance + ((num(opening) ?? 0) - (account.openingBalance ?? 0)) : (num(opening) ?? 0);
+	const previewLimit = isCard ? num(creditLimit) : null;
 	const preview = {
 		name,
 		type,
 		institution,
 		last4,
 		color: color ?? DEFAULT_ACCOUNT_COLOR[type],
-		balance: account ? account.balance + ((num(opening) ?? 0) - (account.openingBalance ?? 0)) : (num(opening) ?? 0),
+		balance: previewBalance,
 		isLiability: liability,
 		isShared: shared,
 		status: "Active" as const,
+		creditLimit: previewLimit ?? undefined,
+		card:
+			previewLimit && previewLimit > 0
+				? { ...account?.card, available: previewLimit - previewBalance, utilisationPct: (previewBalance / previewLimit) * 100 }
+				: undefined,
 	};
 
 	return (
@@ -142,12 +149,12 @@ export function AccountDialog({
 													onClick={() => setType(t)}
 													className={cn(
 														"flex flex-col items-start gap-1 rounded-xl p-2.5 text-left ring-1 transition-colors",
-														type === t ? "bg-teal-50 ring-2 ring-teal-600" : "ring-slate-200 hover:bg-slate-50",
+														type === t ? "bg-brand-50 dark:bg-brand-950/40 ring-2 ring-brand-600" : "ring-slate-200 dark:ring-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/60",
 													)}
 												>
-													<Icon className="size-4 text-teal-700" aria-hidden="true" />
-													<span className="text-xs font-semibold text-slate-900">{t}</span>
-													<span className="text-[10px] leading-tight text-slate-500">{TYPE_HINTS[t]}</span>
+													<Icon className="size-4 text-brand-700 dark:text-brand-300" aria-hidden="true" />
+													<span className="text-xs font-semibold text-slate-900 dark:text-slate-100">{t}</span>
+													<span className="text-[10px] leading-tight text-slate-500 dark:text-slate-400">{TYPE_HINTS[t]}</span>
 												</button>
 											);
 										})}
@@ -168,7 +175,7 @@ export function AccountDialog({
 									onChange={(e) => setLast4(e.target.value.replace(/\D/g, ""))}
 								/>
 								<div className="grid gap-1.5">
-									<Label htmlFor="acct-opening">{liability ? "Amount owed on opening date" : "Balance on opening date"}</Label>
+									<Label htmlFor="acct-opening">{isCard ? "Total outstanding on opening date" : liability ? "Amount owed on opening date" : "Balance on opening date"}</Label>
 									<div className="relative">
 										<span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-slate-400">{currencySymbol(currency)}</span>
 										<Input id="acct-opening" inputMode="decimal" className="pl-7" value={opening} placeholder="0" onChange={(e) => setOpening(e.target.value)} />
@@ -178,7 +185,7 @@ export function AccountDialog({
 							</div>
 
 							{isCard && (
-								<div className="grid gap-3 rounded-xl bg-slate-50 p-3 sm:grid-cols-2">
+								<div className="grid gap-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 p-3 sm:grid-cols-2">
 									<TextField id="acct-limit" label="Credit limit" inputMode="decimal" value={creditLimit} onChange={(e) => setCreditLimit(e.target.value)} />
 									<TextField
 										id="acct-statement"
@@ -235,18 +242,18 @@ export function AccountDialog({
 										</Select>
 									</div>
 								)}
-								<label className="flex items-start gap-2.5 self-end pb-2 text-sm text-slate-700">
+								<label className="flex items-start gap-2.5 self-end pb-2 text-sm text-slate-700 dark:text-slate-300">
 									<Checkbox checked={shared} onCheckedChange={(v) => setShared(v === true)} className="mt-0.5" />
 									<span>
 										Shared with the family
-										<span className="block text-xs text-slate-500">Members can see it and record spending on it.</span>
+										<span className="block text-xs text-slate-500 dark:text-slate-400">Members can see it and record spending on it.</span>
 									</span>
 								</label>
 							</div>
 						</div>
 
 						<div className="hidden md:block">
-							<p className="mb-2 text-xs font-medium text-slate-500">Preview</p>
+							<p className="mb-2 text-xs font-medium text-slate-500 dark:text-slate-400">Preview</p>
 							<AccountCard account={preview} currency={currency} />
 						</div>
 					</div>
@@ -313,13 +320,13 @@ export function ReconcileDialog({
 							We&apos;ll add one adjustment entry for the difference, so the history still explains the balance.
 						</DialogDescription>
 					</DialogHeader>
-					<div className="grid grid-cols-2 gap-3 rounded-xl bg-slate-50 p-3 text-sm">
+					<div className="grid grid-cols-2 gap-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 p-3 text-sm">
 						<div>
-							<p className="text-xs text-slate-500">VK Finance shows</p>
+							<p className="text-xs text-slate-500 dark:text-slate-400">VK Finance shows</p>
 							<p className="font-semibold tabular-nums">{formatMoney(account.balance, currency)}</p>
 						</div>
 						<div>
-							<p className="text-xs text-slate-500">Difference</p>
+							<p className="text-xs text-slate-500 dark:text-slate-400">Difference</p>
 							<p className="font-semibold tabular-nums">{formatMoney(diff, currency, { signed: true })}</p>
 						</div>
 					</div>

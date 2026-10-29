@@ -35,24 +35,24 @@ const SECTIONS: { title: string; body: string[] }[] = [
 /** Public privacy notice; also the privacy policy URL on the Google OAuth consent screen. */
 export default function PrivacyPage() {
 	return (
-		<main className="min-h-svh bg-slate-50 px-4 py-10">
+		<main className="min-h-svh bg-slate-50 dark:bg-slate-800/40 px-4 py-10">
 			<title>Privacy · VK Finance</title>
-			<article className="mx-auto max-w-2xl rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-900/5 sm:p-10">
+			<article className="mx-auto max-w-2xl rounded-2xl bg-white dark:bg-slate-900 p-6 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 sm:p-10">
 				<BrandMark />
-				<h1 className="mt-6 text-2xl font-semibold tracking-tight text-slate-900">Privacy policy</h1>
-				<p className="mt-1 text-sm text-slate-500">Last updated 28 October 2026</p>
+				<h1 className="mt-6 text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">Privacy policy</h1>
+				<p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Last updated 28 October 2026</p>
 				{SECTIONS.map((s) => (
 					<section key={s.title} className="mt-6">
-						<h2 className="text-base font-semibold text-slate-900">{s.title}</h2>
+						<h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">{s.title}</h2>
 						{s.body.map((p) => (
-							<p key={p} className="mt-2 text-sm leading-relaxed text-slate-700">
+							<p key={p} className="mt-2 text-sm leading-relaxed text-slate-700 dark:text-slate-300">
 								{p}
 							</p>
 						))}
 					</section>
 				))}
 				<p className="mt-8 text-sm">
-					<Link to="/login" className="font-medium text-teal-700 hover:underline">
+					<Link to="/login" className="font-medium text-brand-700 dark:text-brand-300 hover:underline">
 						Go to sign in
 					</Link>
 				</p>

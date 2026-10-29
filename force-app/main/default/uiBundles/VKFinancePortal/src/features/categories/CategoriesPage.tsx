@@ -83,8 +83,8 @@ export default function CategoriesPage() {
 							<div className="flex items-start gap-3">
 								<CategoryChip icon={parent.icon} color={parent.color} size="lg" />
 								<div className="min-w-0 flex-1">
-									<h2 className="truncate font-semibold text-slate-900">{parent.name}</h2>
-									<p className="text-xs text-slate-500">
+									<h2 className="truncate font-semibold text-slate-900 dark:text-slate-100">{parent.name}</h2>
+									<p className="text-xs text-slate-500 dark:text-slate-400">
 										{childrenOf(parent.id).length} sub-categories{!parent.active && " · hidden"}
 									</p>
 								</div>
@@ -107,7 +107,7 @@ export default function CategoriesPage() {
 											disabled={!canEdit}
 											onClick={() => setEditing({ category: child, parent, kind })}
 											className={cn(
-												"inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-xs text-slate-700 enabled:hover:bg-slate-200",
+												"inline-flex items-center gap-1 rounded-full bg-slate-100 dark:bg-slate-800 px-2.5 py-1 text-xs text-slate-700 dark:text-slate-300 enabled:hover:bg-slate-200 dark:enabled:hover:bg-slate-700",
 												!child.active && "text-slate-400 line-through",
 											)}
 										>
@@ -121,7 +121,7 @@ export default function CategoriesPage() {
 										<button
 											type="button"
 											onClick={() => setEditing({ parent, kind })}
-											className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium text-teal-700 ring-1 ring-teal-700/20 hover:bg-teal-50"
+											className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium text-brand-700 dark:text-brand-300 ring-1 ring-brand-700/20 hover:bg-brand-50 dark:hover:bg-brand-950/40"
 										>
 											<Plus className="size-3" aria-hidden="true" />
 											Add
@@ -207,7 +207,7 @@ function CategoryDialog({ editing, onClose, onSaved }: { editing: Editing; onClo
 						<>
 							<fieldset>
 								<legend className="mb-2 text-sm font-medium">Icon</legend>
-								<div className="grid max-h-36 grid-cols-9 gap-1 overflow-y-auto rounded-xl bg-slate-50 p-2">
+								<div className="grid max-h-36 grid-cols-9 gap-1 overflow-y-auto rounded-xl bg-slate-50 dark:bg-slate-800/40 p-2">
 									{Object.entries(CATEGORY_ICONS).map(([key, Icon]) => (
 										<button
 											key={key}
@@ -216,8 +216,8 @@ function CategoryDialog({ editing, onClose, onSaved }: { editing: Editing; onClo
 											aria-pressed={icon === key}
 											onClick={() => setIcon(key)}
 											className={cn(
-												"flex size-8 items-center justify-center rounded-lg text-slate-600 hover:bg-white",
-												icon === key && "bg-white text-teal-700 ring-2 ring-teal-600",
+												"flex size-8 items-center justify-center rounded-lg text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800",
+												icon === key && "bg-white dark:bg-slate-900 text-brand-700 dark:text-brand-300 ring-2 ring-brand-600",
 											)}
 										>
 											<Icon className="size-4" />
@@ -249,7 +249,7 @@ function CategoryDialog({ editing, onClose, onSaved }: { editing: Editing; onClo
 								<Checkbox checked={essential} onCheckedChange={(v) => setEssential(v === true)} className="mt-0.5" />
 								<span>
 									A need, not a want
-									<span className="block text-xs text-slate-500">Used for the needs vs wants split.</span>
+									<span className="block text-xs text-slate-500 dark:text-slate-400">Used for the needs vs wants split.</span>
 								</span>
 							</label>
 						)}

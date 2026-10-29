@@ -394,10 +394,10 @@ export function TemporaryPasswordDialog({
 						sign-in.
 					</DialogDescription>
 				</DialogHeader>
-				<dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 rounded-lg bg-slate-100 p-4 text-sm">
-					<dt className="text-slate-600">Username</dt>
+				<dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 rounded-lg bg-slate-100 dark:bg-slate-800 p-4 text-sm">
+					<dt className="text-slate-600 dark:text-slate-400">Username</dt>
 					<dd className="font-mono">{credentials.username}</dd>
-					<dt className="text-slate-600">Password</dt>
+					<dt className="text-slate-600 dark:text-slate-400">Password</dt>
 					<dd className="font-mono" data-testid="temporary-password">
 						{credentials.password}
 					</dd>

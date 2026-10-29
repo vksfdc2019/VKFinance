@@ -102,37 +102,37 @@ function SecurityCheckup({ profile, overview, devices }: { profile: Profile; ove
 		<Panel bodyClassName="grid items-center gap-6 sm:grid-cols-[auto_1fr]">
 			<div className="flex flex-col items-center gap-2">
 				<ProgressRing value={score} size={112} stroke={10} color={color} label={`Security checkup ${passed} of ${checks.length}`}>
-					<span className="text-2xl font-semibold tabular-nums text-slate-900">
+					<span className="text-2xl font-semibold tabular-nums text-slate-900 dark:text-slate-100">
 						{passed}/{checks.length}
 					</span>
-					<span className="text-[11px] text-slate-500">checks</span>
+					<span className="text-[11px] text-slate-500 dark:text-slate-400">checks</span>
 				</ProgressRing>
-				<span className="flex items-center gap-1 text-sm font-medium text-slate-700">
+				<span className="flex items-center gap-1 text-sm font-medium text-slate-700 dark:text-slate-300">
 					{status === "good" ? (
-						<ShieldCheck className="size-4 text-emerald-600" aria-hidden="true" />
+						<ShieldCheck className="size-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
 					) : (
-						<AlertTriangle className="size-4 text-amber-600" aria-hidden="true" />
+						<AlertTriangle className="size-4 text-amber-600 dark:text-amber-400" aria-hidden="true" />
 					)}
 					{verdict}
 				</span>
 			</div>
 			<ul className="grid gap-2 sm:grid-cols-2">
 				{checks.map((c, i) => (
-					<li key={c.label} className="vk-rise flex items-start gap-3 rounded-xl p-2.5 ring-1 ring-slate-900/5" style={{ animationDelay: `${i * 50}ms` }}>
+					<li key={c.label} className="vk-rise flex items-start gap-3 rounded-xl p-2.5 ring-1 ring-slate-900/5 dark:ring-white/10" style={{ animationDelay: `${i * 50}ms` }}>
 						{c.ok ? (
-							<CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-600" aria-label="Done" />
+							<CheckCircle2 className="mt-0.5 size-5 shrink-0 text-emerald-600 dark:text-emerald-400" aria-label="Done" />
 						) : (
-							<AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-500" aria-label="To do" />
+							<AlertTriangle className="mt-0.5 size-5 shrink-0 text-amber-500 dark:text-amber-400" aria-label="To do" />
 						)}
 						<div className="min-w-0 text-sm">
 							{c.href && !c.ok ? (
-								<a href={c.href} className="font-medium text-slate-900 underline-offset-4 hover:text-teal-800 hover:underline">
+								<a href={c.href} className="font-medium text-slate-900 dark:text-slate-100 underline-offset-4 hover:text-brand-800 dark:hover:text-brand-200 hover:underline">
 									{c.label}
 								</a>
 							) : (
-								<p className="font-medium text-slate-900">{c.label}</p>
+								<p className="font-medium text-slate-900 dark:text-slate-100">{c.label}</p>
 							)}
-							<p className="line-clamp-2 text-xs text-slate-500">{c.detail}</p>
+							<p className="line-clamp-2 text-xs text-slate-500 dark:text-slate-400">{c.detail}</p>
 						</div>
 					</li>
 				))}
@@ -235,23 +235,23 @@ function DevicesCard({ sessions, reload }: { sessions: DeviceSession[] | null; r
 					sessions.map((s) => {
 						const Icon = /iOS|Android/.test(s.device) ? Smartphone : Monitor;
 						return (
-							<div key={s.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl p-3 ring-1 ring-slate-900/5">
+							<div key={s.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl p-3 ring-1 ring-slate-900/5 dark:ring-white/10">
 								<div className="flex items-center gap-3">
 									<span
 										className={cn(
 											"relative flex size-9 items-center justify-center rounded-lg",
-											s.current ? "bg-teal-50 text-teal-700" : "bg-slate-100 text-slate-600",
+											s.current ? "bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-300" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400",
 										)}
 									>
 										<Icon className="size-4" aria-hidden="true" />
-										{s.current && <span className="vk-pulse absolute -top-0.5 -right-0.5 size-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />}
+										{s.current && <span className="vk-pulse absolute -top-0.5 -right-0.5 size-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />}
 									</span>
 									<div>
-										<p className="text-sm font-medium text-slate-900">
+										<p className="text-sm font-medium text-slate-900 dark:text-slate-100">
 											{s.device}
-											{s.current && <span className="ml-2 rounded-full bg-teal-50 px-2 py-0.5 text-xs font-medium text-teal-800">This device</span>}
+											{s.current && <span className="ml-2 rounded-full bg-brand-50 dark:bg-brand-950/40 px-2 py-0.5 text-xs font-medium text-brand-800 dark:text-brand-200">This device</span>}
 										</p>
-										<p className="text-xs text-slate-500">
+										<p className="text-xs text-slate-500 dark:text-slate-400">
 											Signed in {formatDateTime(s.startedAt)} · active {formatRelative(s.lastActivity)}
 										</p>
 									</div>
@@ -338,10 +338,10 @@ const EVENT_STYLE: Record<string, { label: string; icon: LucideIcon; tone: "good
 };
 
 const TONE = {
-	good: "bg-emerald-50 text-emerald-700",
-	info: "bg-sky-50 text-sky-700",
-	warn: "bg-amber-50 text-amber-700",
-	bad: "bg-red-50 text-red-700",
+	good: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300",
+	info: "bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300",
+	warn: "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300",
+	bad: "bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300",
 };
 
 const ACTIVITY_PREVIEW = 8;
@@ -362,9 +362,9 @@ function ActivityCard({ events }: { events: SecurityEvent[] }) {
 			}
 		>
 			{events.length === 0 ? (
-				<p className="py-6 text-center text-sm text-slate-500">Nothing yet - new activity can take a few seconds to appear.</p>
+				<p className="py-6 text-center text-sm text-slate-500 dark:text-slate-400">Nothing yet - new activity can take a few seconds to appear.</p>
 			) : (
-				<ol className="relative grid gap-1 before:absolute before:top-2 before:bottom-2 before:left-[17px] before:w-px before:bg-slate-200">
+				<ol className="relative grid gap-1 before:absolute before:top-2 before:bottom-2 before:left-[17px] before:w-px before:bg-slate-200 dark:before:bg-slate-700">
 					{shown.map((e, i) => {
 						const style = EVENT_STYLE[e.type] ?? {
 							label: e.type.replace(/_/g, " ").toLowerCase(),
@@ -373,14 +373,14 @@ function ActivityCard({ events }: { events: SecurityEvent[] }) {
 						};
 						return (
 							<li key={`${e.at}-${i}`} className="vk-rise relative flex items-start gap-3 py-1.5" style={{ animationDelay: `${Math.min(i, 10) * 35}ms` }}>
-								<span className={cn("relative z-10 flex size-9 shrink-0 items-center justify-center rounded-full ring-4 ring-white", TONE[style.tone])}>
+								<span className={cn("relative z-10 flex size-9 shrink-0 items-center justify-center rounded-full ring-4 ring-white dark:ring-slate-900", TONE[style.tone])}>
 									<style.icon className="size-4" aria-hidden="true" />
 								</span>
 								<div className="min-w-0 flex-1 pt-1">
-									<p className="text-sm font-medium text-slate-900">{style.label}</p>
-									{e.details && <p className="truncate text-xs text-slate-500">{e.details}</p>}
+									<p className="text-sm font-medium text-slate-900 dark:text-slate-100">{style.label}</p>
+									{e.details && <p className="truncate text-xs text-slate-500 dark:text-slate-400">{e.details}</p>}
 								</div>
-								<time className="shrink-0 pt-1.5 text-xs text-slate-500" dateTime={e.at} title={formatDateTime(e.at)}>
+								<time className="shrink-0 pt-1.5 text-xs text-slate-500 dark:text-slate-400" dateTime={e.at} title={formatDateTime(e.at)}>
 									{formatRelative(e.at)}
 								</time>
 							</li>
@@ -466,8 +466,8 @@ export default function ProfilePage() {
 								<dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
 									{details.map(([label, value]) => (
 										<div key={label} className="contents">
-											<dt className="text-slate-500">{label}</dt>
-											<dd className="truncate text-slate-900">{value || "—"}</dd>
+											<dt className="text-slate-500 dark:text-slate-400">{label}</dt>
+											<dd className="truncate text-slate-900 dark:text-slate-100">{value || "—"}</dd>
 										</div>
 									))}
 								</dl>

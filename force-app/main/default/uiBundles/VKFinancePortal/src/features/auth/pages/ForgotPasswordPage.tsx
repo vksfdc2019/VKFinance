@@ -55,7 +55,7 @@ export default function ForgotPasswordPage() {
 				<p className="text-center text-sm text-muted-foreground">
 					No email on your account? Ask your Family Admin to reset your password.
 				</p>
-				<Link to="/login" className="text-center text-sm text-teal-800 underline-offset-4 hover:underline">
+				<Link to="/login" className="text-center text-sm text-brand-800 dark:text-brand-200 underline-offset-4 hover:underline">
 					Back to sign in
 				</Link>
 			</form>

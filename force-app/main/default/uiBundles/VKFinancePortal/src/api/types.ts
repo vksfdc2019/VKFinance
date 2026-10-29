@@ -1,3 +1,5 @@
+import type { Appearance } from "@/theme/themes";
+
 export type Role = "Family Admin" | "Co-Admin" | "Member" | "Child" | "Viewer";
 export type MemberStatus = "Invited" | "Active" | "Disabled" | "Removed";
 
@@ -34,6 +36,8 @@ export interface Profile {
 	sessionScope: "FULL" | "CHANGE_PASSWORD";
 	idleTimeoutMinutes: number;
 	permissions: string[];
+	/** Saved themes; missing from older servers. */
+	appearance?: Appearance;
 }
 
 /** A sign-in either finishes (token + profile) or asks for an authenticator code first. */
