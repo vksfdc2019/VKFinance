@@ -39,34 +39,34 @@ export const REPORT_GROUPS: { title: string; reports: ReportInfo[] }[] = [
 	{
 		title: "Spending",
 		reports: [
-			{ type: "summary", title: "Monthly summary", text: "Where this month's money came from and went.", icon: CalendarRange, tint: "bg-teal-50 text-teal-700" },
-			{ type: "category", title: "Spending by category", text: "Drill from category to sub-category to entries.", icon: PieChart, tint: "bg-orange-50 text-orange-700" },
-			{ type: "members", title: "Member spending", text: "Who spent what against their limit.", icon: Users, tint: "bg-violet-50 text-violet-700", adminOnly: true },
-			{ type: "modes", title: "Payment modes", text: "UPI vs cash vs cards vs bank transfers.", icon: Smartphone, tint: "bg-sky-50 text-sky-700" },
+			{ type: "summary", title: "Monthly summary", text: "Where this month's money came from and went.", icon: CalendarRange, tint: "bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-300" },
+			{ type: "category", title: "Spending by category", text: "Drill from category to sub-category to entries.", icon: PieChart, tint: "bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-300" },
+			{ type: "members", title: "Member spending", text: "Who spent what against their limit.", icon: Users, tint: "bg-violet-50 dark:bg-violet-950/40 text-violet-700 dark:text-violet-300", adminOnly: true },
+			{ type: "modes", title: "Payment modes", text: "UPI vs cash vs cards vs bank transfers.", icon: Smartphone, tint: "bg-sky-50 dark:bg-sky-950/40 text-sky-700 dark:text-sky-300" },
 		],
 	},
 	{
 		title: "Planning",
 		reports: [
-			{ type: "trend", title: "Income vs spending", text: "Twelve months of saving, month by month.", icon: BarChart3, tint: "bg-emerald-50 text-emerald-700" },
-			{ type: "budget", title: "Budget vs actual", text: "Which budgets are over, and by how much.", icon: Gauge, tint: "bg-amber-50 text-amber-700" },
-			{ type: "forecast", title: "Cash-flow forecast", text: "Will there be enough in 30, 60 and 90 days?", icon: LineIcon, tint: "bg-indigo-50 text-indigo-700", adminOnly: true },
-			{ type: "annual", title: "Annual summary", text: "Financial-year totals and tax-relevant items.", icon: ScrollText, tint: "bg-rose-50 text-rose-700", adminOnly: true },
+			{ type: "trend", title: "Income vs spending", text: "Twelve months of saving, month by month.", icon: BarChart3, tint: "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300" },
+			{ type: "budget", title: "Budget vs actual", text: "Which budgets are over, and by how much.", icon: Gauge, tint: "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300" },
+			{ type: "forecast", title: "Cash-flow forecast", text: "Will there be enough in 30, 60 and 90 days?", icon: LineIcon, tint: "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300", adminOnly: true },
+			{ type: "annual", title: "Annual summary", text: "Financial-year totals and tax-relevant items.", icon: ScrollText, tint: "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300", adminOnly: true },
 		],
 	},
 	{
 		title: "Accounts and commitments",
 		reports: [
-			{ type: "account", title: "Account statement", text: "Running balance for one account.", icon: Tags, tint: "bg-slate-100 text-slate-700" },
-			{ type: "cards", title: "Credit cards", text: "Card spending, payments and limits used.", icon: CreditCard, tint: "bg-slate-100 text-slate-700" },
-			{ type: "loans", title: "Loans and EMIs", text: "Outstanding, repaid and interest this year.", icon: Landmark, tint: "bg-stone-100 text-stone-700" },
-			{ type: "bills", title: "Bills", text: "Paid on time or late, and yearly cost per biller.", icon: ReceiptText, tint: "bg-yellow-50 text-yellow-800", adminOnly: true },
+			{ type: "account", title: "Account statement", text: "Running balance for one account.", icon: Tags, tint: "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300" },
+			{ type: "cards", title: "Credit cards", text: "Card spending, payments and limits used.", icon: CreditCard, tint: "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300" },
+			{ type: "loans", title: "Loans and EMIs", text: "Outstanding, repaid and interest this year.", icon: Landmark, tint: "bg-stone-100 dark:bg-slate-800 text-stone-700 dark:text-slate-300" },
+			{ type: "bills", title: "Bills", text: "Paid on time or late, and yearly cost per biller.", icon: ReceiptText, tint: "bg-yellow-50 dark:bg-yellow-950/40 text-yellow-800 dark:text-yellow-200", adminOnly: true },
 		],
 	},
 	{
 		title: "Security",
 		reports: [
-			{ type: "security", title: "Security and activity", text: "Sign-ins, sessions, locked accounts, recent changes.", icon: ShieldCheck, tint: "bg-red-50 text-red-700", adminOnly: true },
+			{ type: "security", title: "Security and activity", text: "Sign-ins, sessions, locked accounts, recent changes.", icon: ShieldCheck, tint: "bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300", adminOnly: true },
 		],
 	},
 ];
@@ -94,11 +94,11 @@ export default function ReportsPage() {
 			<PageHeader title="Reports" description="Every view of your family's money - export any of them, print them, or save your favourite filters." />
 			{saved && saved.length > 0 && (
 				<section className="mb-8">
-					<h2 className="mb-3 text-sm font-semibold text-slate-700">Saved reports</h2>
+					<h2 className="mb-3 text-sm font-semibold text-slate-700 dark:text-slate-300">Saved reports</h2>
 					<ul className="flex flex-wrap gap-2">
 						{saved.map((s) => (
-							<li key={s.id} className="vk-rise flex items-center gap-1 rounded-full bg-white py-1 pr-1 pl-3 text-sm shadow-sm ring-1 ring-slate-900/5">
-								<Link to={`/reports/${s.reportType}${queryString(s.filters)}`} className="font-medium text-slate-800 hover:text-teal-700">
+							<li key={s.id} className="vk-rise flex items-center gap-1 rounded-full bg-white dark:bg-slate-900 py-1 pr-1 pl-3 text-sm shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10">
+								<Link to={`/reports/${s.reportType}${queryString(s.filters)}`} className="font-medium text-slate-800 dark:text-slate-200 hover:text-brand-700 dark:hover:text-brand-300">
 									{s.name}
 								</Link>
 								<span className="text-xs text-slate-400">· {REPORT_INFO[s.reportType]?.title ?? s.reportType}{s.shared ? (s.mine ? " · shared" : ` · from ${s.ownerName}`) : ""}</span>
@@ -117,19 +117,19 @@ export default function ReportsPage() {
 				if (!visible.length) return null;
 				return (
 					<section key={group.title} className="mb-8">
-						<h2 className="mb-3 text-sm font-semibold text-slate-700">{group.title}</h2>
+						<h2 className="mb-3 text-sm font-semibold text-slate-700 dark:text-slate-300">{group.title}</h2>
 						<div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
 							{visible.map((r) => (
 								<Reveal key={r.type} index={index++}>
 									<Link
 										to={`/reports/${r.type}`}
-										className="vk-lift flex h-full flex-col rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-900/5 focus-visible:ring-2 focus-visible:ring-teal-600 focus-visible:outline-none"
+										className="vk-lift flex h-full flex-col rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:outline-none"
 									>
 										<span className={`mb-3 flex size-10 items-center justify-center rounded-xl ${r.tint}`}>
 											<r.icon className="size-5" aria-hidden="true" />
 										</span>
-										<span className="font-semibold text-slate-900">{r.title}</span>
-										<span className="mt-1 text-sm text-slate-500">{r.text}</span>
+										<span className="font-semibold text-slate-900 dark:text-slate-100">{r.title}</span>
+										<span className="mt-1 text-sm text-slate-500 dark:text-slate-400">{r.text}</span>
 									</Link>
 								</Reveal>
 							))}

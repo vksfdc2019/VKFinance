@@ -94,8 +94,8 @@ function Requests() {
         )}
       </Intro>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-slate-500">
-          <span className="font-semibold text-slate-900">{pending}</span>{' '}
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          <span className="font-semibold text-slate-900 dark:text-slate-100">{pending}</span>{' '}
           waiting for a decision
         </p>
         <SegmentedControl
@@ -122,12 +122,12 @@ function Requests() {
           {items?.map(r => (
             <article
               key={r.id}
-              className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-slate-900/5"
+              className="rounded-2xl bg-white dark:bg-slate-900 p-5 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <div className="mb-3 flex items-center gap-2">
-                    <span className="rounded-lg bg-amber-50 p-2 text-amber-700">
+                    <span className="rounded-lg bg-amber-50 dark:bg-amber-950/40 p-2 text-amber-700 dark:text-amber-300">
                       {r.status === 'Recorded' ? (
                         <CheckCheck className="size-4" />
                       ) : (
@@ -141,7 +141,7 @@ function Requests() {
                     </Badge>
                   </div>
                   <h2 className="text-lg font-semibold">{r.title}</h2>
-                  <p className="mt-1 text-xs text-slate-500">
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
                     {r.childName} · {r.accountName} · {r.categoryName}
                   </p>
                 </div>
@@ -150,16 +150,16 @@ function Requests() {
                 </p>
               </div>
               {r.note && (
-                <p className="mt-4 rounded-xl bg-slate-50 p-3 text-sm text-slate-600">
+                <p className="mt-4 rounded-xl bg-slate-50 dark:bg-slate-800/40 p-3 text-sm text-slate-600 dark:text-slate-400">
                   {r.note}
                 </p>
               )}
               {r.decisionNote && (
-                <p className="mt-3 text-sm text-teal-800">
+                <p className="mt-3 text-sm text-brand-800 dark:text-brand-200">
                   Parent’s note: {r.decisionNote}
                 </p>
               )}
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-4">
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 dark:border-slate-800 pt-4">
                 <span className="text-xs text-slate-400">
                   Valid through {formatDate(r.validUntil)}
                 </span>

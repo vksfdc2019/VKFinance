@@ -8,7 +8,7 @@ const statusAlertVariants = cva('', {
     variant: {
       error: '',
       success: '',
-      info: 'text-blue-600 *:[svg]:text-current *:data-[slot=alert-description]:text-blue-600/90',
+      info: 'text-blue-600 dark:text-blue-400 *:[svg]:text-current *:data-[slot=alert-description]:text-blue-600/90',
     },
   },
   defaultVariants: {

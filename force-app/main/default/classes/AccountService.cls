@@ -45,18 +45,25 @@ public without sharing class AccountService {
         if (!cycles.isEmpty()) {
             Set<Id> cardIds = cycles.keySet();
             Id fid = ctx.familyId;
+            Map<Id, Decimal> paidByCard = new Map<Id, Decimal>();
             for (Transaction__c t : [
-                SELECT Account__c, Txn_Date__c, Amount__c
+                SELECT Account__c, Txn_Date__c, Amount__c, Direction__c, Type__c
                 FROM Transaction__c
-                WHERE Family__c = :fid AND Account__c IN :cardIds AND Direction__c = 'Debit' AND Status__c != 'Void' AND Txn_Date__c > :earliest
+                WHERE Family__c = :fid AND Account__c IN :cardIds AND Status__c != 'Void' AND Txn_Date__c > :earliest
                 WITH SYSTEM_MODE
                 LIMIT 10000
             ]) {
                 FinanceDtos.CardCycle cycle = cycles.get(t.Account__c);
-                if (t.Txn_Date__c > cycle.lastStatementDate) {
+                if (t.Txn_Date__c <= cycle.lastStatementDate) {
+                    continue;
+                }
+                if (t.Direction__c == 'Debit') {
                     cycle.cycleSpend += t.Amount__c;
+                } else if (CardStatementService.PAYMENT_TYPES.contains(t.Type__c)) {
+                    paidByCard.put(t.Account__c, LedgerUtil.zeroIfNull(paidByCard.get(t.Account__c)) + t.Amount__c);
                 }
             }
+            CardStatementService.attachLatest(cycles, paidByCard, today);
         }
         List<FinanceDtos.Account> result = new List<FinanceDtos.Account>();
         for (Financial_Account__c a : accounts) {

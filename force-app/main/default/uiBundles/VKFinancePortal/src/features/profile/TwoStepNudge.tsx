@@ -32,7 +32,7 @@ export function TwoStepNudge() {
 
 	return (
 		<div
-			className="vk-rise mb-6 flex flex-wrap items-center gap-4 rounded-2xl bg-gradient-to-r from-teal-700 to-emerald-700 p-4 text-white shadow-sm"
+			className="vk-rise mb-6 flex flex-wrap items-center gap-4 rounded-2xl bg-gradient-to-r from-brand-700 to-brand-alt-700 p-4 text-white shadow-sm"
 			role="region"
 			aria-label="Security tip"
 		>
@@ -43,7 +43,7 @@ export function TwoStepNudge() {
 				<p className="font-semibold">Protect your family's money with two-step verification</p>
 				<p className="text-sm text-white/80">As an admin you can see and change everything. A code from your phone stops anyone who learns your password.</p>
 			</div>
-			<Button asChild variant="secondary" className="bg-white text-teal-800 hover:bg-white/90">
+			<Button asChild variant="secondary" className="bg-white text-brand-800 hover:bg-white/90 dark:bg-white dark:text-brand-800 dark:hover:bg-white/90">
 				<Link to="/profile#two-step">Set it up</Link>
 			</Button>
 			<button type="button" onClick={dismiss} aria-label="Not now" className="rounded-lg p-1.5 text-white/70 hover:bg-white/10 hover:text-white">

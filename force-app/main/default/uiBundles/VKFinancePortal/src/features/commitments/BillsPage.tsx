@@ -115,27 +115,27 @@ export default function BillsPage() {
 									.filter((g) => g.rows.length)
 									.map((group, gi) => (
 										<section key={group.title}>
-											<h2 className={cn("mb-2 text-sm font-semibold", group.title === "Overdue" ? "text-red-700" : "text-slate-700")}>{group.title}</h2>
+											<h2 className={cn("mb-2 text-sm font-semibold", group.title === "Overdue" ? "text-red-700 dark:text-red-300" : "text-slate-700 dark:text-slate-300")}>{group.title}</h2>
 											<ul className="space-y-2">
 												{group.rows.map((i, index) => (
 													<Reveal as="li" key={i.id} index={gi * 3 + index}>
 														<div
 															className={cn(
-																"vk-lift flex flex-wrap items-center gap-3 rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-900/5",
-																i.status === "Overdue" && "ring-red-200",
+																"vk-lift flex flex-wrap items-center gap-3 rounded-2xl bg-white dark:bg-slate-900 p-4 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10",
+																i.status === "Overdue" && "ring-red-200 dark:ring-red-800",
 															)}
 														>
 															<CategoryChip icon={i.icon} color={i.color} size="lg" />
 															<div className="min-w-0 flex-1">
-																<p className="truncate font-semibold text-slate-900">{i.billName}</p>
-																<p className="truncate text-xs text-slate-500">
+																<p className="truncate font-semibold text-slate-900 dark:text-slate-100">{i.billName}</p>
+																<p className="truncate text-xs text-slate-500 dark:text-slate-400">
 																	{formatDate(i.dueDate)}
 																	{i.responsibleName ? ` · ${i.responsibleName}` : ""}
 																	{i.autoPay ? " · auto-pay" : ""}
 																</p>
 															</div>
 															<div className="text-right">
-																<p className="font-semibold tabular-nums text-slate-900">
+																<p className="font-semibold tabular-nums text-slate-900 dark:text-slate-100">
 																	{formatMoney((i.amountDue ?? 0) - (i.amountPaid ?? 0), currency)}
 																</p>
 																<DueBadge status={i.status} daysLeft={i.daysLeft} />
@@ -190,12 +190,12 @@ export default function BillsPage() {
 													type="button"
 													disabled={!data.canEdit}
 													onClick={() => setEditing(b)}
-													className={cn("flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left enabled:hover:bg-slate-50", !b.active && "opacity-50")}
+													className={cn("flex w-full items-center gap-3 rounded-xl px-2 py-2 text-left enabled:hover:bg-slate-50 dark:enabled:hover:bg-slate-800/60", !b.active && "opacity-50")}
 												>
 													<CategoryChip icon={b.icon} color={b.color} size="sm" />
 													<span className="min-w-0 flex-1">
-														<span className="block truncate text-sm font-medium text-slate-900">{b.name}</span>
-														<span className="block truncate text-xs text-slate-500">
+														<span className="block truncate text-sm font-medium text-slate-900 dark:text-slate-100">{b.name}</span>
+														<span className="block truncate text-xs text-slate-500 dark:text-slate-400">
 															{b.frequency}
 															{b.active && b.nextDueDate ? ` · next ${formatShortDate(b.nextDueDate)}` : b.active ? "" : " · paused"}
 														</span>
@@ -206,7 +206,7 @@ export default function BillsPage() {
 															Auto
 														</Badge>
 													)}
-													<span className="text-sm tabular-nums text-slate-700">{b.expectedAmount ? formatMoney(b.expectedAmount, currency) : "—"}</span>
+													<span className="text-sm tabular-nums text-slate-700 dark:text-slate-300">{b.expectedAmount ? formatMoney(b.expectedAmount, currency) : "—"}</span>
 												</button>
 											</li>
 										))}
@@ -217,8 +217,8 @@ export default function BillsPage() {
 										<ul className="space-y-2 text-sm">
 											{data.recentlyPaid.slice(0, 6).map((i) => (
 												<li key={i.id} className="flex items-center justify-between gap-2">
-													<span className="truncate text-slate-700">{i.billName}</span>
-													<span className="shrink-0 text-xs text-slate-500">
+													<span className="truncate text-slate-700 dark:text-slate-300">{i.billName}</span>
+													<span className="shrink-0 text-xs text-slate-500 dark:text-slate-400">
 														{formatMoney(i.amountPaid ?? 0, currency)} · {formatShortDate(i.dueDate)}
 													</span>
 												</li>
@@ -260,9 +260,9 @@ export default function BillsPage() {
 
 function Stat({ label, value, tone }: { label: string; value: React.ReactNode; tone?: "bad" | "ok" }) {
 	return (
-		<div className={cn("rounded-2xl px-5 py-4 shadow-sm ring-1", tone === "bad" ? "bg-red-50 ring-red-200" : "bg-white ring-slate-900/5")}>
-			<p className={cn("text-xs", tone === "bad" ? "text-red-700" : "text-slate-500")}>{label}</p>
-			<p className={cn("mt-1 text-xl font-semibold tabular-nums", tone === "bad" ? "text-red-800" : "text-slate-900")}>{value}</p>
+		<div className={cn("rounded-2xl px-5 py-4 shadow-sm ring-1", tone === "bad" ? "bg-red-50 dark:bg-red-950/40 ring-red-200 dark:ring-red-800" : "bg-white dark:bg-slate-900 ring-slate-900/5 dark:ring-white/10")}>
+			<p className={cn("text-xs", tone === "bad" ? "text-red-700 dark:text-red-300" : "text-slate-500 dark:text-slate-400")}>{label}</p>
+			<p className={cn("mt-1 text-xl font-semibold tabular-nums", tone === "bad" ? "text-red-800 dark:text-red-200" : "text-slate-900 dark:text-slate-100")}>{value}</p>
 		</div>
 	);
 }
@@ -338,7 +338,7 @@ function BillDialog({ bill, currency, onClose, onSaved }: { bill?: Bill; currenc
 						{refs ? (
 							<CategoryPicker id="bill-category" categories={refs.categories} kind="Expense" value={categoryId} onChange={setCategoryId} />
 						) : (
-							<div className="h-10 animate-pulse rounded-lg bg-slate-100" />
+							<div className="h-10 animate-pulse rounded-lg bg-slate-100 dark:bg-slate-800" />
 						)}
 					</div>
 					<div className="grid gap-3 sm:grid-cols-3">
@@ -408,11 +408,11 @@ function BillDialog({ bill, currency, onClose, onSaved }: { bill?: Bill; currenc
 							</Select>
 						</div>
 					)}
-					<label className="flex items-start gap-2.5 rounded-xl bg-teal-50/60 p-3 text-sm ring-1 ring-teal-700/10">
+					<label className="flex items-start gap-2.5 rounded-xl bg-brand-50/60 dark:bg-brand-950/40 p-3 text-sm ring-1 ring-brand-700/10">
 						<Checkbox checked={autoPay} onCheckedChange={(v) => setAutoPay(v === true)} className="mt-0.5" />
 						<span>
-							<span className="font-medium text-slate-900">Auto-pay on the due date</span>
-							<span className="block text-xs text-slate-600">Records the usual amount from the chosen account automatically each morning it&apos;s due.</span>
+							<span className="font-medium text-slate-900 dark:text-slate-100">Auto-pay on the due date</span>
+							<span className="block text-xs text-slate-600 dark:text-slate-400">Records the usual amount from the chosen account automatically each morning it&apos;s due.</span>
 						</span>
 					</label>
 					{bill && (

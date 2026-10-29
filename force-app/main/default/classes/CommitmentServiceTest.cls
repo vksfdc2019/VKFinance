@@ -208,11 +208,20 @@ private class CommitmentServiceTest {
         Assert.areEqual(300, statements[0].minimumDue, '5% of 6,000');
         Assert.areNotEqual('Paid', statements[0].status);
         Assert.areEqual(0, CardStatementService.generate(admin.familyId, Date.today()), 'generating again adds nothing');
+        FinanceDtos.Account cardView = AccountService.listAccounts(admin, false)[1];
+        Assert.areEqual('Visa', cardView.name);
+        Assert.areEqual(statements[0].id, cardView.card.statement.id, 'the card shows its latest statement as the bill');
+        Assert.areEqual(6000, cardView.card.statement.amount);
+        Assert.areEqual(300, cardView.card.statement.minimumDue);
+        Assert.areEqual(0, cardView.card.statement.amountPaid);
 
         LedgerTestData.transfer(admin, savings, card, 6000);
         statements = CardStatementService.listStatements(admin, card);
         Assert.areEqual('Paid', statements[0].status);
         Assert.areEqual(6000, statements[0].amountPaid);
+        cardView = AccountService.listAccounts(admin, false)[1];
+        Assert.areEqual('Paid', cardView.card.statement.status, 'paying the card settles its bill');
+        Assert.areEqual(6000, cardView.card.statement.amountPaid);
         try {
             CardStatementService.listStatements(admin, savings);
             Assert.fail('only cards have statements');

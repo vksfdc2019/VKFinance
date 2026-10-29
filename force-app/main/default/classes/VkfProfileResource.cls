@@ -7,8 +7,10 @@
  *   POST   /profile/mfa/confirm              {code} -> recovery codes (shown once)
  *   POST   /profile/mfa/disable              {currentPassword, code}
  *   POST   /profile/mfa/recovery-codes       {currentPassword, code} -> new recovery codes
+ *   PUT    /profile/appearance               {preset, brand?, mode, radius, text} -> appearance
  *   DELETE /profile/sessions        (sign out every other device)
  *   DELETE /profile/sessions/{id}   (sign out one device)
+ *   DELETE /profile/appearance      (back to the family theme)
  */
 @RestResource(urlMapping='/vkf/v1/profile/*')
 global with sharing class VkfProfileResource {
@@ -70,6 +72,22 @@ global with sharing class VkfProfileResource {
         }
     }
 
+    @HttpPut
+    global static void put() {
+        RestRequest req = RestContext.request;
+        Savepoint sp = Database.setSavepoint();
+        try {
+            UserContext ctx = SessionService.require(VkfRest.sessionToken(req), VkfRest.userAgent(req));
+            List<String> parts = VkfRest.segmentsAfter(req, 'profile');
+            if (parts.size() != 1 || parts[0] != 'appearance') {
+                throw new PortalException('NOT_FOUND');
+            }
+            VkfRest.ok(AppearanceService.savePersonal(ctx, VkfRest.body(req)));
+        } catch (Exception e) {
+            VkfRest.fail(e, sp);
+        }
+    }
+
     @HttpDelete
     global static void del() {
         RestRequest req = RestContext.request;
@@ -77,6 +95,10 @@ global with sharing class VkfProfileResource {
         try {
             UserContext ctx = SessionService.require(VkfRest.sessionToken(req), VkfRest.userAgent(req));
             List<String> parts = VkfRest.segmentsAfter(req, 'profile');
+            if (parts.size() == 1 && parts[0] == 'appearance') {
+                VkfRest.ok(AppearanceService.savePersonal(ctx, null));
+                return;
+            }
             if (parts.isEmpty() || parts[0] != 'sessions') {
                 throw new PortalException('NOT_FOUND');
             }

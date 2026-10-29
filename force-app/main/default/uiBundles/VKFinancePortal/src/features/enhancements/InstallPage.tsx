@@ -99,30 +99,30 @@ function Install() {
         description="A familiar place for your family’s finances, without searching through browser tabs. Keep using the same account and the same secure sign-in."
       />
       <div className="grid items-start gap-6 lg:grid-cols-[1fr_1.1fr]">
-        <div className="relative flex min-h-96 items-center justify-center overflow-hidden rounded-3xl bg-gradient-to-br from-teal-900 via-teal-800 to-emerald-700 p-8">
+        <div className="relative flex min-h-96 items-center justify-center overflow-hidden rounded-3xl bg-gradient-to-br from-brand-900 via-brand-800 to-brand-alt-700 p-8">
           <div
             aria-hidden
             className="absolute size-80 rounded-full border-[35px] border-white/5"
           />
-          <div className="relative w-56 rounded-[2.5rem] border-[7px] border-teal-950 bg-slate-50 px-4 pb-6 pt-3 shadow-2xl">
-            <div className="mx-auto mb-7 h-4 w-20 rounded-full bg-teal-950" />
-            <div className="mx-auto flex size-16 items-center justify-center rounded-2xl bg-teal-800 text-xl font-bold text-white shadow-lg shadow-teal-800/20">
+          <div className="relative w-56 rounded-[2.5rem] border-[7px] border-brand-950 bg-slate-50 dark:bg-slate-800/40 px-4 pb-6 pt-3 shadow-2xl">
+            <div className="mx-auto mb-7 h-4 w-20 rounded-full bg-brand-950" />
+            <div className="mx-auto flex size-16 items-center justify-center rounded-2xl bg-brand-800 text-xl font-bold text-white shadow-lg shadow-brand-800/20">
               VK
             </div>
-            <p className="mt-3 text-center text-sm font-semibold text-slate-800">
+            <p className="mt-3 text-center text-sm font-semibold text-slate-800 dark:text-slate-200">
               VK Finance
             </p>
-            <div className="mt-7 rounded-2xl bg-white p-4 shadow-sm">
+            <div className="mt-7 rounded-2xl bg-white dark:bg-slate-900 p-4 shadow-sm">
               <span className="text-[10px] text-slate-400">
                 A little clarity, every day
               </span>
-              <p className="mt-2 text-lg font-semibold text-teal-900">
+              <p className="mt-2 text-lg font-semibold text-brand-900 dark:text-brand-100">
                 Your family.
                 <br />
                 Your future.
               </p>
-              <div className="mt-4 h-2 rounded-full bg-teal-100">
-                <div className="h-2 w-2/3 rounded-full bg-teal-600" />
+              <div className="mt-4 h-2 rounded-full bg-brand-100 dark:bg-brand-900/40">
+                <div className="h-2 w-2/3 rounded-full bg-brand-600" />
               </div>
             </div>
           </div>
@@ -152,12 +152,12 @@ function Install() {
               const Component = Icon as typeof Smartphone;
               return (
                 <div key={String(title)} className="flex gap-3">
-                  <span className="mt-0.5 rounded-xl bg-teal-50 p-2.5 text-teal-700">
+                  <span className="mt-0.5 rounded-xl bg-brand-50 dark:bg-brand-950/40 p-2.5 text-brand-700 dark:text-brand-300">
                     <Component className="size-5" />
                   </span>
                   <div>
                     <h2 className="text-sm font-semibold">{String(title)}</h2>
-                    <p className="mt-1 text-sm leading-relaxed text-slate-500">
+                    <p className="mt-1 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
                       {String(description)}
                     </p>
                   </div>
@@ -165,15 +165,15 @@ function Install() {
               );
             })}
           </div>
-          <div className="mt-7 border-t border-slate-100 pt-5">
+          <div className="mt-7 border-t border-slate-100 dark:border-slate-800 pt-5">
             {!online && (
-              <p className="mb-4 flex items-center gap-2 text-sm text-amber-800">
+              <p className="mb-4 flex items-center gap-2 text-sm text-amber-800 dark:text-amber-200">
                 <WifiOff className="size-4" />
                 Reconnect before setting up installation.
               </p>
             )}
             {installed ? (
-              <p className="flex items-center gap-2 text-sm font-semibold text-teal-800">
+              <p className="flex items-center gap-2 text-sm font-semibold text-brand-800 dark:text-brand-200">
                 <CheckCircle2 className="size-5" />
                 Installed on this device
               </p>
@@ -195,7 +195,7 @@ function Install() {
                       ? 'Install setup ready'
                       : 'Set up home-screen installation'}
                 </Button>
-                <p className="mt-4 text-xs leading-relaxed text-slate-500">
+                <p className="mt-4 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
                   On iPhone or iPad, open the portal in Safari, use Share, then
                   Add to Home Screen. On Android or desktop, look for Install
                   app in the browser menu. Availability depends on the published

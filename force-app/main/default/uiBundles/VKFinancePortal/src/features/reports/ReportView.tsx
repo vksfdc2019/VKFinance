@@ -157,21 +157,21 @@ export default function ReportView() {
 	}
 
 	if (!info) {
-		return <p className="text-sm text-slate-600">That report doesn&apos;t exist. <Link to="/reports" className="text-teal-700 underline">See all reports</Link></p>;
+		return <p className="text-sm text-slate-600 dark:text-slate-400">That report doesn&apos;t exist. <Link to="/reports" className="text-brand-700 dark:text-brand-300 underline">See all reports</Link></p>;
 	}
 
 	return (
 		<>
 			<div className="no-print mb-2">
-				<Link to="/reports" className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-800">
+				<Link to="/reports" className="inline-flex items-center gap-1 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200">
 					<ChevronLeft className="size-4" aria-hidden="true" />
 					Reports
 				</Link>
 			</div>
 			<div className="mb-5 flex flex-wrap items-end justify-between gap-4">
 				<div>
-					<h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">{report?.title ?? info.title}</h1>
-					<p className="mt-1 text-sm text-slate-500">
+					<h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-3xl">{report?.title ?? info.title}</h1>
+					<p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
 						{report?.subtitle ?? info.text}
 						{report && !FIXED_PERIOD.includes(type as ReportType) && type !== "forecast" ? ` · ${formatDate(report.fromDate)} – ${formatDate(report.toDate)}` : ""}
 					</p>
@@ -195,7 +195,7 @@ export default function ReportView() {
 			<div className="no-print mb-5 flex flex-wrap items-center gap-2">
 				{!FIXED_PERIOD.includes(type as ReportType) && (
 					<Select value={preset} onValueChange={(v) => setParam({ preset: v === "custom" ? "custom" : v, from: v === "custom" ? range.from : undefined, to: v === "custom" ? range.to : undefined })}>
-						<SelectTrigger className="h-9 w-48 rounded-xl bg-white" aria-label="Period">
+						<SelectTrigger className="h-9 w-48 rounded-xl bg-white dark:bg-slate-900" aria-label="Period">
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
@@ -209,13 +209,13 @@ export default function ReportView() {
 				)}
 				{preset === "custom" && !FIXED_PERIOD.includes(type as ReportType) && (
 					<>
-						<Input type="date" aria-label="From" className="h-9 w-40 rounded-xl bg-white" value={range.from} onChange={(e) => setParam({ preset: "custom", from: e.target.value, to: range.to })} />
-						<Input type="date" aria-label="To" className="h-9 w-40 rounded-xl bg-white" value={range.to} onChange={(e) => setParam({ preset: "custom", from: range.from, to: e.target.value })} />
+						<Input type="date" aria-label="From" className="h-9 w-40 rounded-xl bg-white dark:bg-slate-900" value={range.from} onChange={(e) => setParam({ preset: "custom", from: e.target.value, to: range.to })} />
+						<Input type="date" aria-label="To" className="h-9 w-40 rounded-xl bg-white dark:bg-slate-900" value={range.to} onChange={(e) => setParam({ preset: "custom", from: range.from, to: e.target.value })} />
 					</>
 				)}
 				{isAdmin && MEMBER_FILTER.includes(type as ReportType) && (
 					<Select value={filters.memberId ?? "all"} onValueChange={(v) => setParam({ memberId: v === "all" ? undefined : v })}>
-						<SelectTrigger className="h-9 w-48 rounded-xl bg-white" aria-label="Member">
+						<SelectTrigger className="h-9 w-48 rounded-xl bg-white dark:bg-slate-900" aria-label="Member">
 							<SelectValue />
 						</SelectTrigger>
 						<SelectContent>
@@ -230,7 +230,7 @@ export default function ReportView() {
 				)}
 				{type === "account" && (
 					<Select value={filters.accountId ?? ""} onValueChange={(v) => setParam({ accountId: v })}>
-						<SelectTrigger className="h-9 w-56 rounded-xl bg-white" aria-label="Account">
+						<SelectTrigger className="h-9 w-56 rounded-xl bg-white dark:bg-slate-900" aria-label="Account">
 							<SelectValue placeholder="Choose an account" />
 						</SelectTrigger>
 						<SelectContent>
@@ -253,7 +253,7 @@ export default function ReportView() {
 			<FormErrors errors={errors} />
 			{needsAccount ? (
 				<Panel>
-					<p className="py-10 text-center text-sm text-slate-500">Choose an account above to see its statement.</p>
+					<p className="py-10 text-center text-sm text-slate-500 dark:text-slate-400">Choose an account above to see its statement.</p>
 				</Panel>
 			) : !report && loading ? (
 				<div className="space-y-4">
@@ -269,9 +269,9 @@ export default function ReportView() {
 					<div className={cn("space-y-4 transition-opacity", loading && "opacity-60")}>
 						<div className={cn("grid gap-3 sm:grid-cols-2", report.kpis.length === 5 ? "xl:grid-cols-5" : "xl:grid-cols-4")}>
 							{report.kpis.map((k, i) => (
-								<Reveal key={k.label} index={i} className="rounded-2xl bg-white px-5 py-4 shadow-sm ring-1 ring-slate-900/5">
-									<p className="text-xs text-slate-500">{k.label}</p>
-									<p className="mt-1 text-xl font-semibold tabular-nums text-slate-900">
+								<Reveal key={k.label} index={i} className="rounded-2xl bg-white dark:bg-slate-900 px-5 py-4 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10">
+									<p className="text-xs text-slate-500 dark:text-slate-400">{k.label}</p>
+									<p className="mt-1 text-xl font-semibold tabular-nums text-slate-900 dark:text-slate-100">
 										{k.format === "money" && k.value !== undefined ? (
 											<AnimatedMoney value={k.value} currency={currency} />
 										) : k.format === "text" ? (
@@ -293,7 +293,7 @@ export default function ReportView() {
 						)}
 						{report.table && <ReportTableView table={report.table} currency={currency} onRow={report.drill ? (row) => drill(row.id as string) : undefined} />}
 						{report.detail && <ReportTableView table={report.detail} currency={currency} />}
-						{report.note && <p className="text-xs text-slate-500">{report.note}</p>}
+						{report.note && <p className="text-xs text-slate-500 dark:text-slate-400">{report.note}</p>}
 					</div>
 				)
 			)}
@@ -336,13 +336,13 @@ function RankedBars({ points, money, currency, onDrill }: { points: ReportPoint[
 						{p.icon && <CategoryChip icon={p.icon} color={p.color} size="sm" />}
 						<div className="min-w-0 flex-1">
 							<div className="flex items-baseline justify-between gap-2">
-								<span className="truncate text-sm font-medium text-slate-800">{p.label}</span>
-								<span className="shrink-0 text-sm font-semibold tabular-nums text-slate-900">
+								<span className="truncate text-sm font-medium text-slate-800 dark:text-slate-200">{p.label}</span>
+								<span className="shrink-0 text-sm font-semibold tabular-nums text-slate-900 dark:text-slate-100">
 									{money ? formatMoney(value, currency) : value.toLocaleString("en-IN")}
 									{p.target !== undefined && p.target !== null && <span className="font-normal text-slate-400"> / {formatMoney(p.target, currency)}</span>}
 								</span>
 							</div>
-							<div className="relative mt-1.5 h-2 rounded-full bg-slate-100">
+							<div className="relative mt-1.5 h-2 rounded-full bg-slate-100 dark:bg-slate-800">
 								<div
 									className="vk-rise h-full rounded-full transition-[width] duration-700"
 									style={{ width: `${(Math.max(0, value) / max) * 100}%`, backgroundColor: over ? "var(--status-critical)" : "var(--series-magnitude)", animationDelay: `${i * 40}ms` }}
@@ -357,7 +357,7 @@ function RankedBars({ points, money, currency, onDrill }: { points: ReportPoint[
 				return (
 					<li key={p.id ?? p.label}>
 						{onDrill && p.id ? (
-							<button type="button" onClick={() => onDrill(p.id)} className="-m-1.5 flex w-full items-center gap-3 rounded-xl p-1.5 text-left hover:bg-slate-50">
+							<button type="button" onClick={() => onDrill(p.id)} className="-m-1.5 flex w-full items-center gap-3 rounded-xl p-1.5 text-left hover:bg-slate-50 dark:hover:bg-slate-800/60">
 								{body}
 							</button>
 						) : (
@@ -386,7 +386,7 @@ function ReportTableView({ table, currency, onRow }: { table: ReportTable; curre
 		<Panel title={table.title} bodyClassName="p-0">
 			<div className="overflow-x-auto">
 				<table className="w-full text-sm">
-					<thead className="bg-slate-50 text-left text-xs text-slate-500">
+					<thead className="bg-slate-50 dark:bg-slate-800/40 text-left text-xs text-slate-500 dark:text-slate-400">
 						<tr>
 							{table.columns.map((c) => {
 								const numeric = ["money", "percent", "number"].includes(c.format);
@@ -394,11 +394,11 @@ function ReportTableView({ table, currency, onRow }: { table: ReportTable; curre
 									<th key={c.key} className={cn("px-4 py-2.5 font-medium whitespace-nowrap", numeric && "text-right")}>
 										<button
 											type="button"
-											className="inline-flex items-center gap-1 hover:text-slate-800"
+											className="inline-flex items-center gap-1 hover:text-slate-800 dark:hover:text-slate-200"
 											onClick={() => setSort((s) => ({ key: c.key, desc: s?.key === c.key ? !s.desc : numeric }))}
 										>
 											{c.label}
-											<ArrowDownUp className={cn("size-3", sort?.key === c.key ? "text-teal-700" : "text-slate-300")} aria-hidden="true" />
+											<ArrowDownUp className={cn("size-3", sort?.key === c.key ? "text-brand-700 dark:text-brand-300" : "text-slate-300")} aria-hidden="true" />
 										</button>
 									</th>
 								);
@@ -409,11 +409,11 @@ function ReportTableView({ table, currency, onRow }: { table: ReportTable; curre
 						{rows.map((row, i) => (
 							<tr
 								key={String(row.id ?? i)}
-								className={cn("border-t border-slate-100", onRow && row.id && "cursor-pointer hover:bg-slate-50")}
+								className={cn("border-t border-slate-100 dark:border-slate-800", onRow && row.id && "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/60")}
 								onClick={onRow && row.id ? () => onRow(row) : undefined}
 							>
 								{table.columns.map((c) => (
-									<td key={c.key} className={cn("px-4 py-2 whitespace-nowrap", ["money", "percent", "number"].includes(c.format) ? "text-right" : "text-slate-800")}>
+									<td key={c.key} className={cn("px-4 py-2 whitespace-nowrap", ["money", "percent", "number"].includes(c.format) ? "text-right" : "text-slate-800 dark:text-slate-200")}>
 										{formatCell(row[c.key], c.format, currency)}
 									</td>
 								))}

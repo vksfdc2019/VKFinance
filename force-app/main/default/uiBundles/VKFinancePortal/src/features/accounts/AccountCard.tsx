@@ -2,9 +2,21 @@ import type { ReactNode } from "react";
 import { CalendarClock, Users } from "lucide-react";
 import { ACCOUNT_GRADIENTS, ACCOUNT_ICONS, accountColor } from "@/components/finance/icons";
 import { utilisationStatus } from "@/components/finance/ui";
-import type { Account } from "@/api/financeTypes";
+import type { Account, CardCycle } from "@/api/financeTypes";
 import { formatMoney, formatShortDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
+
+/** The bill in words: what is left to pay and by when, or when the next statement closes. */
+function billNote(card: Partial<CardCycle>, currency: string): string {
+	const bill = card.statement;
+	const next = `Next statement ${formatShortDate(card.nextStatementDate)}`;
+	if (!bill) return `Statement ${formatShortDate(card.nextStatementDate)} · Due ${formatShortDate(card.dueDate)}`;
+	if (bill.status === "Paid") return `${bill.amount > 0 ? "Bill paid" : "Nothing to pay"} · ${next}`;
+	const left = formatMoney(Math.max(0, bill.amount - bill.amountPaid), currency);
+	if (bill.status === "Overdue") return `Was due ${formatShortDate(bill.dueDate)} · ${left} to pay`;
+	if (bill.status === "Partially Paid") return `${left} left · Due ${formatShortDate(bill.dueDate)}`;
+	return `Due ${formatShortDate(bill.dueDate)} · Minimum ${formatMoney(bill.minimumDue, currency)}`;
+}
 
 /** A bank-card style tile. Text stays white on every gradient; status uses an icon and words. */
 export function AccountCard({
@@ -13,7 +25,8 @@ export function AccountCard({
 	menu,
 	className,
 }: {
-	account: Pick<Account, "name" | "type" | "balance" | "isLiability" | "status"> & Partial<Account>;
+	account: Pick<Account, "name" | "type" | "balance" | "isLiability" | "status"> &
+		Partial<Omit<Account, "card">> & { card?: Partial<CardCycle> };
 	currency: string;
 	menu?: ReactNode;
 	className?: string;
@@ -47,7 +60,9 @@ export function AccountCard({
 			</div>
 
 			<div className="relative mt-auto pt-4">
-				<p className="text-xs text-white/70">{account.isLiability ? "Outstanding" : "Balance"}</p>
+				<p className="text-xs text-white/70">
+					{account.type === "Credit Card" ? "Total outstanding" : account.isLiability ? "Outstanding" : "Balance"}
+				</p>
 				<p className="text-2xl font-semibold tracking-tight tabular-nums">{formatMoney(account.balance, currency)}</p>
 
 				{card && account.creditLimit ? (
@@ -58,17 +73,28 @@ export function AccountCard({
 								style={{ width: `${Math.min(100, Math.max(0, pct ?? 0))}%` }}
 							/>
 						</div>
-						<div className="mt-1.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-[11px] text-white/80">
-							<span>
-								{pct !== undefined ? `${pct.toFixed(0)}% used` : ""}
-								{pct !== undefined && utilisationStatus(pct) !== "good" && " · keep under 30%"}
-							</span>
-							<span>{formatMoney(card.available ?? 0, currency)} available</span>
-						</div>
-						<p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-black/15 px-2.5 py-1 text-[11px]">
-							<CalendarClock className="size-3.5" aria-hidden="true" />
-							Statement {formatShortDate(card.nextStatementDate)} · Due {formatShortDate(card.dueDate)}
-						</p>
+						{pct !== undefined && (
+							<p className="mt-1.5 text-[11px] text-white/80">
+								{pct.toFixed(0)}% used
+								{utilisationStatus(pct) !== "good" && " · keep under 30%"}
+							</p>
+						)}
+						<dl className="mt-3 grid grid-cols-2 gap-3">
+							<div>
+								<dt className="text-xs text-white/70">Available limit</dt>
+								<dd className="font-semibold tabular-nums">{formatMoney(card.available ?? 0, currency)}</dd>
+							</div>
+							<div>
+								<dt className="text-xs text-white/70">Bill amount</dt>
+								<dd className="font-semibold tabular-nums">{card.statement ? formatMoney(card.statement.amount, currency) : "—"}</dd>
+							</div>
+						</dl>
+						{card.nextStatementDate && (
+							<p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-black/15 px-2.5 py-1 text-[11px]">
+								<CalendarClock className="size-3.5" aria-hidden="true" />
+								{billNote(card, currency)}
+							</p>
+						)}
 					</div>
 				) : (
 					<div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-white/80">

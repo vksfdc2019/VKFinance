@@ -73,16 +73,16 @@ function Insights() {
           {data?.map(item => (
             <article
               key={item.key}
-              className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-900/5"
+              className="overflow-hidden rounded-2xl bg-white dark:bg-slate-900 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10"
             >
               <div
-                className={`flex items-center gap-2 px-5 py-3 text-xs font-semibold ${item.severity === 'warning' ? 'bg-amber-50 text-amber-800' : 'bg-violet-50 text-violet-800'}`}
+                className={`flex items-center gap-2 px-5 py-3 text-xs font-semibold ${item.severity === 'warning' ? 'bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200' : 'bg-violet-50 dark:bg-violet-950/40 text-violet-800 dark:text-violet-200'}`}
               >
                 <Lightbulb className="size-4" />
                 {item.kind}
               </div>
               <div className="p-5">
-                <h2 className="text-lg font-semibold text-slate-900">
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                   {item.title}
                 </h2>
                 <div className="my-5 flex flex-wrap items-end gap-5">
@@ -99,21 +99,21 @@ function Insights() {
                   {item.baseline != null && (
                     <div>
                       <p className="text-xs text-slate-400">Expected pace</p>
-                      <p className="mt-1 text-lg font-medium text-slate-500">
+                      <p className="mt-1 text-lg font-medium text-slate-500 dark:text-slate-400">
                         {formatMoney(item.baseline, currency)}
                       </p>
                     </div>
                   )}
                 </div>
-                <p className="text-sm leading-relaxed text-slate-500">
+                <p className="text-sm leading-relaxed text-slate-500 dark:text-slate-400">
                   {item.explanation}
                 </p>
-                <div className="mt-5 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-4">
+                <div className="mt-5 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 dark:border-slate-800 pt-4">
                   {!item.link.startsWith('/recurring') ||
                   can('RECURRING:READ') ? (
                     <Link
                       to={item.link}
-                      className="inline-flex items-center gap-1 text-sm font-semibold text-teal-800"
+                      className="inline-flex items-center gap-1 text-sm font-semibold text-brand-800 dark:text-brand-200"
                     >
                       Explore the details
                       <ArrowUpRight className="size-4" />

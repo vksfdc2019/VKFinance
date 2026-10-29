@@ -11,7 +11,7 @@ interface AuthCardProps {
 /** Centered card used by every signed-out page (sign in, reset, first password). */
 export function AuthCard({ title, description, children }: AuthCardProps) {
 	return (
-		<main className="flex min-h-svh items-center justify-center bg-slate-50 px-4 py-10">
+		<main className="flex min-h-svh items-center justify-center bg-slate-50 dark:bg-slate-800/40 px-4 py-10">
 			<title>{`${title} · VK Finance`}</title>
 			<div className="w-full max-w-md">
 				<div className="mb-6 flex justify-center">

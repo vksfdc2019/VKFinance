@@ -64,7 +64,7 @@ export function CashFlowChart({ data, currency, highlight }: { data: Point[]; cu
 	return (
 		<div>
 			<div className="mb-3 flex items-center justify-between gap-3">
-				<ul className="flex items-center gap-4 text-xs text-slate-600" aria-label="Legend">
+				<ul className="flex items-center gap-4 text-xs text-slate-600 dark:text-slate-400" aria-label="Legend">
 					<li className="inline-flex items-center gap-1.5">
 						<span className="size-2.5 rounded-sm" style={{ backgroundColor: "var(--series-income)" }} />
 						Income
@@ -83,7 +83,7 @@ export function CashFlowChart({ data, currency, highlight }: { data: Point[]; cu
 			{table ? (
 				<table className="w-full text-sm">
 					<thead>
-						<tr className="text-left text-xs text-slate-500">
+						<tr className="text-left text-xs text-slate-500 dark:text-slate-400">
 							<th className="py-1.5 font-medium">Month</th>
 							<th className="py-1.5 text-right font-medium">Income</th>
 							<th className="py-1.5 text-right font-medium">Spending</th>
@@ -92,8 +92,8 @@ export function CashFlowChart({ data, currency, highlight }: { data: Point[]; cu
 					</thead>
 					<tbody className="tabular-nums">
 						{data.map((d) => (
-							<tr key={d.month} className="border-t border-slate-100">
-								<td className="py-1.5 text-slate-700">{monthLabel(d.month)}</td>
+							<tr key={d.month} className="border-t border-slate-100 dark:border-slate-800">
+								<td className="py-1.5 text-slate-700 dark:text-slate-300">{monthLabel(d.month)}</td>
 								<td className="py-1.5 text-right">{formatMoney(d.income, currency)}</td>
 								<td className="py-1.5 text-right">{formatMoney(d.expenses, currency)}</td>
 								<td className="py-1.5 text-right font-medium">{formatMoney(d.income - d.expenses, currency)}</td>
@@ -143,7 +143,7 @@ export function CashFlowChart({ data, currency, highlight }: { data: Point[]; cu
 											x={cx}
 											y={HEIGHT - 8}
 											textAnchor="middle"
-											className={isCurrent ? "fill-slate-900 text-[11px] font-semibold" : "fill-[var(--ink-muted)] text-[11px]"}
+											className={isCurrent ? "fill-slate-900 dark:fill-slate-100 text-[11px] font-semibold" : "fill-[var(--ink-muted)] text-[11px]"}
 										>
 											{monthLabel(d.month, "short")}
 										</text>

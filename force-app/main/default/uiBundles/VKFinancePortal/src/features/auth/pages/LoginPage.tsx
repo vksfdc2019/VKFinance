@@ -84,8 +84,8 @@ export default function LoginPage() {
 					}}
 					noValidate
 				>
-					<div className="flex items-center gap-3 rounded-xl bg-teal-50 p-3 text-sm text-teal-900">
-						<span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white text-teal-700 shadow-sm">
+					<div className="flex items-center gap-3 rounded-xl bg-brand-50 dark:bg-brand-950/40 p-3 text-sm text-brand-900 dark:text-brand-100">
+						<span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-white dark:bg-slate-900 text-brand-700 dark:text-brand-300 shadow-sm">
 							{useRecovery ? <KeyRound className="size-5" aria-hidden="true" /> : <Smartphone className="size-5" aria-hidden="true" />}
 						</span>
 						{useRecovery
@@ -116,7 +116,7 @@ export default function LoginPage() {
 					<div className="flex flex-wrap items-center justify-between gap-2 text-sm">
 						<button
 							type="button"
-							className="text-teal-800 underline-offset-4 hover:underline"
+							className="text-brand-800 dark:text-brand-200 underline-offset-4 hover:underline"
 							onClick={() => {
 								setUseRecovery((r) => !r);
 								setCode("");
@@ -127,7 +127,7 @@ export default function LoginPage() {
 						</button>
 						<button
 							type="button"
-							className="text-slate-500 underline-offset-4 hover:underline"
+							className="text-slate-500 dark:text-slate-400 underline-offset-4 hover:underline"
 							onClick={() => {
 								setChallenge(null);
 								setErrors([]);
@@ -136,7 +136,7 @@ export default function LoginPage() {
 							Back to sign in
 						</button>
 					</div>
-					<p className="text-xs text-slate-500">Lost your phone and your recovery codes? Ask your Family Admin to reset your two-step verification.</p>
+					<p className="text-xs text-slate-500 dark:text-slate-400">Lost your phone and your recovery codes? Ask your Family Admin to reset your two-step verification.</p>
 				</form>
 			</AuthCard>
 		);
@@ -169,7 +169,7 @@ export default function LoginPage() {
 					{busy && <Spinner />}
 					Sign in
 				</Button>
-				<Link to="/forgot-password" className="text-center text-sm text-teal-800 underline-offset-4 hover:underline">
+				<Link to="/forgot-password" className="text-center text-sm text-brand-800 dark:text-brand-200 underline-offset-4 hover:underline">
 					Forgot your password?
 				</Link>
 			</form>

@@ -54,7 +54,65 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --radius-2xl: calc(var(--radius) + 6px);
+  --radius-3xl: calc(var(--radius) + 14px);
+
+  /* Theme colours: set at runtime by src/theme/engine.ts. Use brand-* where the app used teal-*. */
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
+  --color-brand-950: var(--brand-950);
+  --color-brand-alt-50: var(--brand-alt-50);
+  --color-brand-alt-100: var(--brand-alt-100);
+  --color-brand-alt-200: var(--brand-alt-200);
+  --color-brand-alt-300: var(--brand-alt-300);
+  --color-brand-alt-400: var(--brand-alt-400);
+  --color-brand-alt-500: var(--brand-alt-500);
+  --color-brand-alt-600: var(--brand-alt-600);
+  --color-brand-alt-700: var(--brand-alt-700);
+  --color-brand-alt-800: var(--brand-alt-800);
+  --color-brand-alt-900: var(--brand-alt-900);
+  --color-brand-alt-950: var(--brand-alt-950);
 }
+
+/* VK Teal until the theme engine runs (it does before the first render). */
+:root {
+  --brand-50: oklch(98.4% 0.014 180.72);
+  --brand-100: oklch(95.3% 0.051 180.801);
+  --brand-200: oklch(91% 0.096 180.426);
+  --brand-300: oklch(85.5% 0.138 181.071);
+  --brand-400: oklch(77.7% 0.152 181.912);
+  --brand-500: oklch(70.4% 0.14 182.503);
+  --brand-600: oklch(60% 0.118 184.704);
+  --brand-700: oklch(51.1% 0.096 186.391);
+  --brand-800: oklch(43.7% 0.078 188.216);
+  --brand-900: oklch(38.6% 0.063 188.416);
+  --brand-950: oklch(27.7% 0.046 192.524);
+  --brand-alt-50: oklch(97.9% 0.021 166.113);
+  --brand-alt-100: oklch(95% 0.052 163.051);
+  --brand-alt-200: oklch(90.5% 0.093 164.15);
+  --brand-alt-300: oklch(84.5% 0.143 164.978);
+  --brand-alt-400: oklch(76.5% 0.177 163.223);
+  --brand-alt-500: oklch(69.6% 0.17 162.48);
+  --brand-alt-600: oklch(59.6% 0.145 163.225);
+  --brand-alt-700: oklch(50.8% 0.118 165.612);
+  --brand-alt-800: oklch(43.2% 0.095 166.913);
+  --brand-alt-900: oklch(37.8% 0.077 168.94);
+  --brand-alt-950: oklch(26.2% 0.051 172.552);
+  --brand-primary: oklch(43.7% 0.078 188.216);
+}
+
+/* Corner style and text size from the Appearance page. Every rounded-* follows --radius. */
+:root[data-radius="sharp"] { --radius: 0.25rem; }
+:root[data-radius="round"] { --radius: 0.95rem; }
+:root[data-text="large"] { font-size: 112.5%; }
 
 :root {
   --radius: 0.625rem;
@@ -64,7 +122,7 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.437 0.078 188.216);
+  --primary: var(--brand-primary);
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
@@ -75,9 +133,9 @@
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
-  --ring: oklch(0.6 0.118 184.704);
+  --ring: var(--brand-600);
   --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-2: var(--brand-600);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
@@ -91,38 +149,39 @@
   --sidebar-ring: oklch(0.708 0 0);
 }
 
+/* Dark: the same slate greys the pages use (slate-950 page, slate-900 cards), brand buttons kept. */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --background: oklch(12.9% 0.042 264.695);
+  --foreground: oklch(96.8% 0.007 247.896);
+  --card: oklch(20.8% 0.042 265.755);
+  --card-foreground: oklch(96.8% 0.007 247.896);
+  --popover: oklch(20.8% 0.042 265.755);
+  --popover-foreground: oklch(96.8% 0.007 247.896);
+  --primary: var(--brand-primary);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(27.9% 0.041 260.031);
+  --secondary-foreground: oklch(96.8% 0.007 247.896);
+  --muted: oklch(27.9% 0.041 260.031);
+  --muted-foreground: oklch(70.4% 0.04 256.788);
+  --accent: oklch(27.9% 0.041 260.031);
+  --accent-foreground: oklch(96.8% 0.007 247.896);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
+  --ring: var(--brand-400);
+  --chart-1: oklch(0.705 0.213 47.604);
+  --chart-2: var(--brand-400);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar: oklch(20.8% 0.042 265.755);
+  --sidebar-foreground: oklch(96.8% 0.007 247.896);
+  --sidebar-primary: var(--brand-primary);
   --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(27.9% 0.041 260.031);
+  --sidebar-accent-foreground: oklch(96.8% 0.007 247.896);
   --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar-ring: var(--brand-400);
 }
 
 @layer base {
@@ -147,11 +206,40 @@
   --ink-muted: #898781;
 }
 
+/* Series colours are bright enough for dark already; the quiet chart ink needs lifting. */
+.dark {
+  --chart-grid: #334155;
+  --chart-axis: #475569;
+  --ink-muted: #94a3b8;
+}
+
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-900;
+    @apply bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100;
     font-feature-settings: "cv11", "ss01";
   }
+}
+
+/* The signed-in backdrop: a soft wash of the theme colour in two corners. */
+.vk-app-bg {
+  background-color: var(--color-slate-50);
+  background-image:
+    radial-gradient(60rem 30rem at 100% -10%, color-mix(in oklab, var(--brand-500) 9%, transparent), transparent),
+    radial-gradient(40rem 20rem at -10% 0%, color-mix(in oklab, var(--brand-alt-400) 7%, transparent), transparent);
+}
+.dark .vk-app-bg {
+  background-color: var(--color-slate-950);
+  background-image:
+    radial-gradient(60rem 30rem at 100% -10%, color-mix(in oklab, var(--brand-500) 14%, transparent), transparent),
+    radial-gradient(40rem 20rem at -10% 0%, color-mix(in oklab, var(--brand-alt-500) 8%, transparent), transparent);
+}
+
+/* Switching theme or mode fades colours instead of snapping (not on first paint or reduced motion). */
+.vk-theme-transition,
+.vk-theme-transition *,
+.vk-theme-transition *::before,
+.vk-theme-transition *::after {
+  transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease, fill 0.25s ease, box-shadow 0.25s ease !important;
 }
 
 /* VK Finance motion. Short, eased and purposeful; all off when the device asks for reduced motion. */
@@ -193,6 +281,7 @@
 .vk-shake { animation: vk-shake 0.4s ease-in-out; }
 .vk-lift { transition: transform 0.2s ease, box-shadow 0.2s ease; }
 .vk-lift:hover { transform: translateY(-2px); box-shadow: 0 10px 24px -12px rgb(15 23 42 / 0.25); }
+.dark .vk-lift:hover { box-shadow: 0 10px 28px -12px rgb(0 0 0 / 0.6); }
 
 @media (prefers-reduced-motion: reduce) {
   .vk-rise, .vk-pop, .vk-wiggle, .vk-pulse, .vk-shake { animation: none; }

@@ -4,6 +4,8 @@
  */
 public without sharing class CardStatementService {
     public static final Decimal MINIMUM_FLOOR = 200;
+    /** Credits that pay a statement. A refund lowers what is owed but is not a payment. */
+    public static final Set<String> PAYMENT_TYPES = new Set<String>{ 'Card Payment', 'Adjustment' };
 
     /** Creates the statement for each card's most recent closed cycle, if missing. */
     public static Integer generate(Id familyId, Date today) {
@@ -22,7 +24,7 @@ public without sharing class CardStatementService {
             Decimal pct = card.Min_Due_Pct__c == null ? 5 : card.Min_Due_Pct__c;
             Decimal minimum = owed == 0 ? 0 : Math.min(owed, Math.max(MINIMUM_FLOOR, (owed * pct / 100).setScale(0, RoundingMode.CEILING)));
             Integer dueDays = card.Payment_Due_Days__c == null ? 20 : card.Payment_Due_Days__c.intValue();
-            String key = card.Id + '-' + String.valueOf(cycleEnd);
+            String key = statementKey(card.Id, cycleEnd);
             byKey.put(key, new Card_Statement__c(
                 Family__c = familyId, Account__c = card.Id, Cycle_Start__c = previousEnd.addDays(1), Cycle_End__c = cycleEnd,
                 Statement_Amount__c = owed, Minimum_Due__c = minimum, Due_Date__c = cycleEnd.addDays(dueDays), Unique_Key__c = key
@@ -34,6 +36,29 @@ public without sharing class CardStatementService {
         }
         insert as system byKey.values();
         return byKey.size();
+    }
+
+    public static String statementKey(Id cardId, Date cycleEnd) {
+        return cardId + '-' + String.valueOf(cycleEnd);
+    }
+
+    /**
+     * Puts each card's bill on its cycle: the statement for its last closed cycle, with the payments since
+     * it closed. A card is left without one until the daily job has written that statement.
+     */
+    public static void attachLatest(Map<Id, FinanceDtos.CardCycle> cycles, Map<Id, Decimal> paidByCard, Date today) {
+        Set<String> keys = new Set<String>();
+        for (Id cardId : cycles.keySet()) {
+            keys.add(statementKey(cardId, cycles.get(cardId).lastStatementDate));
+        }
+        for (Card_Statement__c s : [
+            SELECT Id, Account__c, Cycle_Start__c, Cycle_End__c, Statement_Amount__c, Minimum_Due__c, Due_Date__c
+            FROM Card_Statement__c
+            WHERE Unique_Key__c IN :keys
+            WITH SYSTEM_MODE
+        ]) {
+            cycles.get(s.Account__c).statement = toDto(s, LedgerUtil.zeroIfNull(paidByCard.get(s.Account__c)), today);
+        }
     }
 
     /** What the card owed at the end of a day: opening + debits - credits up to and including it (archived entries included). */
@@ -76,32 +101,38 @@ public without sharing class CardStatementService {
         Date earliest = rows[rows.size() - 1].Cycle_End__c;
         List<Transaction__c> credits = [
             SELECT Txn_Date__c, Amount__c FROM Transaction__c
-            WHERE Account__c = :cardId AND Direction__c = 'Credit' AND Status__c != 'Void' AND Txn_Date__c > :earliest AND Type__c IN ('Card Payment', 'Adjustment')
+            WHERE Account__c = :cardId AND Direction__c = 'Credit' AND Status__c != 'Void' AND Txn_Date__c > :earliest AND Type__c IN :PAYMENT_TYPES
             WITH SYSTEM_MODE
             LIMIT 5000
         ];
         Date today = Date.today();
         Date nextEnd;
         for (Card_Statement__c s : rows) {
-            CommitmentDtos.Statement d = new CommitmentDtos.Statement();
-            d.id = s.Id;
-            d.accountId = s.Account__c;
-            d.cycleStart = s.Cycle_Start__c;
-            d.cycleEnd = s.Cycle_End__c;
-            d.amount = s.Statement_Amount__c;
-            d.minimumDue = s.Minimum_Due__c;
-            d.dueDate = s.Due_Date__c;
+            Decimal paid = 0;
             // Payments after this statement closes and before the next one closes settle it.
             for (Transaction__c t : credits) {
                 if (t.Txn_Date__c > s.Cycle_End__c && (nextEnd == null || t.Txn_Date__c <= nextEnd)) {
-                    d.amountPaid += t.Amount__c;
+                    paid += t.Amount__c;
                 }
             }
-            d.status = statusFor(d, today);
-            result.add(d);
+            result.add(toDto(s, paid, today));
             nextEnd = s.Cycle_End__c;
         }
         return result;
+    }
+
+    private static CommitmentDtos.Statement toDto(Card_Statement__c s, Decimal amountPaid, Date today) {
+        CommitmentDtos.Statement d = new CommitmentDtos.Statement();
+        d.id = s.Id;
+        d.accountId = s.Account__c;
+        d.cycleStart = s.Cycle_Start__c;
+        d.cycleEnd = s.Cycle_End__c;
+        d.amount = s.Statement_Amount__c;
+        d.minimumDue = s.Minimum_Due__c;
+        d.dueDate = s.Due_Date__c;
+        d.amountPaid = amountPaid;
+        d.status = statusFor(d, today);
+        return d;
     }
 
     public static String statusFor(CommitmentDtos.Statement s, Date today) {

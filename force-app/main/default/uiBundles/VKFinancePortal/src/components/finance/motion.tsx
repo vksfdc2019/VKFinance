@@ -114,17 +114,17 @@ export function ProgressRing({
 export function SuccessCheck({ title, detail }: { title: string; detail?: ReactNode }) {
 	return (
 		<div className="flex flex-col items-center justify-center py-8 text-center" role="status">
-			<div className="vk-pop flex size-20 items-center justify-center rounded-full bg-emerald-50 ring-8 ring-emerald-50/60">
+			<div className="vk-pop flex size-20 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950/40 ring-8 ring-emerald-50/60 dark:ring-emerald-900/60">
 				<svg viewBox="0 0 36 36" className="size-12" aria-hidden="true">
 					<circle cx="18" cy="18" r="16" fill="#059669" />
 					<path className="vk-draw" d="M11 18.5l4.5 4.5L25 13.5" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
 				</svg>
 			</div>
-			<p className="vk-rise mt-4 text-lg font-semibold text-slate-900" style={{ animationDelay: "150ms" }}>
+			<p className="vk-rise mt-4 text-lg font-semibold text-slate-900 dark:text-slate-100" style={{ animationDelay: "150ms" }}>
 				{title}
 			</p>
 			{detail && (
-				<p className="vk-rise mt-1 text-sm text-slate-500" style={{ animationDelay: "250ms" }}>
+				<p className="vk-rise mt-1 text-sm text-slate-500 dark:text-slate-400" style={{ animationDelay: "250ms" }}>
 					{detail}
 				</p>
 			)}

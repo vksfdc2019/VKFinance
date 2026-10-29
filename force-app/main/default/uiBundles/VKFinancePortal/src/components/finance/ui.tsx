@@ -16,8 +16,8 @@ export function PageHeader({
 	return (
 		<div className="mb-6 flex flex-wrap items-end justify-between gap-4">
 			<div className="min-w-0">
-				<h1 className="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">{title}</h1>
-				{description && <p className="mt-1 text-sm text-slate-500">{description}</p>}
+				<h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-slate-100 sm:text-3xl">{title}</h1>
+				{description && <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{description}</p>}
 			</div>
 			{actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
 		</div>
@@ -41,12 +41,12 @@ export function Panel({
 	bodyClassName?: string;
 }) {
 	return (
-		<section className={cn("rounded-2xl bg-white shadow-sm ring-1 ring-slate-900/5", className)}>
+		<section className={cn("rounded-2xl bg-white dark:bg-slate-900 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10", className)}>
 			{(title || action) && (
 				<header className="flex items-start justify-between gap-3 px-5 pt-5">
 					<div className="min-w-0">
-						{title && <h2 className="text-base font-semibold text-slate-900">{title}</h2>}
-						{description && <p className="mt-0.5 text-xs text-slate-500">{description}</p>}
+						{title && <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">{title}</h2>}
+						{description && <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{description}</p>}
 					</div>
 					{action}
 				</header>
@@ -59,13 +59,13 @@ export function Panel({
 export function MonthSwitcher({ value, onChange }: { value: string; onChange: (month: string) => void }) {
 	const current = monthKey();
 	return (
-		<div className="inline-flex items-center rounded-xl bg-white p-1 shadow-sm ring-1 ring-slate-900/5">
+		<div className="inline-flex items-center rounded-xl bg-white dark:bg-slate-900 p-1 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10">
 			<Button variant="ghost" size="icon-sm" aria-label="Previous month" onClick={() => onChange(shiftMonth(value, -1))}>
 				<ChevronLeft />
 			</Button>
 			<button
 				type="button"
-				className="min-w-32 rounded-lg px-2 text-center text-sm font-medium text-slate-800 hover:bg-slate-50"
+				className="min-w-32 rounded-lg px-2 text-center text-sm font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60"
 				onClick={() => onChange(current)}
 				title="Jump to this month"
 			>
@@ -103,7 +103,7 @@ export function Amount({
 		<span
 			className={cn(
 				"font-semibold tabular-nums",
-				muted ? "text-slate-400 line-through" : credit ? "text-emerald-700" : "text-slate-900",
+				muted ? "text-slate-400 line-through" : credit ? "text-emerald-700 dark:text-emerald-300" : "text-slate-900 dark:text-slate-100",
 				className,
 			)}
 		>
@@ -128,11 +128,11 @@ export function EmptyState({
 }) {
 	return (
 		<div className={cn("flex flex-col items-center justify-center px-6 py-12 text-center", className)}>
-			<div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-teal-50 text-teal-700 [&_svg]:size-6">
+			<div className="mb-4 flex size-14 items-center justify-center rounded-2xl bg-brand-50 dark:bg-brand-950/40 text-brand-700 dark:text-brand-300 [&_svg]:size-6">
 				{icon}
 			</div>
-			<h3 className="text-base font-semibold text-slate-900">{title}</h3>
-			{children && <p className="mt-1 max-w-sm text-sm text-slate-500">{children}</p>}
+			<h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">{title}</h3>
+			{children && <p className="mt-1 max-w-sm text-sm text-slate-500 dark:text-slate-400">{children}</p>}
 			{action && <div className="mt-5">{action}</div>}
 		</div>
 	);
@@ -152,7 +152,7 @@ export function SegmentedControl<T extends string>({
 	className?: string;
 }) {
 	return (
-		<div role="radiogroup" aria-label={label} className={cn("inline-flex rounded-xl bg-slate-100 p-1", className)}>
+		<div role="radiogroup" aria-label={label} className={cn("inline-flex rounded-xl bg-slate-100 dark:bg-slate-800 p-1", className)}>
 			{options.map((option) => (
 				<button
 					key={option.value}
@@ -163,7 +163,7 @@ export function SegmentedControl<T extends string>({
 					onClick={() => onChange(option.value)}
 					className={cn(
 						"flex-1 rounded-lg px-3 py-1.5 text-sm font-medium transition-all disabled:opacity-40",
-						value === option.value ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-800",
+						value === option.value ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200",
 					)}
 				>
 					{option.label}
@@ -176,9 +176,9 @@ export function SegmentedControl<T extends string>({
 export type MeterStatus = "good" | "warning" | "critical";
 
 const STATUS = {
-	good: { color: "var(--status-good)", icon: CheckCircle2, text: "text-emerald-800" },
-	warning: { color: "var(--status-warning)", icon: AlertTriangle, text: "text-amber-800" },
-	critical: { color: "var(--status-critical)", icon: OctagonAlert, text: "text-red-700" },
+	good: { color: "var(--status-good)", icon: CheckCircle2, text: "text-emerald-800 dark:text-emerald-200" },
+	warning: { color: "var(--status-warning)", icon: AlertTriangle, text: "text-amber-800 dark:text-amber-200" },
+	critical: { color: "var(--status-critical)", icon: OctagonAlert, text: "text-red-700 dark:text-red-300" },
 } as const;
 
 /** A progress bar whose colour is a status - always paired with an icon and a label. */
@@ -201,7 +201,7 @@ export function StatusMeter({
 	return (
 		<div className={className}>
 			<div
-				className="h-2 overflow-hidden rounded-full bg-slate-100"
+				className="h-2 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800"
 				role="progressbar"
 				aria-valuemin={0}
 				aria-valuemax={100}
@@ -241,7 +241,7 @@ export function DeltaPill({ change, goodWhenUp }: { change?: number; goodWhenUp:
 		<span
 			className={cn(
 				"inline-flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-xs font-medium tabular-nums",
-				good ? "bg-emerald-50 text-emerald-800" : "bg-red-50 text-red-700",
+				good ? "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-200" : "bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300",
 			)}
 		>
 			{up ? "▲" : "▼"} {Math.abs(change).toFixed(0)}%<span className="sr-only"> vs last month</span>
@@ -252,8 +252,8 @@ export function DeltaPill({ change, goodWhenUp }: { change?: number; goodWhenUp:
 export function MoneyStat({ label, value, currency }: { label: string; value: number; currency?: string }) {
 	return (
 		<div>
-			<p className="text-xs text-slate-500">{label}</p>
-			<p className="text-sm font-semibold tabular-nums text-slate-900">{formatMoney(value, currency)}</p>
+			<p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
+			<p className="text-sm font-semibold tabular-nums text-slate-900 dark:text-slate-100">{formatMoney(value, currency)}</p>
 		</div>
 	);
 }

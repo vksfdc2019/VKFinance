@@ -65,11 +65,11 @@ export default function ArchivePage() {
 										aria-current={m.month === month ? "true" : undefined}
 										className={cn(
 											"flex w-full items-center justify-between gap-3 whitespace-nowrap rounded-xl px-3 py-2 text-left text-sm transition-colors",
-											m.month === month ? "bg-teal-50 font-semibold text-teal-900" : "text-slate-700 hover:bg-slate-50",
+											m.month === month ? "bg-brand-50 dark:bg-brand-950/40 font-semibold text-brand-900 dark:text-brand-100" : "text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60",
 										)}
 									>
 										{monthLabel(m.month)}
-										<span className="text-xs tabular-nums text-slate-500">{m.transactions}</span>
+										<span className="text-xs tabular-nums text-slate-500 dark:text-slate-400">{m.transactions}</span>
 									</button>
 								</li>
 							))}
@@ -89,28 +89,28 @@ export default function ArchivePage() {
 							<Skeleton className="h-48 rounded-xl" />
 						) : (
 							<>
-								<div className="mb-4 grid grid-cols-3 gap-3 rounded-xl bg-slate-50 p-3">
+								<div className="mb-4 grid grid-cols-3 gap-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 p-3">
 									<MoneyStat label="Income" value={view.data.income} currency={currency} />
 									<MoneyStat label="Spending" value={view.data.spending} currency={currency} />
 									<div>
-										<p className="text-xs text-slate-500">Entries</p>
-										<p className="text-sm font-semibold tabular-nums text-slate-900">{view.data.entries.length}</p>
+										<p className="text-xs text-slate-500 dark:text-slate-400">Entries</p>
+										<p className="text-sm font-semibold tabular-nums text-slate-900 dark:text-slate-100">{view.data.entries.length}</p>
 									</div>
 								</div>
 								{entries.length === 0 ? (
-									<p className="py-8 text-center text-sm text-slate-500">{query ? "No entries match your search." : "No entries you can see in this month."}</p>
+									<p className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">{query ? "No entries match your search." : "No entries you can see in this month."}</p>
 								) : (
-									<ul className="divide-y divide-slate-100" role="list">
+									<ul className="divide-y divide-slate-100 dark:divide-slate-800" role="list">
 										{entries.map((e, i) => {
 											const voided = e.status === "Void";
 											return (
 												<Reveal as="li" key={e.id} index={i} className="flex items-start gap-3 py-3">
 													<div className="min-w-0 flex-1">
 														<div className="flex flex-wrap items-center gap-2">
-															<p className={cn("truncate font-medium text-slate-900", voided && "text-slate-400")}>{e.payee || e.categoryName || e.type}</p>
+															<p className={cn("truncate font-medium text-slate-900 dark:text-slate-100", voided && "text-slate-400")}>{e.payee || e.categoryName || e.type}</p>
 															{voided && <Badge variant="outline">Void</Badge>}
 														</div>
-														<p className="truncate text-xs text-slate-500">
+														<p className="truncate text-xs text-slate-500 dark:text-slate-400">
 															{formatDate(e.txnDate)} · {[e.categoryName ?? e.type, e.accountName, e.memberName].filter(Boolean).join(" · ")}
 														</p>
 														{e.notes && <p className="mt-0.5 truncate text-xs text-slate-400">{e.notes}</p>}

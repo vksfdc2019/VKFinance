@@ -54,7 +54,7 @@ export const modules: {
       'From bank statement to an organized ledger, with a review before anything is recorded.',
     icon: CloudUpload,
     permission: 'IMPORTS:READ',
-    gradient: 'from-sky-50 to-blue-50',
+    gradient: 'from-sky-50 dark:from-sky-950/40 to-blue-50 dark:to-blue-950/40',
   },
   {
     key: 'RECEIPTS',
@@ -64,7 +64,7 @@ export const modules: {
       'Keep the photo and the payment together. Private, searchable, and easy to find.',
     icon: Camera,
     permission: 'RECEIPTS:READ',
-    gradient: 'from-violet-50 to-fuchsia-50',
+    gradient: 'from-violet-50 dark:from-violet-950/40 to-fuchsia-50 dark:to-fuchsia-950/40',
   },
   {
     key: 'REQUESTS',
@@ -74,7 +74,7 @@ export const modules: {
       'A little independence, with a parent in the loop. Ask, discuss, then decide.',
     icon: UsersRound,
     permission: 'REQUESTS:READ',
-    gradient: 'from-amber-50 to-orange-50',
+    gradient: 'from-amber-50 dark:from-amber-950/40 to-orange-50 dark:to-orange-950/40',
   },
   {
     key: 'GOALS',
@@ -84,7 +84,7 @@ export const modules: {
       'Give your savings a purpose. Watch a holiday, a home, or a dream get closer.',
     icon: Sprout,
     permission: 'GOALS:READ',
-    gradient: 'from-emerald-50 to-teal-50',
+    gradient: 'from-brand-alt-50 dark:from-brand-alt-950/40 to-brand-50 dark:to-brand-950/40',
   },
   {
     key: 'INSTALL',
@@ -93,7 +93,7 @@ export const modules: {
     description:
       'Keep your family’s finances one tap away, with a home-screen shortcut.',
     icon: Download,
-    gradient: 'from-cyan-50 to-sky-50',
+    gradient: 'from-cyan-50 dark:from-cyan-950/40 to-sky-50 dark:to-sky-950/40',
   },
   {
     key: 'INSIGHTS',
@@ -103,7 +103,7 @@ export const modules: {
       'A fresh perspective on spending patterns, with clear reasons behind every suggestion.',
     icon: Lightbulb,
     permission: 'INSIGHTS:READ',
-    gradient: 'from-rose-50 to-amber-50',
+    gradient: 'from-rose-50 dark:from-rose-950/40 to-amber-50 dark:to-amber-950/40',
   },
 ];
 
@@ -133,7 +133,7 @@ export default function EnhancementsLayout() {
   return (
     <SettingsContext.Provider value={{ settings: data, reload }}>
       <div className="mb-6 flex flex-wrap items-center gap-2 text-sm">
-        <Link className="font-semibold text-teal-800" to="/enhancements">
+        <Link className="font-semibold text-brand-800 dark:text-brand-200" to="/enhancements">
           Discover
         </Link>
         <span className="text-slate-300">/</span>
@@ -149,8 +149,8 @@ export default function EnhancementsLayout() {
                   cn(
                     'rounded-full px-3 py-1.5 text-xs transition-colors',
                     isActive
-                      ? 'bg-teal-100 font-semibold text-teal-900'
-                      : 'text-slate-500 hover:bg-white'
+                      ? 'bg-brand-100 dark:bg-brand-900/40 font-semibold text-brand-900 dark:text-brand-100'
+                      : 'text-slate-500 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-800'
                   )
                 }
               >
@@ -179,10 +179,10 @@ export function FeatureGate({
     (item.permission && !can(item.permission))
   )
     return (
-      <div className="rounded-3xl bg-white p-12 text-center shadow-sm ring-1 ring-slate-900/5">
-        <LockKeyhole className="mx-auto mb-4 size-10 text-teal-600" />
+      <div className="rounded-3xl bg-white dark:bg-slate-900 p-12 text-center shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10">
+        <LockKeyhole className="mx-auto mb-4 size-10 text-brand-600 dark:text-brand-400" />
         <h1 className="text-xl font-semibold">This feature is not available</h1>
-        <p className="mt-2 text-sm text-slate-500">
+        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
           Your Family Admin can enable optional features. Your role also
           determines access.
         </p>
@@ -200,26 +200,26 @@ export function EnhancementsHome() {
   const [configure, setConfigure] = useState(false);
   return (
     <>
-      <section className="relative mb-8 overflow-hidden rounded-3xl bg-gradient-to-br from-teal-950 via-teal-900 to-emerald-800 p-7 text-white shadow-lg shadow-teal-950/10 sm:p-10">
+      <section className="relative mb-8 overflow-hidden rounded-3xl bg-gradient-to-br from-brand-950 via-brand-900 to-brand-alt-800 p-7 text-white shadow-lg shadow-brand-950/10 sm:p-10">
         <div
           aria-hidden
           className="pointer-events-none absolute -right-16 -top-28 size-80 rounded-full border-[40px] border-white/5"
         />
         <div className="relative max-w-xl">
-          <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-teal-100">
+          <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-medium text-brand-100">
             <Sparkles className="size-3.5" /> More possibilities, at your pace
           </span>
           <h1 className="mt-5 text-3xl font-semibold tracking-tight sm:text-4xl">
             Small steps.
             <br />A brighter financial future.
           </h1>
-          <p className="mt-4 text-sm leading-relaxed text-teal-100/85">
+          <p className="mt-4 text-sm leading-relaxed text-brand-100/85">
             Thoughtful tools for the moments beyond everyday bookkeeping. Choose
             what works for your family, and make it your own.
           </p>
           {settings.canManage && (
             <Button
-              className="mt-6 bg-white text-teal-950 hover:bg-teal-50"
+              className="mt-6 bg-white text-brand-950 hover:bg-brand-50 dark:bg-white dark:text-brand-950 dark:hover:bg-brand-50"
               onClick={() => setConfigure(true)}
             >
               <Settings2 />
@@ -229,11 +229,11 @@ export function EnhancementsHome() {
         </div>
       </section>
       <div className="mb-5 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-slate-900">
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
           Explore your possibilities
         </h2>
-        <span className="inline-flex items-center gap-1.5 text-xs text-slate-500">
-          <ShieldCheck className="size-4 text-teal-600" /> Family-scoped access
+        <span className="inline-flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+          <ShieldCheck className="size-4 text-brand-600 dark:text-brand-400" /> Family-scoped access
         </span>
       </div>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -244,7 +244,7 @@ export function EnhancementsHome() {
             return (
               <article
                 key={key}
-                className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-slate-900/5 transition-shadow hover:shadow-md"
+                className="group flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-slate-900 shadow-sm ring-1 ring-slate-900/5 dark:ring-white/10 transition-shadow hover:shadow-md"
               >
                 <div
                   className={cn(
@@ -252,31 +252,31 @@ export function EnhancementsHome() {
                     gradient
                   )}
                 >
-                  <div className="flex size-14 items-center justify-center rounded-2xl bg-white/85 text-teal-800 shadow-sm">
+                  <div className="flex size-14 items-center justify-center rounded-2xl bg-white/85 dark:bg-slate-900/85 text-brand-800 dark:text-brand-200 shadow-sm">
                     <Icon className="size-7" />
                   </div>
                   <span
                     className={cn(
                       'rounded-full px-2.5 py-1 text-[11px] font-semibold',
                       active
-                        ? 'bg-white/90 text-teal-800'
-                        : 'bg-white/70 text-slate-500'
+                        ? 'bg-white/90 dark:bg-slate-900/90 text-brand-800 dark:text-brand-200'
+                        : 'bg-white/70 dark:bg-slate-900/70 text-slate-500 dark:text-slate-400'
                     )}
                   >
                     {active ? 'Enabled' : 'Optional'}
                   </span>
                 </div>
                 <div className="flex flex-1 flex-col p-6">
-                  <h3 className="text-base font-semibold text-slate-900">
+                  <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
                     {title}
                   </h3>
-                  <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-500">
+                  <p className="mt-2 flex-1 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
                     {description}
                   </p>
                   {active ? (
                     <Link
                       to={path}
-                      className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-teal-800"
+                      className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-brand-800 dark:text-brand-200"
                     >
                       Explore{' '}
                       <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
@@ -353,11 +353,11 @@ function ConfigureDialog({
             {modules.map(m => (
               <label
                 key={m.key}
-                className="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 p-3"
+                className="flex cursor-pointer items-center gap-3 rounded-xl border border-slate-200 dark:border-slate-800 p-3"
               >
                 <input
                   type="checkbox"
-                  className="size-4 accent-teal-700"
+                  className="size-4 accent-brand-700"
                   checked={enabled.includes(m.key)}
                   onChange={e =>
                     setEnabled(
@@ -367,10 +367,10 @@ function ConfigureDialog({
                     )
                   }
                 />
-                <m.icon className="size-4 text-teal-700" />
+                <m.icon className="size-4 text-brand-700 dark:text-brand-300" />
                 <span className="text-sm font-medium">{m.title}</span>
                 {enabled.includes(m.key) && (
-                  <Check className="ml-auto size-4 text-teal-600" />
+                  <Check className="ml-auto size-4 text-brand-600 dark:text-brand-400" />
                 )}
               </label>
             ))}

@@ -1,5 +1,7 @@
 /** Shapes of the /vkf/v1 ledger endpoints. The server omits null fields, so most are optional. */
 
+import type { Statement } from "./commitmentTypes";
+
 export const ACCOUNT_TYPES = [
 	"Savings",
 	"Current",
@@ -47,6 +49,8 @@ export interface CardCycle {
 	cycleSpend: number;
 	available?: number;
 	utilisationPct?: number;
+	/** The bill: the statement for the last closed cycle. Missing until the daily job writes it. */
+	statement?: Statement;
 }
 
 export interface Account {

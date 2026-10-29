@@ -119,7 +119,24 @@ are for admins only.
   and the transactions they recorded stay in your history.
 - You're told automatically when a family member's account gets locked.
 
-## 8. Privacy and safety
+## 8. Appearance
+
+Open **Appearance** from the menu to make VK Finance look the way you like. Every change previews
+straight away; press **Save** to keep it, or **Discard** to go back.
+
+- **Mode:** *Light*, *Dark*, or *Match device* to follow your phone or computer. The sun or moon
+  button at the top of every page switches light and dark in one tap.
+- **Colour theme:** nine themes (VK Teal, Ocean, Indigo, Grape, Berry, Sunset, Gold, Forest and
+  Graphite) or *Custom* for any colour. If a colour is too light for white button text, VK Finance
+  darkens buttons slightly so they stay easy to read. Account card colours stay as you chose them.
+- **Corners** (*Sharp*, *Soft* or *Round*) and **Text size** (*Standard* or *Large*).
+- **Family theme:** Family Admins and Co-Admins can set a family default under *Family default*,
+  and can stop members choosing their own colours. Light or dark and text size always stay each
+  person's own choice. Members can pick *Family theme* to keep following whatever the admin sets.
+
+Your choice is saved to your sign-in, so it follows you to every device.
+
+## 9. Privacy and safety
 
 - Passwords are never stored as text. They're salted and hashed thousands of times, so nobody can
   read them, including the people who run VK Finance.

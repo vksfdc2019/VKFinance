@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Theme__c</fullName>
+    <label>Theme (JSON)</label>
+    <description>The family's default portal colour theme and corner style, and whether members may choose their own. Written and validated by AppearanceService; blank uses the VK Finance default.</description>
+    <inlineHelpText>Set by the Family Admin or Co-Admin on the portal's Appearance page.</inlineHelpText>
+    <length>255</length>
+    <required>false</required>
+    <type>Text</type>
+</CustomField>

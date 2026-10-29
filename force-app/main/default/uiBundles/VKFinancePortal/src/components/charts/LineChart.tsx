@@ -23,7 +23,7 @@ export function LineChart({ points, currency, label }: { points: { label: string
 		return () => observer.disconnect();
 	}, []);
 
-	if (points.length === 0) return <p className="py-10 text-center text-sm text-slate-500">Nothing to chart for this period.</p>;
+	if (points.length === 0) return <p className="py-10 text-center text-sm text-slate-500 dark:text-slate-400">Nothing to chart for this period.</p>;
 	const values = points.map((p) => p.value);
 	const min = Math.min(0, ...values);
 	const max = Math.max(1, ...values);
@@ -66,7 +66,7 @@ export function LineChart({ points, currency, label }: { points: { label: string
 					{tip && active !== null && (
 						<g>
 							<line x1={x(active)} x2={x(active)} y1={PAD.top} y2={PAD.top + innerH} stroke="var(--chart-axis)" />
-							<circle cx={x(active)} cy={y(tip.value)} r={5} fill="white" stroke="var(--series-magnitude)" strokeWidth={2} />
+							<circle cx={x(active)} cy={y(tip.value)} r={5} className="fill-white dark:fill-slate-900" stroke="var(--series-magnitude)" strokeWidth={2} />
 						</g>
 					)}
 					<rect
