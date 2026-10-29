@@ -5,5 +5,21 @@
     "**/.sf": true,
     "**/.sfdx": true
   },
-  "xml.preferences.showSchemaDocumentationType": "none"
+  "xml.preferences.showSchemaDocumentationType": "none",
+  "workbench.colorCustomizations": {
+    "titleBar.activeBackground": "#8e4ec6",
+    "titleBar.activeForeground": "#ffffff",
+    "titleBar.inactiveBackground": "#8e4ec6cc",
+    "titleBar.inactiveForeground": "#ffffff99",
+    "activityBar.background": "#8e4ec6",
+    "activityBar.foreground": "#ffffff",
+    "activityBar.inactiveForeground": "#ffffff99",
+    "activityBar.activeBorder": "#ffffff",
+    "activityBarBadge.background": "#ffffff",
+    "activityBarBadge.foreground": "#8e4ec6",
+    "statusBar.background": "#8e4ec6",
+    "statusBar.foreground": "#ffffff",
+    "statusBar.border": "#8e4ec6",
+    "statusBarItem.hoverBackground": "#ffffff22"
+  }
 }
