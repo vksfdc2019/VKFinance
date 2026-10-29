@@ -42,6 +42,15 @@ export type TxnType =
 	| "Adjustment";
 export type EntryType = "Income" | "Expense" | "Refund";
 
+export interface CardBill {
+	billId: string;
+	instanceId: string;
+	amount?: number;
+	amountPaid: number;
+	dueDate: string;
+	status: import("./commitmentTypes").DueStatus;
+}
+
 export interface CardCycle {
 	lastStatementDate: string;
 	nextStatementDate: string;
@@ -51,6 +60,8 @@ export interface CardCycle {
 	utilisationPct?: number;
 	/** The bill: the statement for the last closed cycle. Missing until the daily job writes it. */
 	statement?: Statement;
+	/** An explicitly linked bill takes precedence over the computed statement. */
+	bill?: CardBill;
 }
 
 export interface Account {

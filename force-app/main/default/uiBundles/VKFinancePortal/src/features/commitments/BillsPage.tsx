@@ -277,6 +277,7 @@ function BillDialog({ bill, currency, onClose, onSaved }: { bill?: Bill; currenc
 	const [nextDue, setNextDue] = useState(bill?.nextDueDate ?? todayIso());
 	const [amount, setAmount] = useState(bill?.expectedAmount ? String(bill.expectedAmount) : "");
 	const [accountId, setAccountId] = useState(bill?.payFromAccountId ?? "none");
+	const [creditCardId, setCreditCardId] = useState(bill?.creditCardAccountId ?? "none");
 	const [autoPay, setAutoPay] = useState(bill?.autoPay ?? false);
 	const [reminder, setReminder] = useState(String(bill?.reminderDays ?? 3));
 	const [responsible, setResponsible] = useState(bill?.responsibleId ?? profile?.userId ?? "");
@@ -304,6 +305,7 @@ function BillDialog({ bill, currency, onClose, onSaved }: { bill?: Bill; currenc
 				nextDueDate: nextDue,
 				expectedAmount: amount ? Number(amount.replace(/,/g, "")) : null,
 				payFromAccountId: accountId === "none" ? null : accountId,
+				creditCardAccountId: creditCardId === "none" ? null : creditCardId,
 				autoPay,
 				reminderDays: Number(reminder) || 0,
 				consumerNo: consumerNo.trim() || null,
@@ -332,6 +334,19 @@ function BillDialog({ bill, currency, onClose, onSaved }: { bill?: Bill; currenc
 					<div className="grid gap-3 sm:grid-cols-2">
 						<TextField id="bill-name" label="Biller" placeholder="e.g. BESCOM, Airtel Fiber" value={name} maxLength={80} onChange={(e) => setName(e.target.value)} />
 						<TextField id="bill-consumer" label="Consumer / account no" value={consumerNo} maxLength={40} onChange={(e) => setConsumerNo(e.target.value)} />
+					</div>
+					<div className="grid gap-1.5">
+						<Label htmlFor="bill-credit-card">Credit card this bill repays</Label>
+						<Select value={creditCardId} onValueChange={setCreditCardId}>
+							<SelectTrigger id="bill-credit-card" className="w-full"><SelectValue /></SelectTrigger>
+							<SelectContent>
+								<SelectItem value="none">Regular bill</SelectItem>
+								{refs?.accounts.filter((a) => a.type === "Credit Card").map((a) => (
+									<SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+						<p className="text-xs text-slate-500">Choose a card to show this bill on its account. Payments reduce the card balance.</p>
 					</div>
 					<div className="grid gap-1.5">
 						<Label htmlFor="bill-category">Category</Label>
@@ -375,7 +390,7 @@ function BillDialog({ bill, currency, onClose, onSaved }: { bill?: Bill; currenc
 								</SelectTrigger>
 								<SelectContent>
 									<SelectItem value="none">Decide when paying</SelectItem>
-									{refs?.accounts.map((a) => (
+									{refs?.accounts.filter((a) => creditCardId === "none" || !a.isLiability).map((a) => (
 										<SelectItem key={a.id} value={a.id}>
 											{a.name}
 										</SelectItem>

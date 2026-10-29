@@ -6,6 +6,11 @@
  */
 public without sharing class TransferService {
     public static FinanceDtos.Transfer createTransfer(UserContext ctx, Map<String, Object> body) {
+        return createTransfer(ctx, body, null);
+    }
+
+    /** A bill occurrence is passed only by the guarded bill-payment service. */
+    public static FinanceDtos.Transfer createTransfer(UserContext ctx, Map<String, Object> body, Id billInstanceId) {
         AccessGuard.require(ctx, 'TRANSACTIONS', 'CREATE');
         Financial_Account__c source = TransactionService.usableAccount(ctx, VkfRest.toId(LedgerUtil.text(body, 'fromAccountId')));
         if (LedgerUtil.isLiability(source.Type__c)) {
@@ -53,6 +58,9 @@ public without sharing class TransferService {
             new Transaction__c(Id = outLeg.Id, Counter_Transaction__c = inLeg.Id),
             new Transaction__c(Id = inLeg.Id, Counter_Transaction__c = outLeg.Id)
         };
+        if (cardPayment) {
+            BillService.recordCardPayment(ctx, target.Id, outLeg.Id, inLeg.Id, amount, txnDate, billInstanceId);
+        }
         AuditService.log(ctx, cardPayment ? 'CARD_PAYMENT' : 'TRANSFER_CREATED', 'Transaction__c', outLeg.Id,
             source.Name + ' -> ' + target.Name + ' ' + amount);
 

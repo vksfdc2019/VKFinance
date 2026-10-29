@@ -13,6 +13,8 @@ public inherited sharing class CommitmentDtos {
         public Decimal expectedAmount;
         public Id payFromAccountId;
         public String payFromAccountName;
+        public Id creditCardAccountId;
+        public String creditCardAccountName;
         public Boolean autoPay;
         public Integer reminderDays;
         public Id responsibleId;
@@ -35,6 +37,7 @@ public inherited sharing class CommitmentDtos {
         public Boolean autoPay;
         public Id payFromAccountId;
         public String responsibleName;
+        public Id creditCardAccountId;
         public Integer daysLeft;
         public Boolean canPay;
     }

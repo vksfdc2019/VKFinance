@@ -80,13 +80,13 @@ export function PayBillDialog({
 	onClose,
 	onPaid,
 }: {
-	instance: Pick<BillInstance, "id" | "billName" | "dueDate" | "amountDue" | "amountPaid" | "payFromAccountId">;
+	instance: Pick<BillInstance, "id" | "billName" | "dueDate" | "amountDue" | "amountPaid" | "payFromAccountId" | "creditCardAccountId">;
 	currency: string;
 	onClose: () => void;
 	onPaid: () => void;
 }) {
 	const remaining = (instance.amountDue ?? 0) - (instance.amountPaid ?? 0);
-	const accounts = usePayingAccounts(true);
+	const accounts = usePayingAccounts(!instance.creditCardAccountId);
 	const [amount, setAmount] = useState(remaining > 0 ? String(remaining) : "");
 	const [accountId, setAccountId] = useState(instance.payFromAccountId ?? "");
 	const [date, setDate] = useState(todayIso());
@@ -115,12 +115,12 @@ export function PayBillDialog({
 		<Dialog open onOpenChange={(open) => !open && !saving && onClose()}>
 			<DialogContent className="sm:max-w-md">
 				{done ? (
-					<SuccessCheck title={`${instance.billName} paid`} detail={`${formatMoney(Number(amount), currency)} recorded as a bill payment`} />
+					<SuccessCheck title={`${instance.billName} paid`} detail={`${formatMoney(Number(amount), currency)} recorded as a ${instance.creditCardAccountId ? "card payment" : "bill payment"}`} />
 				) : (
 					<form onSubmit={submit} noValidate className="space-y-4">
 						<DialogHeader>
 							<DialogTitle>Pay {instance.billName}</DialogTitle>
-							<DialogDescription>Due {formatDate(instance.dueDate)}. The payment is recorded as spending in this bill&apos;s category.</DialogDescription>
+							<DialogDescription>Due {formatDate(instance.dueDate)}. {instance.creditCardAccountId ? "The payment reduces your card balance and settles this bill." : "The payment is recorded as spending in this bill’s category."}</DialogDescription>
 						</DialogHeader>
 						<div className="flex items-center gap-2 rounded-2xl bg-slate-50 dark:bg-slate-800/40 px-4 py-3 ring-1 ring-slate-900/5 dark:ring-white/10 focus-within:ring-2 focus-within:ring-brand-600">
 							<span className="text-2xl text-slate-400">{currencySymbol(currency)}</span>

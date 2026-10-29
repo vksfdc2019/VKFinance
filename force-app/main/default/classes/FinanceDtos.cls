@@ -33,6 +33,16 @@ public inherited sharing class FinanceDtos {
         public Decimal utilisationPct;
         /** The bill: the statement for the last closed cycle, or null until the daily job writes it. */
         public CommitmentDtos.Statement statement;
+        public CardBill bill;
+    }
+
+    public class CardBill {
+        public Id billId;
+        public Id instanceId;
+        public Decimal amount;
+        public Decimal amountPaid;
+        public Date dueDate;
+        public String status;
     }
 
     public class AccountRef {

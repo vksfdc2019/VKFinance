@@ -13,7 +13,7 @@ public without sharing class CommitmentSelector extends FamilyScopedSelector {
         List<Bill__c> rows = [
             SELECT
                 Id, Name, Family__c, Category__c, Consumer_No__c, Frequency__c, Next_Due_Date__c, Expected_Amount__c, Pay_From_Account__c,
-                Pay_From_Account__r.Name, Auto_Pay__c, Reminder_Days__c, Responsible_Member__c, Responsible_Member__r.First_Name__c,
+                Pay_From_Account__r.Name, Credit_Card_Account__c, Credit_Card_Account__r.Name, Auto_Pay__c, Reminder_Days__c, Responsible_Member__c, Responsible_Member__r.First_Name__c,
                 Responsible_Member__r.Last_Name__c, Active__c
             FROM Bill__c
             WHERE Family__c = :fid

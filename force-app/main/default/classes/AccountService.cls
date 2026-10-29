@@ -64,6 +64,7 @@ public without sharing class AccountService {
                 }
             }
             CardStatementService.attachLatest(cycles, paidByCard, today);
+            BillService.attachCardBills(ctx, cycles, today);
         }
         List<FinanceDtos.Account> result = new List<FinanceDtos.Account>();
         for (Financial_Account__c a : accounts) {

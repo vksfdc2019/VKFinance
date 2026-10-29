@@ -74,7 +74,44 @@ const accounts = [
     isLiability: false,
     color: 'sky',
   },
+  {
+    id: 'card',
+    name: 'AXIS BANK NEO',
+    type: 'Credit Card',
+    institution: 'AXIS BANK',
+    balance: 29613.72,
+    creditLimit: 314000,
+    ownerId: 'admin',
+    status: 'Active',
+    canUse: true,
+    canManage: true,
+    isLiability: true,
+    color: 'orange',
+    card: {
+      lastStatementDate: '2026-10-16',
+      nextStatementDate: '2026-11-16',
+      dueDate: '2026-11-05',
+      cycleSpend: 29613.72,
+      available: 284386.28,
+      utilisationPct: 9.43,
+      statement: {
+        amount: 0,
+        amountPaid: 0,
+        dueDate: '2026-11-05',
+        status: 'Paid',
+      },
+      bill: {
+        billId: 'bill',
+        instanceId: 'bill-instance',
+        amount: 16985.59,
+        amountPaid: 0,
+        dueDate: '2026-11-04',
+        status: 'Due',
+      },
+    },
+  },
 ];
+
 const categories = [
   {
     id: 'c1',
