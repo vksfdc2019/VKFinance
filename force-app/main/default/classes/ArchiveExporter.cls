@@ -16,7 +16,8 @@ public without sharing class ArchiveExporter {
         },
         'Accounts' => new List<String>{
             'name:Account', 'type:Type', 'institution:Institution', 'last4:Last 4', 'status:Status', 'owner:Owner', 'shared:Shared',
-            'openingBalance:Opening balance', 'monthEndBalance:Balance at month end', 'creditLimit:Credit limit'
+            'openingBalance:Opening balance', 'monthEndBalance:Balance at month end', 'creditLimit:Credit limit',
+            'creditLimitGroupId:Shared facility ID', 'creditLimitGroup:Shared facility', 'independentCreditLimit:Saved independent limit'
         },
         'Members' => new List<String>{
             'name:Name', 'username:Username', 'email:Email', 'role:Role', 'relationship:Relationship', 'status:Status',

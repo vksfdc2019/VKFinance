@@ -303,7 +303,7 @@ public without sharing class ArchiveService {
         }
         List<Financial_Account__c> accounts = [
             SELECT Id, Name, Type__c, Institution__c, Last4__c, Status__c, Is_Shared__c, Owner_Member__r.First_Name__c,
-                Owner_Member__r.Last_Name__c, Opening_Balance__c, Archived_Net__c, Credit_Limit__c, LastModifiedDate
+                Owner_Member__r.Last_Name__c, Opening_Balance__c, Archived_Net__c, Credit_Limit__c, Credit_Limit_Group__c, Credit_Limit_Group__r.Name, Credit_Limit_Group__r.Credit_Limit__c, Credit_Limit_Group__r.LastModifiedDate, LastModifiedDate
             FROM Financial_Account__c WHERE Family__c = :familyId WITH SYSTEM_MODE
         ];
         List<Portal_User__c> members = [
@@ -332,10 +332,13 @@ public without sharing class ArchiveService {
             for (Financial_Account__c a : accounts) {
                 Decimal n = LedgerUtil.zeroIfNull(a.Archived_Net__c) + (net.containsKey(a.Id) ? net.get(a.Id) : 0);
                 Decimal opening = LedgerUtil.zeroIfNull(a.Opening_Balance__c);
-                rows.add(row(familyId, m, ACCOUNT, a.Id, at, a.LastModifiedDate, now, new Map<String, Object>{
+                Datetime modified = a.LastModifiedDate;
+                if (a.Credit_Limit_Group__c != null && a.Credit_Limit_Group__r.LastModifiedDate > modified) modified = a.Credit_Limit_Group__r.LastModifiedDate;
+                rows.add(row(familyId, m, ACCOUNT, a.Id, at, modified, now, new Map<String, Object>{
                     'name' => a.Name, 'type' => a.Type__c, 'institution' => a.Institution__c, 'last4' => a.Last4__c, 'status' => a.Status__c,
                     'owner' => fullName(a.Owner_Member__r), 'shared' => a.Is_Shared__c, 'openingBalance' => opening,
-                    'monthEndBalance' => LedgerUtil.isLiability(a.Type__c) ? opening - n : opening + n, 'creditLimit' => a.Credit_Limit__c
+                    'monthEndBalance' => LedgerUtil.isLiability(a.Type__c) ? opening - n : opening + n, 'creditLimit' => a.Credit_Limit_Group__c == null ? a.Credit_Limit__c : a.Credit_Limit_Group__r.Credit_Limit__c,
+                    'creditLimitGroupId' => a.Credit_Limit_Group__c, 'creditLimitGroup' => a.Credit_Limit_Group__r?.Name, 'independentCreditLimit' => a.Credit_Limit__c
                 }));
             }
             // Password hashes, salts, two-step keys and recovery codes are never copied.
@@ -375,6 +378,9 @@ public without sharing class ArchiveService {
     }
 
     public static final List<Snapshot> SNAPSHOTS = new List<Snapshot>{
+        new Snapshot('CreditLimitGroup', 'Shared credit limits', 'Credit_Limit_Group__c', new List<String>{
+            'name:Facility:Name', 'issuer:Issuer:Issuer__c', 'limit:Shared limit:Credit_Limit__c', 'active:Active:Active__c', 'version:Version:Version__c'
+        }),
         new Snapshot('Bill', 'Bills', 'Bill__c', new List<String>{
             'name:Bill:Name', 'category:Category:Category__r.Name', 'amount:Expected amount:Expected_Amount__c', 'frequency:Frequency:Frequency__c',
             'nextDue:Next due:Next_Due_Date__c', 'account:Pay from:Pay_From_Account__r.Name', 'autoPay:Auto pay:Auto_Pay__c',

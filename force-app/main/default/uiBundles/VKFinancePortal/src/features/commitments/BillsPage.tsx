@@ -346,7 +346,7 @@ function BillDialog({ bill, currency, onClose, onSaved }: { bill?: Bill; currenc
 								))}
 							</SelectContent>
 						</Select>
-						<p className="text-xs text-slate-500">Choose a card to show this bill on its account. Payments reduce the card balance.</p>
+						<p className="text-xs text-slate-500 dark:text-slate-400">Choose a card to show this bill on its account. Payments reduce the card balance.</p>
 					</div>
 					<div className="grid gap-1.5">
 						<Label htmlFor="bill-category">Category</Label>

@@ -1,4 +1,5 @@
 import { vkf } from "./vkfClient";
+import type { CreditGroupInput, CreditOverview } from "./creditTypes";
 import type {
 	CompletedLogin,
 	CreatedMember,
@@ -105,6 +106,10 @@ export function queryString(params: object): string {
 }
 
 export const financeApi = {
+	creditGroups: () => vkf<CreditOverview>("GET", "/accounts/credit-groups"),
+	createCreditGroup: (input: CreditGroupInput) => vkf<CreditOverview>("POST", "/accounts/credit-groups", input),
+	updateCreditGroup: (groupId: string, input: CreditGroupInput) => vkf<CreditOverview>("PATCH", `/accounts/credit-groups/${id(groupId)}`, input),
+	archiveCreditGroup: (groupId: string, expectedVersion: number) => vkf<CreditOverview>("POST", `/accounts/credit-groups/${id(groupId)}/archive`, { expectedVersion }),
 	accounts: (includeClosed = false) => vkf<Account[]>("GET", `/accounts${queryString({ includeClosed })}`),
 	transferTargets: () => vkf<AccountRef[]>("GET", "/accounts/targets"),
 	createAccount: (input: AccountInput) => vkf<Account>("POST", "/accounts", input),

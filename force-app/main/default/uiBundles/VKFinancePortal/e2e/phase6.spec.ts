@@ -123,11 +123,9 @@ test('credit card shows linked bill and all five amounts on desktop and phone', 
   page,
 }) => {
   await page.goto('/accounts');
-  const card = page
-    .getByRole('article')
-    .filter({
-      has: page.getByRole('heading', { name: 'AXIS BANK NEO', exact: true }),
-    });
+  const card = page.getByRole('article').filter({
+    has: page.getByRole('heading', { name: 'AXIS BANK NEO', exact: true }),
+  });
   for (const label of [
     'Total outstanding',
     'Available amount',
@@ -159,4 +157,66 @@ test('credit card shows linked bill and all five amounts on desktop and phone', 
     )
   ).toBe(true);
   await card.screenshot({ path: 'test-results/card-bill-phone.png' });
+});
+
+test('shared facility counts its limit once and supports editing, phone layouts and archiving', async ({
+  page,
+}) => {
+  await page.addInitScript(() =>
+    sessionStorage.setItem('vkf.fixture.shared-credit', '1')
+  );
+  await page.goto('/accounts');
+  const panel = page.getByRole('region', {
+    name: 'Shared credit limits',
+    exact: true,
+  });
+  const facility = page.getByRole('article', {
+    name: 'Example Bank Duo shared facility',
+    exact: true,
+  });
+  await expect(facility.getByText('₹2,50,000', { exact: true })).toBeVisible();
+  await expect(
+    panel.getByText('1 credit facility · shared limits counted once')
+  ).toBeVisible();
+  await expect(page.getByText('₹6,00,000', { exact: true })).toHaveCount(0);
+  const first = page.getByRole('article').filter({
+    has: page.getByRole('heading', { name: 'Everyday card', exact: true }),
+  });
+  await expect(first.getByText('₹30,000', { exact: true })).toBeVisible();
+  await expect(first.getByText('₹2,50,000', { exact: true })).toBeVisible();
+  await panel.screenshot({ path: 'test-results/shared-credit-desktop.png' });
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth
+    )
+  ).toBe(true);
+  await page.screenshot({ path: 'test-results/shared-credit-phone.png', fullPage: true });
+  await page.getByRole('button', { name: 'Switch to dark mode', exact: true }).click();
+  await expect(page.locator('html')).toHaveClass(/dark/);
+  await expect(facility.getByText('₹2,50,000', { exact: true })).toBeVisible();
+  await page.screenshot({ path: 'test-results/shared-credit-dark-phone.png', fullPage: true });
+  await page.getByRole('button', { name: 'Edit Example Bank Duo' }).click();
+  await page.getByLabel('Shared credit limit', { exact: true }).fill('350000');
+  await expect(
+    page.getByRole('dialog').getByText('₹3,00,000', { exact: true })
+  ).toBeVisible();
+  await page
+    .getByRole('button', { name: 'Save shared limit', exact: true })
+    .click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(facility.getByText('₹3,00,000', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Edit Example Bank Duo' }).click();
+  await page
+    .getByRole('button', { name: 'Archive group', exact: true })
+    .click();
+  await expect(page.getByRole('dialog')).toContainText(
+    'Balances, bills and payment history stay intact.'
+  );
+  await page
+    .getByRole('button', { name: 'Archive and unlink cards', exact: true })
+    .click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(facility).toHaveCount(0);
+  await expect(panel.getByText('₹1,00,000', { exact: true })).toBeVisible();
 });

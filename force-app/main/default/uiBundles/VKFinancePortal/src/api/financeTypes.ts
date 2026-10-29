@@ -1,6 +1,7 @@
 /** Shapes of the /vkf/v1 ledger endpoints. The server omits null fields, so most are optional. */
 
 import type { Statement } from "./commitmentTypes";
+import type { CreditGroupSummary } from "./creditTypes";
 
 export const ACCOUNT_TYPES = [
 	"Savings",
@@ -75,6 +76,10 @@ export interface Account {
 	balance: number;
 	isLiability: boolean;
 	creditLimit?: number;
+	independentCreditLimit?: number;
+	creditLimitGroupId?: string;
+	sharedCredit?: CreditGroupSummary;
+	sharedCreditRestricted?: boolean;
 	statementDay?: number;
 	paymentDueDays?: number;
 	minDuePct?: number;

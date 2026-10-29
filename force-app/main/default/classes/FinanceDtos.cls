@@ -11,6 +11,10 @@ public inherited sharing class FinanceDtos {
         public Decimal balance;
         public Boolean isLiability;
         public Decimal creditLimit;
+        public Decimal independentCreditLimit;
+        public Id creditLimitGroupId;
+        public CreditLimitGroupService.GroupSummary sharedCredit;
+        public Boolean sharedCreditRestricted = false;
         public Integer statementDay;
         public Integer paymentDueDays;
         public Decimal minDuePct;
@@ -213,6 +217,8 @@ public inherited sharing class FinanceDtos {
         d.balance = a.Current_Balance__c == null ? LedgerUtil.zeroIfNull(a.Opening_Balance__c) : a.Current_Balance__c;
         d.isLiability = LedgerUtil.isLiability(a.Type__c);
         d.creditLimit = a.Credit_Limit__c;
+        d.independentCreditLimit = scope.canManageAccount(a) ? a.Credit_Limit__c : null;
+        d.creditLimitGroupId = a.Credit_Limit_Group__c;
         d.statementDay = a.Statement_Day__c == null ? null : a.Statement_Day__c.intValue();
         d.paymentDueDays = a.Payment_Due_Days__c == null ? null : a.Payment_Due_Days__c.intValue();
         d.minDuePct = a.Min_Due_Pct__c;
