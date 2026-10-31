@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Tax_Saver__c</fullName>
+    <description>5-year tax-saving FD under section 80C: no premature withdrawal.</description>
+    <defaultValue>false</defaultValue>
+    <label>Tax Saver</label>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

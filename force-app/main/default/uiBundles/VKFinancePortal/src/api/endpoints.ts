@@ -1,5 +1,6 @@
 import { vkf } from "./vkfClient";
 import type { CreditGroupInput, CreditOverview } from "./creditTypes";
+import type { CloseDepositInput, Deposit, DepositInput, DepositPortfolio, RenewDepositInput } from "./depositTypes";
 import type {
 	CompletedLogin,
 	CreatedMember,
@@ -118,6 +119,11 @@ export const financeApi = {
 	updateAccount: (accountId: string, input: AccountInput) => vkf<Account>("PATCH", `/accounts/${id(accountId)}`, input),
 	reconcile: (accountId: string, actualBalance: number, note?: string) =>
 		vkf<Account>("POST", `/accounts/${id(accountId)}/reconcile`, { actualBalance, note }),
+	deposits: () => vkf<DepositPortfolio>("GET", "/deposits"),
+	deposit: (accountId: string) => vkf<Deposit>("GET", `/deposits/${id(accountId)}`),
+	saveDeposit: (accountId: string, input: DepositInput) => vkf<Deposit>("PATCH", `/deposits/${id(accountId)}`, input),
+	closeDeposit: (accountId: string, input: CloseDepositInput) => vkf<Deposit>("POST", `/deposits/${id(accountId)}/close`, input),
+	renewDeposit: (accountId: string, input: RenewDepositInput) => vkf<Deposit>("POST", `/deposits/${id(accountId)}/renew`, input),
 
 	categories: () => vkf<Category[]>("GET", "/categories"),
 	createCategory: (input: CategoryInput) => vkf<Category>("POST", "/categories", input),

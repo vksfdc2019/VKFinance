@@ -45,6 +45,11 @@
                 <label>Fixed Deposit</label>
             </value>
             <value>
+                <fullName>Recurring Deposit</fullName>
+                <default>false</default>
+                <label>Recurring Deposit</label>
+            </value>
+            <value>
                 <fullName>Investment</fullName>
                 <default>false</default>
                 <label>Investment</label>

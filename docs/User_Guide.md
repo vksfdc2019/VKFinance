@@ -77,6 +77,25 @@ and corrects any difference.
 > **Never type a full card number, CVV, PIN or bank password anywhere in VK Finance.** It only ever
 > needs the last 4 digits of a card, so you can tell your cards apart.
 
+**Fixed and recurring deposits:** choose **Fixed Deposit** or **Recurring Deposit** and enter the
+terms from the receipt: the FD/RD number, the amount invested (or monthly instalment), the rate,
+the date invested and the duration. VK Finance works out the maturity date and amount the way
+Indian banks do. FDs compound quarterly, and terms under 6 months earn simple interest. RD
+instalments compound quarterly to maturity. If the receipt shows a different maturity amount,
+enter it and the bank's figure is used. You can also record the nominee, senior citizen rate,
+interest payout (monthly, quarterly, half-yearly, yearly or at maturity), tax-saver FD (5-year
+lock-in) and Form 15G/15H. The full deposit number is shown only to the owner and admins.
+
+- Link an RD to the account its instalments come from, and each month's instalment is recorded
+  for you. A payout FD records its interest into the account you choose.
+- You get a reminder a week before a deposit matures. Then use **Record maturity** (or **Close
+  early**, which applies the bank's penalty) to book the interest as income and move the money.
+  Or use **Renew** to roll the FD over for a new term, with or without the interest.
+- The **Deposits** panel shows what you've invested, its value today, its value at maturity and
+  this financial year's interest. It warns you when interest from one bank is likely to attract
+  TDS (above ₹50,000 a year, or ₹1,00,000 for senior citizens). It also warns when one
+  person's deposits at one bank go beyond the ₹5 lakh DICGC insurance cover.
+
 **Cards sharing one bank limit:** a Family Admin or Co-Admin can open **Accounts → Shared credit limits → Create shared limit**, enter the bank-confirmed facility limit and choose its cards. Availability uses the combined balances, while each card keeps its own bill and due date. The overview counts that shared limit once. Grouping never moves money. Archiving a group restores each card's saved independent limit. Shared totals are private when you cannot see every linked card.
 
 ## 5. Budgets, bills, loans and regular payments

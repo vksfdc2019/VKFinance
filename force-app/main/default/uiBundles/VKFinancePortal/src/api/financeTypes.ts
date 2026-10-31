@@ -2,6 +2,7 @@
 
 import type { Statement } from "./commitmentTypes";
 import type { CreditGroupSummary } from "./creditTypes";
+import type { Deposit } from "./depositTypes";
 
 export const ACCOUNT_TYPES = [
 	"Savings",
@@ -10,6 +11,7 @@ export const ACCOUNT_TYPES = [
 	"UPI Wallet",
 	"Credit Card",
 	"Fixed Deposit",
+	"Recurring Deposit",
 	"Investment",
 	"Loan",
 ] as const;
@@ -91,6 +93,8 @@ export interface Account {
 	canManage: boolean;
 	canUse: boolean;
 	card?: CardCycle;
+	/** FD and RD accounts: the deposit terms, once added. */
+	deposit?: Deposit;
 }
 
 export interface AccountRef {

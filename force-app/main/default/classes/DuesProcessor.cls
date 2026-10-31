@@ -198,6 +198,7 @@ public without sharing class DuesProcessor {
     bills(familyId, today, admin, admins, s);
     emis(familyId, today, admin, admins, s);
     cards(familyId, today, admins, s);
+    s.notifications += DepositService.notifyMaturities(familyId, today, admins);
     if (admin != null) {
       budgets(familyId, today, admin, admins, s);
     }

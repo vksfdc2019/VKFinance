@@ -26,6 +26,7 @@ public inherited sharing class FinanceDtos {
         public Boolean canManage;
         public Boolean canUse;
         public CardCycle card;
+        public DepositDtos.Deposit deposit;
     }
 
     public class CardCycle {

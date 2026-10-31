@@ -1,9 +1,10 @@
 import type { ReactNode } from "react";
-import { CalendarClock, Layers3, Users } from "lucide-react";
+import { CalendarClock, Layers3, Lock, Users } from "lucide-react";
 import { ACCOUNT_GRADIENTS, ACCOUNT_ICONS, accountColor } from "@/components/finance/icons";
 import { utilisationStatus } from "@/components/finance/ui";
 import type { Account, CardCycle } from "@/api/financeTypes";
-import { formatMoney, formatShortDate } from "@/lib/format";
+import type { Deposit } from "@/api/depositTypes";
+import { formatDate, formatMoney, formatShortDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 /** The bill in words: what is left to pay and by when, or when the next statement closes. */
@@ -26,7 +27,7 @@ export function AccountCard({
 	className,
 }: {
 	account: Pick<Account, "name" | "type" | "balance" | "isLiability" | "status"> &
-		Partial<Omit<Account, "card">> & { card?: Partial<CardCycle> };
+		Partial<Omit<Account, "card" | "deposit">> & { card?: Partial<CardCycle>; deposit?: Partial<Deposit> };
 	currency: string;
 	menu?: ReactNode;
 	className?: string;
@@ -38,6 +39,8 @@ export function AccountCard({
 	const available = account.creditLimitGroupId ? account.sharedCredit?.available : card?.available ?? (account.creditLimit !== undefined ? account.creditLimit - account.balance : undefined);
 	const displayedLimit = account.sharedCredit?.creditLimit ?? account.creditLimit;
 	const closed = account.status === "Closed";
+	const deposit = account.deposit;
+	const isDeposit = account.type === "Fixed Deposit" || account.type === "Recurring Deposit";
 
 	return (
 		<article
@@ -65,7 +68,7 @@ export function AccountCard({
 
 			<div className="relative mt-auto pt-4">
 				<p className="text-xs text-white/70">
-					{account.type === "Credit Card" ? "Total outstanding" : account.isLiability ? "Outstanding" : "Balance"}
+					{account.type === "Credit Card" ? "Total outstanding" : account.isLiability ? "Outstanding" : isDeposit ? (account.type === "Recurring Deposit" ? "Paid in so far" : "Invested") : "Balance"}
 				</p>
 				<p className="text-2xl font-semibold tracking-tight tabular-nums">{formatMoney(account.balance, currency)}</p>
 
@@ -111,6 +114,8 @@ export function AccountCard({
 							</p>
 						)}
 					</div>
+				) : isDeposit ? (
+					<DepositDetails deposit={deposit} currency={currency} closed={closed} />
 				) : (
 					<div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-white/80">
 						{account.last4 && <span className="font-mono tracking-widest">•••• {account.last4}</span>}
@@ -126,5 +131,66 @@ export function AccountCard({
 				)}
 			</div>
 		</article>
+	);
+}
+
+/** Maturity value, rate and dates on an FD or RD tile. */
+function DepositDetails({ deposit: d, currency, closed }: { deposit?: Partial<Deposit>; currency: string; closed: boolean }) {
+	if (!d) {
+		return <p className="mt-3 inline-flex rounded-full bg-black/15 px-2.5 py-1 text-[11px]">Add the deposit details to track maturity</p>;
+	}
+	const days = d.daysToMaturity;
+	const active = d.status === "Active" && !closed;
+	const open = d.status === "Active" || !d.status;
+	return (
+		<div className="mt-3">
+			{d.progressPct !== undefined && active && (
+				<div className="h-1.5 overflow-hidden rounded-full bg-white/25" role="progressbar" aria-label="Term elapsed" aria-valuenow={Math.round(d.progressPct)} aria-valuemin={0} aria-valuemax={100}>
+					<div className="h-full rounded-full bg-white" style={{ width: `${Math.min(100, Math.max(0, d.progressPct))}%` }} />
+				</div>
+			)}
+			<dl className="mt-3 grid grid-cols-2 gap-3">
+				<div>
+					<dt className="text-xs text-white/70">{open ? "At maturity" : "Received"}</dt>
+					<dd className="font-semibold tabular-nums">{formatMoney(open ? d.maturityAmount : d.amountReceived, currency)}</dd>
+				</div>
+				<div>
+					<dt className="text-xs text-white/70">Matures on</dt>
+					<dd className="font-semibold">{d.maturityDate ? formatShortDate(d.maturityDate) : "—"}</dd>
+				</div>
+				<div>
+					<dt className="text-xs text-white/70">Rate of interest</dt>
+					<dd className="font-semibold tabular-nums">
+						{d.rate ? `${d.rate}%` : "—"}
+						{d.seniorCitizen && <span className="font-normal text-white/80"> · senior</span>}
+					</dd>
+				</div>
+				<div>
+					<dt className="text-xs text-white/70">{d.kind === "RD" ? "Monthly instalment" : d.payoutPerPeriod ? `Paid ${d.payout?.toLowerCase()}` : "Interest earned"}</dt>
+					<dd className="font-semibold tabular-nums">
+						{d.kind === "RD"
+							? `${formatMoney(d.instalment, currency)}${d.instalmentsDue !== undefined ? ` · ${d.instalmentsDue}/${d.tenureMonths}` : ""}`
+							: formatMoney(d.payoutPerPeriod ?? d.interestAtMaturity, currency)}
+					</dd>
+				</div>
+			</dl>
+			<div className="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-white/85">
+				{d.depositNumberMasked && <span className="font-mono tracking-wider">{d.depositNumberMasked}</span>}
+				{d.taxSaver && (
+					<span className="inline-flex items-center gap-1 rounded-full bg-black/15 px-2 py-0.5">
+						<Lock className="size-3" aria-hidden="true" />
+						Tax saver
+					</span>
+				)}
+				{active && days !== undefined && days <= 30 && (
+					<span className="inline-flex items-center gap-1 rounded-full bg-black/25 px-2 py-0.5 font-semibold">
+						<CalendarClock className="size-3" aria-hidden="true" />
+						{days < 0 ? `Matured ${formatDate(d.maturityDate)} - record it` : days === 0 ? "Matures today" : `Matures in ${days} ${days === 1 ? "day" : "days"}`}
+					</span>
+				)}
+				{d.status === "Matured" && <span className="rounded-full bg-black/25 px-2 py-0.5">Matured {formatShortDate(d.closedOn)}</span>}
+				{d.status === "Closed Early" && <span className="rounded-full bg-black/25 px-2 py-0.5">Closed early {formatShortDate(d.closedOn)}</span>}
+			</div>
+		</div>
 	);
 }

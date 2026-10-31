@@ -4,7 +4,7 @@
  */
 public inherited sharing class LedgerUtil {
     public static final Decimal MAX_AMOUNT = 9999999999.99;
-    public static final Set<String> ASSET_TYPES = new Set<String>{ 'Savings', 'Current', 'Cash', 'UPI Wallet', 'Fixed Deposit', 'Investment' };
+    public static final Set<String> ASSET_TYPES = new Set<String>{ 'Savings', 'Current', 'Cash', 'UPI Wallet', 'Fixed Deposit', 'Recurring Deposit', 'Investment' };
     public static final Set<String> LIABILITY_TYPES = new Set<String>{ 'Credit Card', 'Loan' };
     public static final Set<String> PAYMENT_MODES = new Set<String>{
         'UPI', 'Cash', 'Debit Card', 'Credit Card', 'NEFT/IMPS', 'Net Banking', 'Cheque', 'Auto-debit', 'Other'

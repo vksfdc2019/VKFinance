@@ -6,7 +6,7 @@
  */
 public without sharing class AccountService {
     public static final List<String> TYPES = new List<String>{
-        'Savings', 'Current', 'Cash', 'UPI Wallet', 'Credit Card', 'Loan', 'Fixed Deposit', 'Investment'
+        'Savings', 'Current', 'Cash', 'UPI Wallet', 'Credit Card', 'Loan', 'Fixed Deposit', 'Recurring Deposit', 'Investment'
     };
     public static final Set<String> COLORS = new Set<String>{
         'teal', 'emerald', 'sky', 'indigo', 'violet', 'rose', 'amber', 'orange', 'slate', 'zinc'
@@ -80,6 +80,7 @@ public without sharing class AccountService {
             result.add(d);
         }
         CreditLimitGroupService.attach(ctx, result);
+        DepositService.attach(ctx, result);
         return result;
     }
 
@@ -154,6 +155,9 @@ public without sharing class AccountService {
             if (LedgerUtil.isLiability(type) != LedgerUtil.isLiability(existing.Type__c) && selector.hasTransactions(existing.Id)) {
                 throw new PortalException('VALIDATION')
                     .withError('This account has transactions, so it can\'t switch between money you have and money you owe.');
+            }
+            if (DepositService.TYPES.contains(existing.Type__c) && [SELECT COUNT() FROM Deposit__c WHERE Account__c = :existing.Id WITH SYSTEM_MODE] > 0) {
+                throw new PortalException('VALIDATION').withError('This account holds deposit terms, so its type can\'t change. Close the deposit instead.');
             }
             a.Type__c = type;
         }
@@ -255,7 +259,7 @@ public without sharing class AccountService {
         return toDtos(ctx, new List<Financial_Account__c>{ selector.byId(a.Id) })[0];
     }
 
-    private static Financial_Account__c manageable(UserContext ctx, AccountSelector selector, Id accountId) {
+    public static Financial_Account__c manageable(UserContext ctx, AccountSelector selector, Id accountId) {
         Financial_Account__c a = selector.byId(accountId);
         LedgerScope scope = new LedgerScope(ctx);
         if (!scope.canSeeAccount(a)) {

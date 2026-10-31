@@ -1,7 +1,7 @@
 import { SharedCreditPanel } from "./SharedCreditPanel";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
-import { ArrowLeftRight, CreditCard, FileText, ListOrdered, MoreVertical, Pencil, Plus, Power, Receipt, Scale, Wallet } from "lucide-react";
+import { ArrowLeftRight, CalendarCheck2, CreditCard, FileText, ListOrdered, MoreVertical, Pencil, Plus, Power, Receipt, RefreshCw, Scale, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -25,11 +25,12 @@ import { useLedger } from "@/features/ledger/LedgerContext";
 import { AccountCard } from "./AccountCard";
 import { AccountDialog, ReconcileDialog } from "./AccountDialogs";
 import { StatementsDialog } from "./StatementsDialog";
+import { CloseDepositDialog, DepositsPanel, RenewDepositDialog, isDepositType } from "./DepositDialogs";
 
 const GROUPS: { title: string; types: AccountType[] }[] = [
 	{ title: "Bank & cash", types: ["Savings", "Current", "Cash", "UPI Wallet"] },
 	{ title: "Credit cards", types: ["Credit Card"] },
-	{ title: "Savings & investments", types: ["Fixed Deposit", "Investment"] },
+	{ title: "Deposits & investments", types: ["Fixed Deposit", "Recurring Deposit", "Investment"] },
 	{ title: "Loans", types: ["Loan"] },
 ];
 
@@ -42,6 +43,8 @@ export default function AccountsPage() {
 	const [editing, setEditing] = useState<Account | "new" | null>(params.get("new") === "1" ? "new" : null);
 	const [reconciling, setReconciling] = useState<Account | null>(null);
 	const [statementsFor, setStatementsFor] = useState<Account | null>(null);
+	const [closingDeposit, setClosingDeposit] = useState<Account | null>(null);
+	const [renewing, setRenewing] = useState<Account | null>(null);
 	const { data: accounts, errors, loading } = useAsync(() => financeApi.accounts(showClosed), [showClosed, version]);
 	const canCreate = can("ACCOUNTS:CREATE");
 
@@ -65,6 +68,8 @@ export default function AccountsPage() {
 
 	function menu(a: Account) {
 		const usable = a.canUse && a.status === "Active";
+		// An active deposit closes through its maturity or early-closure flow, which books the interest.
+		const depositOpen = isDepositType(a.type) && a.status === "Active" && a.deposit?.status === "Active";
 		return (
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
@@ -109,13 +114,29 @@ export default function AccountsPage() {
 								<Pencil />
 								Edit details
 							</DropdownMenuItem>
+							{depositOpen && (
+								<>
+									{(a.deposit!.daysToMaturity <= 0 || !a.deposit!.lockedIn) && (
+										<DropdownMenuItem onSelect={() => setClosingDeposit(a)}>
+											<CalendarCheck2 />
+											{a.deposit!.daysToMaturity <= 0 ? "Record maturity" : "Close early"}
+										</DropdownMenuItem>
+									)}
+									{a.deposit!.kind === "FD" && a.deposit!.daysToMaturity <= 0 && (
+										<DropdownMenuItem onSelect={() => setRenewing(a)}>
+											<RefreshCw />
+											Renew
+										</DropdownMenuItem>
+									)}
+								</>
+							)}
 							{a.status === "Active" && (
 								<DropdownMenuItem onSelect={() => setReconciling(a)}>
 									<Scale />
 									Match to statement
 								</DropdownMenuItem>
 							)}
-							<DropdownMenuItem onSelect={() => void setStatus(a, a.status === "Active" ? "Closed" : "Active")}>
+							<DropdownMenuItem disabled={depositOpen} onSelect={() => void setStatus(a, a.status === "Active" ? "Closed" : "Active")}>
 								<Power />
 								{a.status === "Active" ? "Close account" : "Reopen account"}
 							</DropdownMenuItem>
@@ -156,6 +177,7 @@ export default function AccountsPage() {
 			</div>
 
 			<FormErrors errors={errors} />
+			{accounts && accounts.some((a) => isDepositType(a.type) && a.deposit) && <DepositsPanel currency={currency} version={version} />}
 			{accounts && accounts.some((a) => a.type === "Credit Card") && <SharedCreditPanel currency={currency} version={version} onChanged={refresh} />}
 			{!accounts && loading ? (
 				<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -213,6 +235,28 @@ export default function AccountsPage() {
 					onClose={() => setEditing(null)}
 					onSaved={() => {
 						setEditing(null);
+						refresh();
+					}}
+				/>
+			)}
+			{closingDeposit && (
+				<CloseDepositDialog
+					account={closingDeposit}
+					currency={currency}
+					onClose={() => setClosingDeposit(null)}
+					onDone={() => {
+						setClosingDeposit(null);
+						refresh();
+					}}
+				/>
+			)}
+			{renewing && (
+				<RenewDepositDialog
+					account={renewing}
+					currency={currency}
+					onClose={() => setRenewing(null)}
+					onDone={() => {
+						setRenewing(null);
 						refresh();
 					}}
 				/>

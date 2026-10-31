@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>On_Maturity__c</fullName>
+    <label>On Maturity</label>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Picklist</type>
+    <valueSet>
+        <restricted>true</restricted>
+        <valueSetDefinition>
+            <sorted>false</sorted>
+            <value>
+                <fullName>Credit to account</fullName>
+                <default>true</default>
+                <label>Credit to account</label>
+            </value>
+            <value>
+                <fullName>Renew principal</fullName>
+                <default>false</default>
+                <label>Renew principal</label>
+            </value>
+            <value>
+                <fullName>Renew principal and interest</fullName>
+                <default>false</default>
+                <label>Renew principal and interest</label>
+            </value>
+        </valueSetDefinition>
+    </valueSet>
+</CustomField>

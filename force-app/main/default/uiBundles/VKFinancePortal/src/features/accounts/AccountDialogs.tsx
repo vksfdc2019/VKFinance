@@ -18,6 +18,8 @@ import { currencySymbol, formatMoney, todayIso } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/features/auth/AuthContext";
 import { AccountCard } from "./AccountCard";
+import { DepositFields, DepositQuoteCard, depositFormFrom, depositInput, depositKind, depositTerms, isDepositType } from "./DepositDialogs";
+import { quoteDeposit, rdInstalmentsDue } from "@/lib/deposits";
 
 const TYPE_HINTS: Record<AccountType, string> = {
 	Savings: "Bank savings",
@@ -25,7 +27,8 @@ const TYPE_HINTS: Record<AccountType, string> = {
 	Cash: "Cash in hand",
 	"UPI Wallet": "Paytm, PhonePe…",
 	"Credit Card": "Card you pay later",
-	"Fixed Deposit": "FD, RD",
+	"Fixed Deposit": "Bank FD, tax saver",
+	"Recurring Deposit": "Monthly RD",
 	Investment: "MF, stocks, PPF",
 	Loan: "Home, car, personal",
 };
@@ -64,7 +67,12 @@ export function AccountDialog({
 	const [members, setMembers] = useState<Member[]>([]);
 	const [errors, setErrors] = useState<string[]>([]);
 	const [saving, setSaving] = useState(false);
+	const [depositForm, setDepositForm] = useState(() => depositFormFrom(account?.deposit));
+	// Set once a new deposit account exists, so a retry after a terms error doesn't add it twice.
+	const [created, setCreated] = useState<Account>();
 	const isCard = type === "Credit Card";
+	const isDeposit = isDepositType(type);
+	const kind = depositKind(type);
 	const liability = isCard || type === "Loan";
 
 	useEffect(() => {
@@ -76,12 +84,15 @@ export function AccountDialog({
 		const input: AccountInput = {
 			name: name.trim(),
 			institution: institution.trim() || null,
-			last4: last4.trim() || null,
-			openingBalance: num(opening) ?? 0,
-			openingDate,
 			color: color ?? DEFAULT_ACCOUNT_COLOR[type],
 			isShared: shared,
 		};
+		// A deposit's balance comes from its terms; the server sets it while the account has no entries.
+		if (!isDeposit) {
+			input.last4 = last4.trim() || null;
+			input.openingBalance = num(opening) ?? 0;
+			input.openingDate = openingDate;
+		}
 		if (!account) input.type = type;
 		else if (type !== account.type) input.type = type;
 		if (isCard) {
@@ -93,7 +104,12 @@ export function AccountDialog({
 		if (isAdmin) input.ownerId = ownerId === "family" ? null : ownerId;
 		setSaving(true);
 		try {
-			const saved = account ? await financeApi.updateAccount(account.id, input) : await financeApi.createAccount(input);
+			const existing = account ?? created;
+			const saved = existing ? await financeApi.updateAccount(existing.id, input) : await financeApi.createAccount(input);
+			if (isDeposit) {
+				if (!account) setCreated(saved);
+				await financeApi.saveDeposit(saved.id, depositInput(depositForm, kind, account?.deposit));
+			}
 			toast.success(account ? "Account updated" : `${saved.name} added`);
 			onSaved(saved);
 		} catch (error) {
@@ -103,7 +119,12 @@ export function AccountDialog({
 		}
 	}
 
-	const previewBalance = account ? account.balance + ((num(opening) ?? 0) - (account.openingBalance ?? 0)) : (num(opening) ?? 0);
+	const quote = isDeposit ? quoteDeposit(depositTerms(depositForm, kind)) : null;
+	const terms = depositTerms(depositForm, kind);
+	const depositBalance = kind === "RD" ? terms.instalment * (terms.startDate ? rdInstalmentsDue(terms.startDate, terms.months, todayIso()) : 0) : terms.principal;
+	const previewBalance = isDeposit
+		? account && account.balance !== 0 ? account.balance : depositBalance
+		: account ? account.balance + ((num(opening) ?? 0) - (account.openingBalance ?? 0)) : (num(opening) ?? 0);
 	const previewLimit = isCard ? (account?.creditLimitGroupId ? account.creditLimit ?? null : num(creditLimit)) : null;
 	const previewGroup = account?.sharedCredit ? { ...account.sharedCredit } : undefined;
 	if (previewGroup && account) {
@@ -126,6 +147,19 @@ export function AccountDialog({
 		creditLimitGroupId: account?.creditLimitGroupId,
 		sharedCredit: previewGroup,
 		sharedCreditRestricted: account?.sharedCreditRestricted,
+		deposit: quote
+			? {
+					kind,
+					rate: terms.rate,
+					maturityDate: quote.maturityDate,
+					maturityAmount: depositForm.bankMaturity.trim() ? num(depositForm.bankMaturity) ?? quote.maturityAmount : quote.maturityAmount,
+					depositNumberMasked: depositForm.depositNumber.trim() ? `•••• ${depositForm.depositNumber.trim().slice(-4)}` : undefined,
+					instalment: terms.instalment,
+					tenureMonths: terms.months,
+					status: "Active" as const,
+					taxSaver: kind === "FD" && depositForm.taxSaver,
+				}
+			: undefined,
 		card:
 			previewLimit && previewLimit > 0
 				? { ...account?.card, available: previewGroup?.available ?? previewLimit - previewBalance, utilisationPct: previewGroup?.utilisationPct ?? (previewBalance / previewLimit) * 100 }
@@ -139,7 +173,9 @@ export function AccountDialog({
 					<DialogHeader>
 						<DialogTitle>{account ? `Edit ${account.name}` : "Add an account"}</DialogTitle>
 						<DialogDescription>
-							Never enter full account or card numbers - the last 4 digits are enough to recognise it.
+							{isDeposit
+								? "Enter the terms from your deposit receipt - we work out the maturity amount and remind you before it matures."
+								: "Never enter full account or card numbers - the last 4 digits are enough to recognise it."}
 						</DialogDescription>
 					</DialogHeader>
 
@@ -175,6 +211,7 @@ export function AccountDialog({
 							<div className="grid gap-3 sm:grid-cols-2">
 								<TextField id="acct-name" label="Name" value={name} maxLength={80} placeholder="e.g. HDFC Salary" onChange={(e) => setName(e.target.value)} />
 								<TextField id="acct-bank" label={isCard ? "Card issuer" : "Bank or provider"} value={institution} maxLength={80} onChange={(e) => setInstitution(e.target.value)} />
+								{!isDeposit && (
 								<TextField
 									id="acct-last4"
 									label="Last 4 digits"
@@ -184,6 +221,8 @@ export function AccountDialog({
 									placeholder="1234"
 									onChange={(e) => setLast4(e.target.value.replace(/\D/g, ""))}
 								/>
+								)}
+								{!isDeposit && (
 								<div className="grid gap-1.5">
 									<Label htmlFor="acct-opening">{isCard ? "Total outstanding on opening date" : liability ? "Amount owed on opening date" : "Balance on opening date"}</Label>
 									<div className="relative">
@@ -191,8 +230,11 @@ export function AccountDialog({
 										<Input id="acct-opening" inputMode="decimal" className="pl-7" value={opening} placeholder="0" onChange={(e) => setOpening(e.target.value)} />
 									</div>
 								</div>
-								<TextField id="acct-opening-date" label="Opening date" type="date" value={openingDate} onChange={(e) => setOpeningDate(e.target.value)} />
+								)}
+								{!isDeposit && <TextField id="acct-opening-date" label="Opening date" type="date" value={openingDate} onChange={(e) => setOpeningDate(e.target.value)} />}
 							</div>
+
+							{isDeposit && <DepositFields kind={kind} form={depositForm} onChange={setDepositForm} currency={currency} accountId={account?.id ?? created?.id} />}
 
 							{isCard && (
 								<div className="grid gap-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 p-3 sm:grid-cols-2">
@@ -270,6 +312,7 @@ export function AccountDialog({
 						<div className="hidden md:block">
 							<p className="mb-2 text-xs font-medium text-slate-500 dark:text-slate-400">Preview</p>
 							<AccountCard account={preview} currency={currency} />
+							{isDeposit && <DepositQuoteCard kind={kind} form={depositForm} currency={currency} />}
 						</div>
 					</div>
 

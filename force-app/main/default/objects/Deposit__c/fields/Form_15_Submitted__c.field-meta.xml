@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Form_15_Submitted__c</fullName>
+    <description>No TDS is deducted when Form 15G/15H is on file with the bank.</description>
+    <defaultValue>false</defaultValue>
+    <label>Form 15G/15H Submitted</label>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
+</CustomField>

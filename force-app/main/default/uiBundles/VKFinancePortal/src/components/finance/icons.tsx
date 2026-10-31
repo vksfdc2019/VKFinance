@@ -26,6 +26,7 @@ import {
 	PartyPopper,
 	PawPrint,
 	PiggyBank,
+	CalendarSync,
 	Pill,
 	Plane,
 	Receipt,
@@ -152,6 +153,7 @@ export const ACCOUNT_ICONS: Record<AccountType, LucideIcon> = {
 	"UPI Wallet": Smartphone,
 	"Credit Card": CreditCard,
 	"Fixed Deposit": PiggyBank,
+	"Recurring Deposit": CalendarSync,
 	Investment: TrendingUp,
 	Loan: HandCoins,
 };
@@ -163,6 +165,7 @@ export const DEFAULT_ACCOUNT_COLOR: Record<AccountType, AccountColor> = {
 	"UPI Wallet": "violet",
 	"Credit Card": "slate",
 	"Fixed Deposit": "amber",
+	"Recurring Deposit": "orange",
 	Investment: "indigo",
 	Loan: "rose",
 };
