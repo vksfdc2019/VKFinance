@@ -4,8 +4,10 @@
  * day. A month is named after the calendar month it mostly covers: with a start day after the
  * 15th, "November" runs 30 Oct to 29 Nov; with one up to the 15th, "November" runs 10 Nov to 9 Dec.
  * Short months start on their last day. Budgets stay keyed by the 1st of the month they are named after.
+ * without sharing: the portal runs as the site guest user, which cannot update Family__c under sharing;
+ * access is the caller's own family only, and only the Family Admin can change it.
  */
-public inherited sharing class BudgetMonth {
+public without sharing class BudgetMonth {
     public static final Integer CALENDAR = 1;
     private static Map<Id, Integer> cache = new Map<Id, Integer>();
 
