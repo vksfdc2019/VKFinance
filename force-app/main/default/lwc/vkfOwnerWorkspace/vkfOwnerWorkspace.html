@@ -7,19 +7,34 @@
           <span class="pulse"></span>
           Owner Workspace
         </div>
-        <button
-          class="icon-btn"
-          title="Refresh"
-          aria-label="Refresh"
-          onclick={handleRefresh}
-          disabled={loadingFamilies}
-        >
-          <lightning-icon
-            icon-name="utility:refresh"
-            size="x-small"
-            variant="inverse"
-          ></lightning-icon>
-        </button>
+        <div class="hero-actions">
+          <button
+            class="icon-btn"
+            title="Send a test alert"
+            aria-label="Send a test alert"
+            onclick={handleTestAlert}
+            disabled={sendingTest}
+          >
+            <lightning-icon
+              icon-name="utility:notification"
+              size="x-small"
+              variant="inverse"
+            ></lightning-icon>
+          </button>
+          <button
+            class="icon-btn"
+            title="Refresh"
+            aria-label="Refresh"
+            onclick={handleRefresh}
+            disabled={loadingFamilies}
+          >
+            <lightning-icon
+              icon-name="utility:refresh"
+              size="x-small"
+              variant="inverse"
+            ></lightning-icon>
+          </button>
+        </div>
       </div>
 
       <template lwc:if={loadingFamilies}>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomObject xmlns="http://soap.sforce.com/2006/04/metadata">
+    <customSettingsType>Hierarchy</customSettingsType>
+    <description
+  >Daily owner alert digest (OwnerAlertJob): master switch, which channels to use (Salesforce push, email, Telegram), the Telegram chat ID and how many days ahead to warn about dues. Edited by the platform owner in Setup &gt; Custom Settings; the org default row applies when none exists.</description>
+    <label>VKF Owner Alerts</label>
+    <visibility>Public</visibility>
+</CustomObject>

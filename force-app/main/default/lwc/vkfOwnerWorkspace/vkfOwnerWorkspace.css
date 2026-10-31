@@ -59,6 +59,11 @@
   animation: vkf-pulse 2.4s ease-out infinite;
 }
 
+.hero-actions {
+  display: inline-flex;
+  gap: 8px;
+}
+
 .icon-btn {
   width: 36px;
   height: 36px;

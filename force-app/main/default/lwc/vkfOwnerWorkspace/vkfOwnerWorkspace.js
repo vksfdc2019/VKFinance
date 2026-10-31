@@ -1,6 +1,7 @@
 import { LightningElement } from "lwc";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
 import getFamilies from "@salesforce/apex/VkfOwnerController.getFamilies";
+import sendTestAlert from "@salesforce/apex/VkfOwnerController.sendTestAlert";
 import VkfOwnerEntryModal from "c/vkfOwnerEntryModal";
 import {
   currentMonth,
@@ -31,6 +32,7 @@ export default class VkfOwnerWorkspace extends LightningElement {
   activeTab = recall("tab") || "overview";
   refreshToken = 0;
   loadingFamilies = true;
+  sendingTest = false;
   error;
 
   connectedCallback() {
@@ -158,6 +160,39 @@ export default class VkfOwnerWorkspace extends LightningElement {
 
   handleChanged() {
     this.refreshToken += 1;
+  }
+
+  /** Sends a test on every enabled channel and reports each one: "Push sent · Email sent · Telegram off". */
+  async handleTestAlert() {
+    this.sendingTest = true;
+    try {
+      const results = parse(await sendTestAlert(), []);
+      const failed = results.filter((r) => r.status === "failed");
+      const summary = results
+        .map((r) => `${r.channel} ${r.status === "skipped" ? "off" : r.status}`)
+        .join(" · ");
+      const details = failed.map((r) => `${r.channel}: ${r.detail}`).join(" ");
+      this.dispatchEvent(
+        new ShowToastEvent({
+          title: failed.length
+            ? "Some alerts did not go out"
+            : "Test alert sent",
+          message: details ? `${summary}. ${details}` : summary,
+          variant: failed.length ? "warning" : "success",
+          mode: failed.length ? "sticky" : "dismissible"
+        })
+      );
+    } catch (e) {
+      this.dispatchEvent(
+        new ShowToastEvent({
+          title: "Could not send the test alert",
+          message: errorMessage(e),
+          variant: "error"
+        })
+      );
+    } finally {
+      this.sendingTest = false;
+    }
   }
 
   async handleAdd() {

@@ -218,6 +218,26 @@ public with sharing class VkfOwnerController {
     }
   }
 
+  /**
+   * Sends a test message on every enabled alert channel (push, email, Telegram).
+   * @return JSON list of OwnerAlertService.ChannelResult: channel, status (sent/skipped/failed), detail
+   */
+  @AuraEnabled
+  public static String sendTestAlert() {
+    try {
+      OwnerContext.requirePermission();
+      OwnerAlertService.Alert alert = new OwnerAlertService.Alert(
+        'VK Finance: test alert',
+        'Alerts are working. Your daily digest arrives at 07:30 when something needs attention.',
+        'VK Finance - test alert\n\nAlerts are working on this channel.\n' +
+        'Your daily digest (bills and EMIs due, large transactions, nightly checks) arrives at 07:30 when something needs attention.'
+      );
+      return JSON.serialize(OwnerAlertService.deliver(alert), true);
+    } catch (Exception e) {
+      throw auraError(e);
+    }
+  }
+
   private static Map<String, Object> bodyOf(String payload) {
     if (String.isBlank(payload)) {
       return new Map<String, Object>();

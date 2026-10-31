@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Overdue_Repeat_Days__c</fullName>
+    <defaultValue>1</defaultValue>
+    <description
+  >Portal bell: repeat each overdue bill, EMI and card reminder every this many days until it is paid (the older one is replaced). 0 = remind once only. Default 1 (daily).</description>
+    <externalId>false</externalId>
+    <inlineHelpText
+  >Portal bell: repeat each overdue bill, EMI and card reminder every this many days until it is paid (the older one is replaced). 0 = remind once only. Default 1 (daily).</inlineHelpText>
+    <label>Repeat Overdue Every (Days)</label>
+    <precision>2</precision>
+    <required>false</required>
+    <scale>0</scale>
+    <type>Number</type>
+    <unique>false</unique>
+</CustomField>

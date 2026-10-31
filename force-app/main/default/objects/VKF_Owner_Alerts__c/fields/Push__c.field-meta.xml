@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Push__c</fullName>
+    <defaultValue>true</defaultValue>
+    <description
+  >Send the digest as a Salesforce mobile app notification to every user with the VKF Platform Admin permission set.</description>
+    <inlineHelpText
+  >Send the digest as a Salesforce mobile app notification to every user with the VKF Platform Admin permission set.</inlineHelpText>
+    <label>Salesforce Push</label>
+    <type>Checkbox</type>
+</CustomField>

@@ -26,4 +26,8 @@ if (!existing.contains('VKF Security Digest')) {
     // 07:00 on Mondays: one email to whoever runs this script (the platform owner).
     System.schedule('VKF Security Digest', '0 0 7 ? * MON', new SecurityDigestJob());
 }
+if (!existing.contains('VKF Owner Alerts')) {
+    // 07:30 every day: owner digest (bills/EMIs due, large transactions, nightly checks) by push, email and Telegram.
+    System.schedule('VKF Owner Alerts', '0 30 7 * * ?', new OwnerAlertJob());
+}
 System.debug('VKF jobs: ' + [SELECT CronJobDetail.Name, NextFireTime FROM CronTrigger WHERE CronJobDetail.Name LIKE 'VKF %']);

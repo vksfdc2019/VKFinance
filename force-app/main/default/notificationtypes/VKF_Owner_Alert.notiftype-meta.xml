@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomNotificationType xmlns="http://soap.sforce.com/2006/04/metadata">
+    <customNotifTypeName>VKF Owner Alert</customNotifTypeName>
+    <description
+  >Daily owner alert digest from VK Finance: dues, large transactions, balance fixes and failed jobs. Opens the Owner Workspace.</description>
+    <desktop>true</desktop>
+    <masterLabel>VKF Owner Alert</masterLabel>
+    <mobile>true</mobile>
+</CustomNotificationType>

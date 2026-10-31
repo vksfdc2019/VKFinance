@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Email__c</fullName>
+    <defaultValue>true</defaultValue>
+    <description
+  >Email the digest to every user with the VKF Platform Admin permission set.</description>
+    <inlineHelpText
+  >Email the digest to every user with the VKF Platform Admin permission set.</inlineHelpText>
+    <label>Email</label>
+    <type>Checkbox</type>
+</CustomField>

@@ -35,6 +35,30 @@ public without sharing class OwnerContext {
    */
   public static UserContext forFamily(Id familyId, Boolean forWrite) {
     requirePermission();
+    Portal_User__c admin = adminOf(familyId);
+    if (forWrite == true && admin.Family__r.Status__c != 'Active') {
+      throw new PortalException('CONFLICT')
+        .withError(
+          'This family is suspended. Reactivate it before making changes.'
+        );
+    }
+    UserContext ctx = new UserContext(admin, null, SessionService.SCOPE_FULL);
+    ctx.ownerUserId = UserInfo.getUserId();
+    AuditService.actingOwnerId = ctx.ownerUserId;
+    return ctx;
+  }
+
+  /**
+   * Read-only Family Admin context for the scheduled owner alerts (OwnerAlertJob). Server-side
+   * only - no @AuraEnabled path reaches it - so it skips the custom permission check (the job
+   * runs as whoever scheduled it) and the audit tag (it changes nothing).
+   * @throws PortalException NOT_FOUND when the family has no admin
+   */
+  public static UserContext forAlerts(Id familyId) {
+    return new UserContext(adminOf(familyId), null, SessionService.SCOPE_FULL);
+  }
+
+  private static Portal_User__c adminOf(Id familyId) {
     if (familyId == null) {
       throw new PortalException('BAD_REQUEST')
         .withError('Choose a family first.');
@@ -78,16 +102,7 @@ public without sharing class OwnerContext {
         break;
       }
     }
-    if (forWrite == true && admin.Family__r.Status__c != 'Active') {
-      throw new PortalException('CONFLICT')
-        .withError(
-          'This family is suspended. Reactivate it before making changes.'
-        );
-    }
-    UserContext ctx = new UserContext(admin, null, SessionService.SCOPE_FULL);
-    ctx.ownerUserId = UserInfo.getUserId();
-    AuditService.actingOwnerId = ctx.ownerUserId;
-    return ctx;
+    return admin;
   }
 
   /** @return every family (Active before Suspended - the picklist order), then by name, with member counts and the admin's name */

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Portal_Summary_Off__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description
+  >Tick to stop the portal bell's daily summary. When unticked (default), each morning the family's admins get one bell entry with how many bills, EMIs and card bills are overdue or due within Warn Days Ahead; yesterday's summary is replaced.</description>
+    <inlineHelpText
+  >Tick to stop the portal bell's daily summary. When unticked (default), each morning the family's admins get one bell entry with how many bills, EMIs and card bills are overdue or due within Warn Days Ahead; yesterday's summary is replaced.</inlineHelpText>
+    <label>Portal Daily Summary Off</label>
+    <type>Checkbox</type>
+</CustomField>

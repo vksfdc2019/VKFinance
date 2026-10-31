@@ -3,7 +3,15 @@ import VkfOwnerWorkspace from "c/vkfOwnerWorkspace";
 import getFamilies from "@salesforce/apex/VkfOwnerController.getFamilies";
 import getOverview from "@salesforce/apex/VkfOwnerController.getOverview";
 import VkfOwnerEntryModal from "c/vkfOwnerEntryModal";
+import sendTestAlert from "@salesforce/apex/VkfOwnerController.sendTestAlert";
 
+const TOAST_EVENT = "lightning__showtoast";
+
+jest.mock(
+  "@salesforce/apex/VkfOwnerController.sendTestAlert",
+  () => ({ default: jest.fn() }),
+  { virtual: true }
+);
 jest.mock(
   "@salesforce/apex/VkfOwnerController.getFamilies",
   () => ({ default: jest.fn() }),
@@ -171,5 +179,63 @@ describe("c-vkf-owner-workspace", () => {
         currencyCode: "INR"
       })
     );
+  });
+
+  it("reports each channel after a test alert", async () => {
+    getFamilies.mockResolvedValue(JSON.stringify(FAMILIES));
+    sendTestAlert.mockResolvedValue(
+      JSON.stringify([
+        { channel: "Telegram", status: "skipped" },
+        { channel: "Email", status: "sent" },
+        { channel: "Push", status: "sent" }
+      ])
+    );
+    const element = mount();
+    const toast = jest.fn();
+    element.addEventListener(TOAST_EVENT, toast);
+    await flush();
+
+    element.shadowRoot
+      .querySelector('button[aria-label="Send a test alert"]')
+      .click();
+    await flush();
+
+    expect(sendTestAlert).toHaveBeenCalled();
+    expect(toast.mock.calls[0][0].detail).toEqual(
+      expect.objectContaining({
+        title: "Test alert sent",
+        message: "Telegram off · Email sent · Push sent",
+        variant: "success"
+      })
+    );
+  });
+
+  it("keeps a failed channel's reason on screen", async () => {
+    getFamilies.mockResolvedValue(JSON.stringify(FAMILIES));
+    sendTestAlert.mockResolvedValue(
+      JSON.stringify([
+        {
+          channel: "Telegram",
+          status: "failed",
+          detail: "Add your Telegram chat ID in VKF Owner Alerts."
+        },
+        { channel: "Email", status: "sent" },
+        { channel: "Push", status: "sent" }
+      ])
+    );
+    const element = mount();
+    const toast = jest.fn();
+    element.addEventListener(TOAST_EVENT, toast);
+    await flush();
+
+    element.shadowRoot
+      .querySelector('button[aria-label="Send a test alert"]')
+      .click();
+    await flush();
+
+    const detail = toast.mock.calls[0][0].detail;
+    expect(detail.variant).toBe("warning");
+    expect(detail.mode).toBe("sticky");
+    expect(detail.message).toContain("Telegram: Add your Telegram chat ID");
   });
 });

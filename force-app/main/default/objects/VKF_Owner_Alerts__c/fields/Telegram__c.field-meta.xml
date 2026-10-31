@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Telegram__c</fullName>
+    <defaultValue>false</defaultValue>
+    <description
+  >Post the digest to Telegram. Needs the VKF_Telegram named credential (with the bot token) and the chat ID below.</description>
+    <inlineHelpText
+  >Post the digest to Telegram. Needs the VKF_Telegram named credential (with the bot token) and the chat ID below.</inlineHelpText>
+    <label>Telegram</label>
+    <type>Checkbox</type>
+</CustomField>
