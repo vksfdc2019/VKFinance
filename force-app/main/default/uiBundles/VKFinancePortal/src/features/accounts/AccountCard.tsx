@@ -59,6 +59,7 @@ export function AccountCard({
 					<p className="flex items-center gap-1.5 text-xs font-medium tracking-wide text-white/75 uppercase">
 						<Icon className="size-3.5" aria-hidden="true" />
 						{account.institution || account.type}
+						{account.type === "Credit Card" && account.cardNetwork && <span className="text-white/60">· {account.cardNetwork}</span>}
 					</p>
 					<h3 className="mt-1 truncate text-lg font-semibold">{account.name || "New account"}</h3>
 					{account.creditLimitGroupId && <p className="mt-2 flex items-center gap-1.5 text-[11px] text-white/85"><Layers3 className="size-3.5 shrink-0" />{account.sharedCredit?.name ?? "Shared credit limit"}</p>}
@@ -113,6 +114,7 @@ export function AccountCard({
 								{billNote(card, currency)}
 							</p>
 						)}
+						<CardTerms account={account} currency={currency} />
 					</div>
 				) : isDeposit ? (
 					<DepositDetails deposit={deposit} currency={currency} closed={closed} />
@@ -191,6 +193,28 @@ function DepositDetails({ deposit: d, currency, closed }: { deposit?: Partial<De
 				{d.status === "Matured" && <span className="rounded-full bg-black/25 px-2 py-0.5">Matured {formatShortDate(d.closedOn)}</span>}
 				{d.status === "Closed Early" && <span className="rounded-full bg-black/25 px-2 py-0.5">Closed early {formatShortDate(d.closedOn)}</span>}
 			</div>
+		</div>
+	);
+}
+
+/** Expiry and the annual fee waiver, when the card's terms are known. */
+function CardTerms({ account, currency }: { account: Partial<Pick<Account, "cardExpiry" | "annualFee">> & { card?: Partial<CardCycle> }; currency: string }) {
+	const expiry = account.cardExpiry;
+	const daysToExpiry = expiry ? Math.round((new Date(expiry).getTime() - new Date().setHours(0, 0, 0, 0)) / 86_400_000) : undefined;
+	const remaining = account.card?.feeWaiverRemaining;
+	if (!expiry && remaining === undefined) return null;
+	return (
+		<div className="mt-2 flex flex-wrap gap-2 text-[11px] text-white/85">
+			{expiry && (
+				<span className={cn("rounded-full px-2 py-0.5", daysToExpiry !== undefined && daysToExpiry <= 60 ? "bg-black/30 font-semibold" : "bg-black/15")}>
+					{daysToExpiry !== undefined && daysToExpiry < 0 ? "Expired" : "Valid thru"} {expiry.slice(5, 7)}/{expiry.slice(2, 4)}
+				</span>
+			)}
+			{remaining !== undefined && account.annualFee ? (
+				<span className="rounded-full bg-black/15 px-2 py-0.5">
+					{remaining > 0 ? `Spend ${formatMoney(remaining, currency)} more to waive the ${formatMoney(account.annualFee, currency)} fee` : "Annual fee waiver reached"}
+				</span>
+			) : null}
 		</div>
 	);
 }

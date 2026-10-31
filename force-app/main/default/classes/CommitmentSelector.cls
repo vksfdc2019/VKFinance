@@ -75,7 +75,7 @@ public without sharing class CommitmentSelector extends FamilyScopedSelector {
             SELECT
                 Id, Name, Borrower_Member__c, Borrower_Member__r.First_Name__c, Borrower_Member__r.Last_Name__c, Lender__c, Loan_Type__c,
                 Principal__c, Annual_Rate__c, Rate_Type__c, Tenure_Months__c, Start_Date__c, EMI_Amount__c, Outstanding_Principal__c, Installments_Paid__c,
-                Debit_Account__c, Debit_Account__r.Name, Loan_Account__c, Loan_Account__r.Current_Balance__c, Auto_Debit__c, Status__c
+                Debit_Account__c, Debit_Account__r.Name, Loan_Account__c, Loan_Account__r.Current_Balance__c, Auto_Debit__c, Status__c, Loan_Account_No__c
             FROM Loan__c
             WHERE Family__c = :fid
             WITH SYSTEM_MODE

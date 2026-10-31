@@ -96,6 +96,14 @@ lock-in) and Form 15G/15H. The full deposit number is shown only to the owner an
   TDS (above ₹50,000 a year, or ₹1,00,000 for senior citizens). It also warns when one
   person's deposits at one bank go beyond the ₹5 lakh DICGC insurance cover.
 
+**Credit cards:** besides the limit, statement day, days to pay and minimum due %, you can record
+the network (Visa, Mastercard, RuPay, Amex, Diners), the *valid thru* month, the cash withdrawal
+limit, the finance charge (% a month), the annual fee and the yearly spend that waives it, and the
+bank autopay you have set up. Never enter the full card number or the CVV. Each card shows its
+interest-free period, how much more spend waives the fee, and when it expires. Under RBI rules,
+no late fee applies until a bill is more than 3 days overdue. Edit a card any time with the pencil
+on its tile.
+
 **Cards sharing one bank limit:** a Family Admin or Co-Admin can open **Accounts → Shared credit limits → Create shared limit**, enter the bank-confirmed facility limit and choose its cards. Availability uses the combined balances, while each card keeps its own bill and due date. The overview counts that shared limit once. Grouping never moves money. Archiving a group restores each card's saved independent limit. Shared totals are private when you cannot see every linked card.
 
 ## 5. Budgets, bills, loans and regular payments
@@ -110,6 +118,11 @@ lock-in) and Form 15G/15H. The full deposit number is shown only to the owner an
   from the calculated ones. When the bank changes the rate, use **Rate changed** on the loan:
   choose whether the bank changed the EMI or the number of EMIs left. Every change is kept in
   the loan's rate history.
+  Use **Edit** on a loan to fix its details (name, lender, loan account number, type, borrower,
+  EMI account) or to correct its terms to match the bank's statement. Corrected terms re-price
+  the loan. A loan added by mistake can be deleted until a payment is recorded against it. RBI
+  rules don't allow banks to charge a prepayment or foreclosure fee on floating-rate loans to
+  individuals.
 - **Recurring entries** (salary, rent, SIPs, pocket money) can post themselves, or ask you first.
 - **The bell** (top left) collects reminders, overdue alerts and security notices.
 

@@ -71,6 +71,12 @@ export default function AccountsPage() {
 		// An active deposit closes through its maturity or early-closure flow, which books the interest.
 		const depositOpen = isDepositType(a.type) && a.status === "Active" && a.deposit?.status === "Active";
 		return (
+			<div className="flex items-center">
+			{a.canManage && (
+				<Button variant="ghost" size="icon-sm" aria-label={`Edit ${a.name}`} title="Edit details" className="text-white hover:bg-white/15 hover:text-white" onClick={() => setEditing(a)}>
+					<Pencil />
+				</Button>
+			)}
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
 					<Button variant="ghost" size="icon-sm" aria-label={`Actions for ${a.name}`} className="text-white hover:bg-white/15 hover:text-white">
@@ -112,7 +118,7 @@ export default function AccountsPage() {
 							<DropdownMenuSeparator />
 							<DropdownMenuItem onSelect={() => setEditing(a)}>
 								<Pencil />
-								Edit details
+								{a.type === "Credit Card" ? "Edit card details" : "Edit details"}
 							</DropdownMenuItem>
 							{depositOpen && (
 								<>
@@ -144,6 +150,7 @@ export default function AccountsPage() {
 					)}
 				</DropdownMenuContent>
 			</DropdownMenu>
+			</div>
 		);
 	}
 

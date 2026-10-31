@@ -18,6 +18,13 @@ public inherited sharing class FinanceDtos {
         public Integer statementDay;
         public Integer paymentDueDays;
         public Decimal minDuePct;
+        public String cardNetwork;
+        public Date cardExpiry;
+        public Decimal cashLimit;
+        public Decimal annualFee;
+        public Decimal feeWaiverSpend;
+        public Decimal cardInterestRate;
+        public String cardAutopay;
         public Boolean isShared;
         public String status;
         public String color;
@@ -36,6 +43,13 @@ public inherited sharing class FinanceDtos {
         public Decimal cycleSpend;
         public Decimal available;
         public Decimal utilisationPct;
+        /** Longest interest-free period: a purchase on the day after a statement, paid on the due date. */
+        public Integer interestFreeDays;
+        /** RBI: late payment charges apply only when the bill is unpaid more than 3 days after the due date. */
+        public Date lateFeeAfter;
+        public Decimal cashAvailable;
+        public Decimal spendLast12Months;
+        public Decimal feeWaiverRemaining;
         /** The bill: the statement for the last closed cycle, or null until the daily job writes it. */
         public CommitmentDtos.Statement statement;
         public CardBill bill;
@@ -223,6 +237,13 @@ public inherited sharing class FinanceDtos {
         d.statementDay = a.Statement_Day__c == null ? null : a.Statement_Day__c.intValue();
         d.paymentDueDays = a.Payment_Due_Days__c == null ? null : a.Payment_Due_Days__c.intValue();
         d.minDuePct = a.Min_Due_Pct__c;
+        d.cardNetwork = a.Card_Network__c;
+        d.cardExpiry = a.Card_Expiry__c;
+        d.cashLimit = a.Cash_Limit__c;
+        d.annualFee = a.Annual_Fee__c;
+        d.feeWaiverSpend = a.Fee_Waiver_Spend__c;
+        d.cardInterestRate = a.Card_Interest_Rate__c;
+        d.cardAutopay = a.Card_Autopay__c;
         d.isShared = a.Is_Shared__c;
         d.status = a.Status__c;
         d.color = a.Color__c;

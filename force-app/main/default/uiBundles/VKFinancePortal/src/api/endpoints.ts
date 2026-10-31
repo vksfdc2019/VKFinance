@@ -36,6 +36,7 @@ import type {
 	Loan,
 	LoanInput,
 	LoanSchedule,
+	LoanUpdate,
 	RateChange,
 	RateChangeInput,
 	RecurringRule,
@@ -155,7 +156,9 @@ export const commitmentApi = {
 	loans: () => vkf<Loan[]>("GET", "/loans"),
 	schedule: (loanId: string) => vkf<LoanSchedule>("GET", `/loans/${id(loanId)}/schedule`),
 	createLoan: (input: LoanInput) => vkf<Loan>("POST", "/loans", input),
-	updateLoan: (loanId: string, input: Partial<LoanInput>) => vkf<Loan>("PATCH", `/loans/${id(loanId)}`, input),
+	/** Details just change; corrected terms (amount, rate, tenure, EMIs paid, EMI, outstanding) re-price the loan. null clears a bank figure. */
+	updateLoan: (loanId: string, input: LoanUpdate) => vkf<Loan>("PATCH", `/loans/${id(loanId)}`, input),
+	deleteLoan: (loanId: string) => vkf<void>("DELETE", `/loans/${id(loanId)}`),
 	payEmi: (loanId: string, input: { accountId?: string; date?: string }) => vkf<Loan>("POST", `/loans/${id(loanId)}/pay`, input),
 	prepay: (loanId: string, input: { amount: number; accountId?: string; date?: string }) =>
 		vkf<Loan>("POST", `/loans/${id(loanId)}/prepay`, input),

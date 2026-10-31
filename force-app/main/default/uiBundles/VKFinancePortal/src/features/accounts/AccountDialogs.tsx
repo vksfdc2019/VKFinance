@@ -13,7 +13,7 @@ import { ACCOUNT_ICONS, ACCOUNT_SWATCHES, DEFAULT_ACCOUNT_COLOR } from "@/compon
 import { familyApi, financeApi } from "@/api/endpoints";
 import { errorMessages } from "@/api/vkfClient";
 import type { Member } from "@/api/types";
-import { ACCOUNT_COLORS, ACCOUNT_TYPES, type Account, type AccountColor, type AccountInput, type AccountType } from "@/api/financeTypes";
+import { ACCOUNT_COLORS, ACCOUNT_TYPES, CARD_AUTOPAY, CARD_NETWORKS, type Account, type AccountColor, type AccountInput, type AccountType, type CardAutopay, type CardNetwork } from "@/api/financeTypes";
 import { currencySymbol, formatMoney, todayIso } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/features/auth/AuthContext";
@@ -32,6 +32,11 @@ const TYPE_HINTS: Record<AccountType, string> = {
 	Investment: "MF, stocks, PPF",
 	Loan: "Home, car, personal",
 };
+
+/** "2029-08-31" -> "08/29", as printed on the card. */
+function expiryLabel(iso?: string): string {
+	return iso ? `${iso.slice(5, 7)}/${iso.slice(2, 4)}` : "";
+}
 
 function num(value: string): number | null {
 	const cleaned = value.replace(/[, ]/g, "");
@@ -61,6 +66,13 @@ export function AccountDialog({
 	const [statementDay, setStatementDay] = useState(account?.statementDay ? String(account.statementDay) : "");
 	const [dueDays, setDueDays] = useState(account?.paymentDueDays ? String(account.paymentDueDays) : "20");
 	const [minDue, setMinDue] = useState(account?.minDuePct !== undefined ? String(account.minDuePct) : "5");
+	const [network, setNetwork] = useState<CardNetwork | "">(account?.cardNetwork ?? "");
+	const [expiry, setExpiry] = useState(expiryLabel(account?.cardExpiry));
+	const [cashLimit, setCashLimit] = useState(account?.cashLimit !== undefined ? String(account.cashLimit) : "");
+	const [annualFee, setAnnualFee] = useState(account?.annualFee !== undefined ? String(account.annualFee) : "");
+	const [feeWaiver, setFeeWaiver] = useState(account?.feeWaiverSpend !== undefined ? String(account.feeWaiverSpend) : "");
+	const [financeCharge, setFinanceCharge] = useState(account?.cardInterestRate !== undefined ? String(account.cardInterestRate) : "");
+	const [autopay, setAutopay] = useState<CardAutopay>(account?.cardAutopay ?? "Off");
 	const [color, setColor] = useState<AccountColor | undefined>(account?.color);
 	const [shared, setShared] = useState(account?.isShared ?? false);
 	const [ownerId, setOwnerId] = useState<string>(account ? (account.ownerId ?? "family") : (profile?.userId ?? "family"));
@@ -100,6 +112,13 @@ export function AccountDialog({
 			input.statementDay = num(statementDay);
 			input.paymentDueDays = num(dueDays);
 			input.minDuePct = num(minDue);
+			input.cardNetwork = network || null;
+			input.cardExpiry = expiry.trim() || null;
+			input.cashLimit = num(cashLimit);
+			input.annualFee = num(annualFee);
+			input.feeWaiverSpend = num(feeWaiver);
+			input.cardInterestRate = num(financeCharge);
+			input.cardAutopay = autopay;
 		}
 		if (isAdmin) input.ownerId = ownerId === "family" ? null : ownerId;
 		setSaving(true);
@@ -144,6 +163,8 @@ export function AccountDialog({
 		isShared: shared,
 		status: "Active" as const,
 		creditLimit: previewLimit ?? undefined,
+		cardNetwork: network || undefined,
+		cardExpiry: /^\d{2}\/\d{2}$/.test(expiry) ? `20${expiry.slice(3)}-${expiry.slice(0, 2)}-01` : undefined,
 		creditLimitGroupId: account?.creditLimitGroupId,
 		sharedCredit: previewGroup,
 		sharedCreditRestricted: account?.sharedCreditRestricted,
@@ -255,6 +276,67 @@ export function AccountDialog({
 									/>
 									<TextField id="acct-due" label="Days to pay after statement" inputMode="numeric" value={dueDays} onChange={(e) => setDueDays(e.target.value.replace(/\D/g, ""))} />
 									<TextField id="acct-min" label="Minimum due %" inputMode="decimal" value={minDue} onChange={(e) => setMinDue(e.target.value)} />
+									<div className="grid gap-1.5">
+										<Label htmlFor="acct-network">Network</Label>
+										<Select value={network || "none"} onValueChange={(v) => setNetwork(v === "none" ? "" : (v as CardNetwork))}>
+											<SelectTrigger id="acct-network" className="w-full">
+												<SelectValue />
+											</SelectTrigger>
+											<SelectContent>
+												<SelectItem value="none">Not set</SelectItem>
+												{CARD_NETWORKS.map((n) => (
+													<SelectItem key={n} value={n}>
+														{n}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									</div>
+									<TextField
+										id="acct-expiry"
+										label="Valid thru (MM/YY)"
+										inputMode="numeric"
+										placeholder="08/29"
+										maxLength={5}
+										value={expiry}
+										onChange={(e) => {
+											const digits = e.target.value.replace(/\D/g, "").slice(0, 4);
+											setExpiry(digits.length > 2 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits);
+										}}
+										hint="Never enter the CVV."
+									/>
+									<TextField id="acct-cash" label="Cash withdrawal limit" inputMode="decimal" value={cashLimit} onChange={(e) => setCashLimit(e.target.value)} hint="Usually 20-40% of the credit limit." />
+									<TextField
+										id="acct-rate"
+										label="Finance charge (% a month)"
+										inputMode="decimal"
+										placeholder="3.75"
+										value={financeCharge}
+										onChange={(e) => setFinanceCharge(e.target.value.replace(/[^0-9.]/g, ""))}
+										hint={num(financeCharge) ? `${((num(financeCharge) ?? 0) * 12).toFixed(1)}% a year on unpaid balances` : "From the card's key fact statement."}
+									/>
+									<TextField id="acct-fee" label="Annual fee (before GST)" inputMode="decimal" value={annualFee} onChange={(e) => setAnnualFee(e.target.value)} />
+									<TextField id="acct-waiver" label="Fee waived on yearly spend of" inputMode="decimal" value={feeWaiver} onChange={(e) => setFeeWaiver(e.target.value)} />
+									<div className="grid gap-1.5 sm:col-span-2">
+										<Label htmlFor="acct-autopay">Bank autopay (standing instruction)</Label>
+										<Select value={autopay} onValueChange={(v) => setAutopay(v as CardAutopay)}>
+											<SelectTrigger id="acct-autopay" className="w-full">
+												<SelectValue />
+											</SelectTrigger>
+											<SelectContent>
+												{CARD_AUTOPAY.map((o) => (
+													<SelectItem key={o} value={o}>
+														{o}
+													</SelectItem>
+												))}
+											</SelectContent>
+										</Select>
+									</div>
+									<p className="text-xs text-slate-500 sm:col-span-2 dark:text-slate-400">
+										{num(dueDays) ? `Up to about ${30 + (num(dueDays) ?? 0)} days interest-free on purchases. ` : ""}
+										Under RBI rules, a late fee applies only if the bill is unpaid more than 3 days after the due date, and paying only the minimum due
+										still attracts interest on the rest.
+									</p>
 								</div>
 							)}
 

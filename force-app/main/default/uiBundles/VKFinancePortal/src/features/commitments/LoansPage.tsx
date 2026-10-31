@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { Banknote, CalendarRange, Landmark, Percent, Plus, Table2, Zap } from "lucide-react";
+import { Banknote, CalendarRange, Landmark, Pencil, Percent, Plus, Table2, Trash2, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -16,7 +16,7 @@ import { commitmentApi, familyApi, financeApi } from "@/api/endpoints";
 import { errorMessages } from "@/api/vkfClient";
 import type { Account } from "@/api/financeTypes";
 import type { Member } from "@/api/types";
-import { LOAN_TYPES, RATE_TYPES, type Loan, type LoanSchedule, type RateChange } from "@/api/commitmentTypes";
+import { LOAN_TYPES, RATE_TYPES, type Loan, type LoanSchedule, type LoanUpdate, type RateChange } from "@/api/commitmentTypes";
 import { currencySymbol, formatDate, formatMoney, todayIso } from "@/lib/format";
 import { useAsync } from "@/lib/useAsync";
 import { useAuth } from "@/features/auth/AuthContext";
@@ -51,6 +51,7 @@ export default function LoansPage() {
 	const [prepaying, setPrepaying] = useState<Loan | null>(null);
 	const [scheduleFor, setScheduleFor] = useState<Loan | null>(null);
 	const [rating, setRating] = useState<Loan | null>(null);
+	const [editing, setEditing] = useState<Loan | null>(null);
 	const active = (loans ?? []).filter((l) => l.status === "Active");
 
 	return (
@@ -176,6 +177,12 @@ export default function LoansPage() {
 													Prepay
 												</Button>
 											)}
+											{l.canEdit && (
+												<Button size="sm" variant="ghost" onClick={() => setEditing(l)}>
+													<Pencil />
+													Edit
+												</Button>
+											)}
 											{can("LOANS:EDIT") && l.status === "Active" && (
 												<Button size="sm" variant="outline" onClick={() => setRating(l)}>
 													<Percent />
@@ -228,6 +235,17 @@ export default function LoansPage() {
 				/>
 			)}
 			{scheduleFor && <ScheduleDialog loan={scheduleFor} currency={currency} onClose={() => setScheduleFor(null)} />}
+			{editing && (
+				<LoanDialog
+					loan={editing}
+					currency={currency}
+					onClose={() => setEditing(null)}
+					onSaved={() => {
+						setEditing(null);
+						refresh();
+					}}
+				/>
+			)}
 			{rating && (
 				<RateDialog
 					loan={rating}
@@ -477,6 +495,7 @@ function PrepayDialog({ loan, currency, onClose, onDone }: { loan: Loan; currenc
 							<DialogTitle>Prepay {loan.name}</DialogTitle>
 							<DialogDescription>
 								Pays down principal only. Your EMI stays the same, so the loan finishes sooner. Outstanding: {formatMoney(loan.outstanding, currency)}.
+									{loan.rateType === "Floating" && " Under RBI rules, banks can't charge a prepayment or foreclosure fee on floating-rate loans to individuals."}
 							</DialogDescription>
 						</DialogHeader>
 						<div className="flex items-center gap-2 rounded-2xl bg-slate-50 dark:bg-slate-800/40 px-4 py-3 ring-1 ring-slate-900/5 dark:ring-white/10 focus-within:ring-2 focus-within:ring-brand-600">
@@ -523,25 +542,33 @@ function PrepayDialog({ loan, currency, onClose, onDone }: { loan: Loan; currenc
 	);
 }
 
-function LoanDialog({ currency, onClose, onSaved }: { currency: string; onClose: () => void; onSaved: () => void }) {
+function loanForm(loan: Loan | undefined, userId: string) {
+	return {
+		name: loan?.name ?? "",
+		lender: loan?.lender ?? "",
+		loanAccountNumber: loan?.loanAccountNumber ?? "",
+		loanType: loan?.loanType ?? "Home",
+		principal: loan ? String(loan.principal) : "",
+		annualRate: loan ? String(loan.annualRate) : "",
+		rateType: loan?.rateType ?? "Fixed",
+		tenureMonths: loan ? String(loan.tenureMonths) : "",
+		firstEmiDate: loan?.firstEmiDate ?? todayIso(),
+		installmentsPaid: loan ? String(loan.installmentsPaid) : "0",
+		bankEmi: loan ? String(loan.emi) : "",
+		bankOutstanding: loan ? String(loan.outstanding) : "",
+		debitAccountId: loan?.debitAccountId ?? "",
+		autoDebit: loan?.autoDebit ?? false,
+		borrowerId: loan?.borrowerId ?? userId,
+	};
+}
+
+/** Adds a loan, or edits one: details just change, while corrected terms re-price the loan on the server. */
+function LoanDialog({ loan, currency, onClose, onSaved }: { loan?: Loan; currency: string; onClose: () => void; onSaved: () => void }) {
 	const { profile } = useAuth();
 	const isAdmin = profile?.role === "Family Admin" || profile?.role === "Co-Admin";
-	const [form, setForm] = useState({
-		name: "",
-		lender: "",
-		loanType: "Home",
-		principal: "",
-		annualRate: "",
-		rateType: "Fixed",
-		tenureMonths: "",
-		firstEmiDate: todayIso(),
-		installmentsPaid: "0",
-		bankEmi: "",
-		bankOutstanding: "",
-		debitAccountId: "",
-		autoDebit: false,
-		borrowerId: profile?.userId ?? "",
-	});
+	const [initial] = useState(() => loanForm(loan, profile?.userId ?? ""));
+	const [form, setForm] = useState(initial);
+	const [confirmDelete, setConfirmDelete] = useState(false);
 	const [accounts, setAccounts] = useState<Account[]>([]);
 	const [members, setMembers] = useState<Member[]>([]);
 	const [errors, setErrors] = useState<string[]>([]);
@@ -567,10 +594,62 @@ function LoanDialog({ currency, onClose, onSaved }: { currency: string; onClose:
 	// More than 1% apart usually means the bank's loan amount, tenure or an earlier rate differs from what was typed.
 	const emiMismatch = bankEmi > 0 && preview.calculated > 0 && Math.abs(bankEmi - preview.calculated) / preview.calculated > 0.01;
 
+	const termsChanged =
+		!!loan &&
+		(["principal", "annualRate", "tenureMonths", "firstEmiDate", "installmentsPaid", "bankEmi", "bankOutstanding"] as const).some((k) => form[k].trim() !== initial[k]);
+
+	function changes(): LoanUpdate {
+		const u: LoanUpdate = {};
+		const text = (k: "name" | "lender" | "loanAccountNumber") => form[k].trim();
+		if (text("name") !== initial.name) u.name = text("name");
+		if (text("lender") !== initial.lender) u.lender = text("lender") || null;
+		if (text("loanAccountNumber") !== initial.loanAccountNumber && text("loanAccountNumber") !== loan?.loanAccountNumberMasked) {
+			u.loanAccountNumber = text("loanAccountNumber") || null;
+		}
+		if (form.loanType !== initial.loanType) u.loanType = form.loanType;
+		if (form.rateType !== initial.rateType) u.rateType = form.rateType;
+		if (form.debitAccountId !== initial.debitAccountId) u.debitAccountId = form.debitAccountId || null;
+		if (form.autoDebit !== initial.autoDebit) u.autoDebit = form.autoDebit;
+		if (isAdmin && form.borrowerId !== initial.borrowerId) u.borrowerId = form.borrowerId;
+		if (form.principal.trim() !== initial.principal) u.principal = principal;
+		if (form.annualRate.trim() !== initial.annualRate) u.annualRate = rate;
+		if (form.tenureMonths.trim() !== initial.tenureMonths) u.tenureMonths = months;
+		if (form.firstEmiDate !== initial.firstEmiDate) u.firstEmiDate = form.firstEmiDate;
+		if (form.installmentsPaid.trim() !== initial.installmentsPaid) u.installmentsPaid = Number(form.installmentsPaid) || 0;
+		// Clearing a bank figure sends null, so the server works it out again.
+		if (form.bankEmi.trim() !== initial.bankEmi) u.emiAmount = bankEmi || null;
+		if (form.bankOutstanding.trim() !== initial.bankOutstanding) u.outstandingAmount = bankOutstanding || null;
+		return u;
+	}
+
+	async function remove() {
+		if (!loan) return;
+		setSaving(true);
+		try {
+			await commitmentApi.deleteLoan(loan.id);
+			toast.success(`${loan.name} deleted`);
+			onSaved();
+		} catch (error) {
+			setErrors(errorMessages(error));
+			setSaving(false);
+		}
+	}
+
 	async function submit(e: FormEvent) {
 		e.preventDefault();
 		setSaving(true);
 		try {
+			if (loan) {
+				const update = changes();
+				if (Object.keys(update).length === 0) {
+					onClose();
+					return;
+				}
+				const saved = await commitmentApi.updateLoan(loan.id, update);
+				toast.success(termsChanged ? `${saved.name} updated · EMI ${formatMoney(saved.emi, currency)} · ${formatMoney(saved.outstanding, currency)} outstanding` : `${saved.name} updated`);
+				onSaved();
+				return;
+			}
 			await commitmentApi.createLoan({
 				name: form.name.trim(),
 				lender: form.lender.trim() || undefined,
@@ -580,6 +659,7 @@ function LoanDialog({ currency, onClose, onSaved }: { currency: string; onClose:
 				rateType: form.rateType,
 				tenureMonths: months,
 				firstEmiDate: form.firstEmiDate,
+				loanAccountNumber: form.loanAccountNumber.trim() || undefined,
 				installmentsPaid: Number(form.installmentsPaid) || 0,
 				emiAmount: bankEmi || undefined,
 				outstandingAmount: bankOutstanding || undefined,
@@ -602,13 +682,26 @@ function LoanDialog({ currency, onClose, onSaved }: { currency: string; onClose:
 			<DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-2xl">
 				<form onSubmit={submit} noValidate className="space-y-4">
 					<DialogHeader>
-						<DialogTitle>Add a loan</DialogTitle>
-						<DialogDescription>Already paying it? Enter how many EMIs are done and we&apos;ll start from where you are.</DialogDescription>
+						<DialogTitle>{loan ? `Edit ${loan.name}` : "Add a loan"}</DialogTitle>
+						<DialogDescription>
+							{loan
+								? "Fix any detail, or correct the terms to match your bank's loan statement. For a new rate from the bank, use Rate changed instead."
+								: "Already paying it? Enter how many EMIs are done and we'll start from where you are."}
+						</DialogDescription>
 					</DialogHeader>
 					<div className="grid gap-5 md:grid-cols-[1fr_14rem]">
 						<div className="grid gap-3 sm:grid-cols-2">
 							<TextField id="loan-name" label="Name" placeholder="e.g. Home loan" value={form.name} maxLength={80} onChange={(e) => set("name")(e.target.value)} />
 							<TextField id="loan-lender" label="Lender" placeholder="e.g. SBI" value={form.lender} maxLength={80} onChange={(e) => set("lender")(e.target.value)} />
+							<TextField
+								id="loan-number"
+								label="Loan account number (optional)"
+								value={form.loanAccountNumber}
+								maxLength={30}
+								autoComplete="off"
+								onChange={(e) => set("loanAccountNumber")(e.target.value)}
+								hint="Members see only the last 4 digits."
+							/>
 							<div className="grid gap-1.5">
 								<Label htmlFor="loan-type">Type</Label>
 								<Select value={form.loanType} onValueChange={set("loanType")}>
@@ -643,7 +736,7 @@ function LoanDialog({ currency, onClose, onSaved }: { currency: string; onClose:
 							</div>
 							<TextField id="loan-tenure" label="Tenure (months)" inputMode="numeric" value={form.tenureMonths} onChange={(e) => set("tenureMonths")(e.target.value.replace(/\D/g, ""))} />
 							<TextField id="loan-first" label="First EMI date" type="date" value={form.firstEmiDate} onChange={(e) => set("firstEmiDate")(e.target.value)} />
-							<TextField id="loan-paid" label="EMIs already paid" inputMode="numeric" value={form.installmentsPaid} onChange={(e) => set("installmentsPaid")(e.target.value.replace(/\D/g, ""))} />
+							<TextField id="loan-paid" label={loan ? "EMIs paid so far (as per bank)" : "EMIs already paid"} inputMode="numeric" value={form.installmentsPaid} onChange={(e) => set("installmentsPaid")(e.target.value.replace(/\D/g, ""))} />
 							<TextField
 								id="loan-bank-emi"
 								label="EMI as per bank (optional)"
@@ -734,15 +827,43 @@ function LoanDialog({ currency, onClose, onSaved }: { currency: string; onClose:
 							</dl>
 						</div>
 					</div>
+					{termsChanged && (
+						<p className="rounded-xl bg-amber-50 px-3 py-2.5 text-xs text-amber-900 dark:bg-amber-950/40 dark:text-amber-100">
+							Saving re-prices the loan: the outstanding and every future EMI are worked out again. EMIs already recorded here keep their numbers
+							{loan && (loan.installmentsPaidHere ?? 0) > 0 ? ", and the outstanding changes only if you enter the bank's figure." : "."}
+						</p>
+					)}
 					<FormErrors errors={errors} />
-					<DialogFooter>
-						<Button type="button" variant="outline" onClick={onClose}>
-							Cancel
-						</Button>
-						<Button type="submit" disabled={saving}>
-							{saving && <Spinner />}
-							Add loan
-						</Button>
+					<DialogFooter className="sm:justify-between">
+						{loan?.canDelete ? (
+							confirmDelete ? (
+								<div className="flex flex-wrap items-center gap-2 text-sm">
+									<span className="text-slate-600 dark:text-slate-400">Delete this loan and its schedule?</span>
+									<Button type="button" variant="destructive" size="sm" disabled={saving} onClick={() => void remove()}>
+										Delete
+									</Button>
+									<Button type="button" variant="ghost" size="sm" onClick={() => setConfirmDelete(false)}>
+										Keep
+									</Button>
+								</div>
+							) : (
+								<Button type="button" variant="ghost" className="text-red-700 dark:text-red-300" onClick={() => setConfirmDelete(true)}>
+									<Trash2 />
+									Delete loan
+								</Button>
+							)
+						) : (
+							<span />
+						)}
+						<div className="flex gap-2">
+							<Button type="button" variant="outline" onClick={onClose}>
+								Cancel
+							</Button>
+							<Button type="submit" disabled={saving}>
+								{saving && <Spinner />}
+								{loan ? "Save changes" : "Add loan"}
+							</Button>
+						</div>
 					</DialogFooter>
 				</form>
 			</DialogContent>

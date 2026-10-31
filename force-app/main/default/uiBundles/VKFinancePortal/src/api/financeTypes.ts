@@ -20,6 +20,12 @@ export type AccountType = (typeof ACCOUNT_TYPES)[number];
 export const ACCOUNT_COLORS = ["teal", "emerald", "sky", "indigo", "violet", "rose", "amber", "orange", "slate", "zinc"] as const;
 export type AccountColor = (typeof ACCOUNT_COLORS)[number];
 
+export const CARD_NETWORKS = ["Visa", "Mastercard", "RuPay", "American Express", "Diners Club", "Other"] as const;
+export type CardNetwork = (typeof CARD_NETWORKS)[number];
+
+export const CARD_AUTOPAY = ["Off", "Minimum due", "Total due"] as const;
+export type CardAutopay = (typeof CARD_AUTOPAY)[number];
+
 export const PAYMENT_MODES = [
 	"UPI",
 	"Cash",
@@ -61,6 +67,13 @@ export interface CardCycle {
 	cycleSpend: number;
 	available?: number;
 	utilisationPct?: number;
+	/** Longest interest-free period: bought the day after a statement, paid on the due date. */
+	interestFreeDays?: number;
+	/** RBI: no late payment charge until the bill is unpaid 3 days past the due date. */
+	lateFeeAfter?: string;
+	cashAvailable?: number;
+	spendLast12Months?: number;
+	feeWaiverRemaining?: number;
 	/** The bill: the statement for the last closed cycle. Missing until the daily job writes it. */
 	statement?: Statement;
 	/** An explicitly linked bill takes precedence over the computed statement. */
@@ -85,6 +98,15 @@ export interface Account {
 	statementDay?: number;
 	paymentDueDays?: number;
 	minDuePct?: number;
+	cardNetwork?: CardNetwork;
+	/** Last day of the expiry month. */
+	cardExpiry?: string;
+	cashLimit?: number;
+	annualFee?: number;
+	feeWaiverSpend?: number;
+	/** Finance charge, % per month. */
+	cardInterestRate?: number;
+	cardAutopay?: CardAutopay;
 	isShared: boolean;
 	status: "Active" | "Closed";
 	color?: AccountColor;
@@ -117,6 +139,14 @@ export interface AccountInput {
 	statementDay?: number | null;
 	paymentDueDays?: number | null;
 	minDuePct?: number | null;
+	cardNetwork?: CardNetwork | null;
+	/** "MM/YY" as printed on the card. */
+	cardExpiry?: string | null;
+	cashLimit?: number | null;
+	annualFee?: number | null;
+	feeWaiverSpend?: number | null;
+	cardInterestRate?: number | null;
+	cardAutopay?: CardAutopay | null;
 	isShared?: boolean;
 	color?: AccountColor | null;
 	ownerId?: string | null;

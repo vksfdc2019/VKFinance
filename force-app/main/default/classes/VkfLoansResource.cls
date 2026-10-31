@@ -4,7 +4,8 @@
  *   GET   /loans/{id}/schedule
  *   GET   /loans/{id}/rates      rate change history, newest first
  *   POST  /loans
- *   PATCH /loans/{id}
+ *   PATCH /loans/{id}             details, or corrected terms that re-price the loan
+ *   DELETE /loans/{id}            only while nothing has been paid on it
  *   POST  /loans/{id}/pay        pays the next EMI { accountId?, date? }
  *   POST  /loans/{id}/prepay     { amount, accountId?, date? }
  *   POST  /loans/{id}/rate       { annualRate, adjust: EMI|Tenure, emiAmount?, effectiveDate?, note? }
@@ -50,6 +51,23 @@ global with sharing class VkfLoansResource {
             } else {
                 throw new PortalException('NOT_FOUND');
             }
+        } catch (Exception e) {
+            VkfRest.fail(e, sp);
+        }
+    }
+
+    @HttpDelete
+    global static void remove() {
+        RestRequest req = RestContext.request;
+        Savepoint sp = Database.setSavepoint();
+        try {
+            UserContext ctx = SessionService.require(VkfRest.sessionToken(req), VkfRest.userAgent(req));
+            List<String> parts = VkfRest.segmentsAfter(req, 'loans');
+            if (parts.size() != 1) {
+                throw new PortalException('NOT_FOUND');
+            }
+            LoanService.deleteLoan(ctx, VkfRest.toId(parts[0]));
+            VkfRest.noContent();
         } catch (Exception e) {
             VkfRest.fail(e, sp);
         }

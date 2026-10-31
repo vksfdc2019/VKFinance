@@ -77,6 +77,11 @@ public inherited sharing class CommitmentDtos {
         public String borrowerName;
         public Installment next;
         public Boolean canPay;
+        public Boolean canEdit;
+        public Boolean canDelete;
+        public Integer installmentsPaidHere;
+        public String loanAccountNumber;
+        public String loanAccountNumberMasked;
     }
 
     public class Installment {

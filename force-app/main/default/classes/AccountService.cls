@@ -12,6 +12,12 @@ public without sharing class AccountService {
         'teal', 'emerald', 'sky', 'indigo', 'violet', 'rose', 'amber', 'orange', 'slate', 'zinc'
     };
     private static final Pattern LAST4 = Pattern.compile('^\\d{4}$');
+    private static final Pattern EXPIRY = Pattern.compile('^(\\d{1,2})/(\\d{2})$');
+    public static final List<String> NETWORKS = new List<String>{ 'Visa', 'Mastercard', 'RuPay', 'American Express', 'Diners Club', 'Other' };
+    public static final List<String> AUTOPAY = new List<String>{ 'Off', 'Minimum due', 'Total due' };
+    /** RBI Master Direction on credit cards (2022): no late fee until a payment is more than 3 days overdue. */
+    public static final Integer LATE_FEE_GRACE_DAYS = 3;
+    public static final Decimal MAX_FINANCE_CHARGE = 5;
 
     public static List<FinanceDtos.Account> listAccounts(UserContext ctx, Boolean includeClosed) {
         AccessGuard.require(ctx, 'ACCOUNTS', 'READ');
@@ -63,6 +69,19 @@ public without sharing class AccountService {
                     paidByCard.put(t.Account__c, LedgerUtil.zeroIfNull(paidByCard.get(t.Account__c)) + t.Amount__c);
                 }
             }
+            Map<Id, Decimal> spendByCard = new Map<Id, Decimal>();
+            for (AggregateResult r : [
+                SELECT Account__c card, SUM(Amount__c) spent
+                FROM Transaction__c
+                WHERE Family__c = :fid AND Account__c IN :cardIds AND Type__c = 'Expense' AND Status__c != 'Void' AND Txn_Date__c > :today.addYears(-1)
+                WITH SYSTEM_MODE
+                GROUP BY Account__c
+            ]) {
+                spendByCard.put((Id) r.get('card'), (Decimal) r.get('spent'));
+            }
+            for (Id cardId : cycles.keySet()) {
+                cycles.get(cardId).spendLast12Months = LedgerUtil.zeroIfNull(spendByCard.get(cardId));
+            }
             CardStatementService.attachLatest(cycles, paidByCard, today);
             BillService.attachCardBills(ctx, cycles, today);
         }
@@ -74,6 +93,12 @@ public without sharing class AccountService {
                 if (a.Credit_Limit__c != null && a.Credit_Limit__c > 0) {
                     cycle.available = a.Credit_Limit__c - d.balance;
                     cycle.utilisationPct = (d.balance / a.Credit_Limit__c * 100).setScale(1, RoundingMode.HALF_UP);
+                }
+                if (a.Cash_Limit__c != null && cycle.available != null) {
+                    cycle.cashAvailable = Math.max(0, Math.min(a.Cash_Limit__c, cycle.available));
+                }
+                if (a.Fee_Waiver_Spend__c != null && a.Fee_Waiver_Spend__c > 0) {
+                    cycle.feeWaiverRemaining = Math.max(0, a.Fee_Waiver_Spend__c - cycle.spendLast12Months);
                 }
                 d.card = cycle;
             }
@@ -104,6 +129,8 @@ public without sharing class AccountService {
             c.dueDate = c.nextStatementDate.addDays(dueDays);
         }
         c.cycleSpend = 0;
+        c.interestFreeDays = c.lastStatementDate.daysBetween(c.nextStatementDate) - 1 + dueDays;
+        c.lateFeeAfter = c.dueDate.addDays(LATE_FEE_GRACE_DAYS);
         return c;
     }
 
@@ -202,6 +229,13 @@ public without sharing class AccountService {
             Statement_Day__c = a.Statement_Day__c,
             Payment_Due_Days__c = a.Payment_Due_Days__c,
             Min_Due_Pct__c = a.Min_Due_Pct__c,
+            Card_Network__c = a.Card_Network__c,
+            Card_Expiry__c = a.Card_Expiry__c,
+            Cash_Limit__c = a.Cash_Limit__c,
+            Annual_Fee__c = a.Annual_Fee__c,
+            Fee_Waiver_Spend__c = a.Fee_Waiver_Spend__c,
+            Card_Interest_Rate__c = a.Card_Interest_Rate__c,
+            Card_Autopay__c = a.Card_Autopay__c,
             Is_Shared__c = a.Is_Shared__c,
             Status__c = a.Status__c,
             Color__c = a.Color__c,
@@ -347,9 +381,72 @@ public without sharing class AccountService {
             if (a.Min_Due_Pct__c < 0 || a.Min_Due_Pct__c > 100) {
                 errors.add('Minimum due % must be between 0 and 100.');
             }
+            applyCardTerms(a, body, errors);
         }
         if (!errors.isEmpty()) {
             throw new PortalException('VALIDATION').withErrors(errors);
         }
+    }
+
+    /** The rest of a card's terms, as printed on the card and its key fact statement. Never the full number or CVV. */
+    private static void applyCardTerms(Financial_Account__c a, Map<String, Object> body, List<String> errors) {
+        if (LedgerUtil.has(body, 'cardNetwork')) {
+            a.Card_Network__c = LedgerUtil.text(body, 'cardNetwork');
+            if (a.Card_Network__c != null && !NETWORKS.contains(a.Card_Network__c)) {
+                errors.add('Choose the card network.');
+            }
+        }
+        if (LedgerUtil.has(body, 'cardExpiry')) {
+            a.Card_Expiry__c = expiry(LedgerUtil.text(body, 'cardExpiry'), errors);
+        }
+        if (LedgerUtil.has(body, 'cashLimit')) {
+            a.Cash_Limit__c = LedgerUtil.dec(body, 'cashLimit', 'Cash limit');
+        }
+        if (a.Cash_Limit__c != null && (a.Cash_Limit__c < 0 || (a.Credit_Limit__c != null && a.Cash_Limit__c > a.Credit_Limit__c))) {
+            errors.add('Cash limit must be between zero and the credit limit.');
+        }
+        if (LedgerUtil.has(body, 'annualFee')) {
+            a.Annual_Fee__c = LedgerUtil.dec(body, 'annualFee', 'Annual fee');
+        }
+        if (a.Annual_Fee__c != null && (a.Annual_Fee__c < 0 || a.Annual_Fee__c > 100000)) {
+            errors.add('Annual fee must be between ₹0 and ₹1,00,000.');
+        }
+        if (LedgerUtil.has(body, 'feeWaiverSpend')) {
+            a.Fee_Waiver_Spend__c = LedgerUtil.dec(body, 'feeWaiverSpend', 'Fee waiver spend');
+        }
+        if (a.Fee_Waiver_Spend__c != null && (a.Fee_Waiver_Spend__c < 0 || a.Fee_Waiver_Spend__c > LedgerUtil.MAX_AMOUNT)) {
+            errors.add('Fee waiver spend must be zero or more.');
+        }
+        if (LedgerUtil.has(body, 'cardInterestRate')) {
+            a.Card_Interest_Rate__c = LedgerUtil.dec(body, 'cardInterestRate', 'Finance charge');
+        }
+        if (a.Card_Interest_Rate__c != null && (a.Card_Interest_Rate__c < 0 || a.Card_Interest_Rate__c > MAX_FINANCE_CHARGE)) {
+            errors.add('Finance charge must be between 0% and ' + MAX_FINANCE_CHARGE + '% a month.');
+        }
+        if (LedgerUtil.has(body, 'cardAutopay')) {
+            a.Card_Autopay__c = LedgerUtil.text(body, 'cardAutopay');
+            if (a.Card_Autopay__c != null && !AUTOPAY.contains(a.Card_Autopay__c)) {
+                errors.add('Choose the autopay setting.');
+            }
+        }
+    }
+
+    /** 'MM/YY' as printed on the card -> the last day of that month. */
+    private static Date expiry(String value, List<String> errors) {
+        if (value == null) {
+            return null;
+        }
+        Matcher m = EXPIRY.matcher(value);
+        Integer month = m.matches() ? Integer.valueOf(m.group(1)) : 0;
+        if (month < 1 || month > 12) {
+            errors.add('Enter the expiry as MM/YY, as printed on the card.');
+            return null;
+        }
+        Integer year = 2000 + Integer.valueOf(m.group(2));
+        Date d = Date.newInstance(year, month, Date.daysInMonth(year, month));
+        if (d < Date.today().addYears(-5) || d > Date.today().addYears(20)) {
+            errors.add('That expiry date doesn\'t look right.');
+        }
+        return d;
     }
 }

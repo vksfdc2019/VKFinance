@@ -111,6 +111,13 @@ export interface Loan {
 	borrowerName?: string;
 	next?: Installment;
 	canPay: boolean;
+	canEdit?: boolean;
+	/** True while nothing has been paid or adjusted on the loan. */
+	canDelete?: boolean;
+	installmentsPaidHere?: number;
+	/** Full for admins; masked for everyone else. */
+	loanAccountNumber?: string;
+	loanAccountNumberMasked?: string;
 }
 
 export interface LoanInput {
@@ -122,6 +129,7 @@ export interface LoanInput {
 	rateType?: string;
 	tenureMonths: number;
 	firstEmiDate: string;
+	loanAccountNumber?: string;
 	emiAmount?: number;
 	installmentsPaid?: number;
 	/** As per the bank; otherwise worked out from the EMIs already paid. */
@@ -130,6 +138,11 @@ export interface LoanInput {
 	autoDebit?: boolean;
 	borrowerId?: string;
 }
+
+/** A loan edit: any subset of the fields; null clears a bank figure or an optional link. */
+export type LoanUpdate = {
+	[K in keyof LoanInput]?: LoanInput[K] | null;
+};
 
 export interface RateChange {
 	id: string;

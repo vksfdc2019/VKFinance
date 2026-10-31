@@ -2,7 +2,8 @@ public without sharing class AccountSelector extends FamilyScopedSelector {
     private static final String FIELDS =
         'Id, Name, Family__c, Owner_Member__c, Owner_Member__r.First_Name__c, Owner_Member__r.Last_Name__c, Type__c, ' +
         'Credit_Limit_Group__c, Institution__c, Last4__c, Opening_Balance__c, Archived_Net__c, Opening_Date__c, Current_Balance__c, Credit_Limit__c, ' +
-        'Statement_Day__c, Payment_Due_Days__c, Min_Due_Pct__c, Is_Shared__c, Status__c, Color__c, Sort_Order__c, CreatedDate';
+        'Statement_Day__c, Payment_Due_Days__c, Min_Due_Pct__c, Is_Shared__c, Status__c, Color__c, Sort_Order__c, CreatedDate, ' +
+        'Card_Network__c, Card_Expiry__c, Cash_Limit__c, Annual_Fee__c, Fee_Waiver_Spend__c, Card_Interest_Rate__c, Card_Autopay__c';
 
     public AccountSelector(UserContext ctx) {
         super(ctx);

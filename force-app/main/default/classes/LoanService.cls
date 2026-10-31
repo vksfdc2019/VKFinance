@@ -44,7 +44,32 @@ public without sharing class LoanService {
         for (Loan__c l : loans) {
             result.add(dto(ctx, l, nextByLoan.get(l.Id)));
         }
+        markDeletable(result);
         return result;
+    }
+
+    /** Counts the EMIs paid here; a loan can be deleted while nothing has been paid or adjusted on its account. */
+    private static void markDeletable(List<CommitmentDtos.Loan> loans) {
+        Set<Id> accountIds = new Set<Id>();
+        Set<Id> loanIds = new Set<Id>();
+        for (CommitmentDtos.Loan d : loans) {
+            accountIds.add(d.loanAccountId);
+            loanIds.add(d.id);
+        }
+        Map<Id, Integer> paidByLoan = new Map<Id, Integer>();
+        for (AggregateResult r : [SELECT Loan__c l, COUNT(Id) n FROM EMI_Installment__c WHERE Loan__c IN :loanIds AND Status__c = 'Paid' WITH SYSTEM_MODE GROUP BY Loan__c]) {
+            paidByLoan.put((Id) r.get('l'), (Integer) r.get('n'));
+        }
+        for (CommitmentDtos.Loan d : loans) {
+            d.installmentsPaidHere = paidByLoan.containsKey(d.id) ? paidByLoan.get(d.id) : 0;
+        }
+        Set<Id> used = new Set<Id>();
+        for (AggregateResult r : [SELECT Account__c a FROM Transaction__c WHERE Account__c IN :accountIds WITH SYSTEM_MODE GROUP BY Account__c]) {
+            used.add((Id) r.get('a'));
+        }
+        for (CommitmentDtos.Loan d : loans) {
+            d.canDelete = d.canEdit && d.installmentsPaidHere == 0 && !used.contains(d.loanAccountId);
+        }
     }
 
     private static CommitmentDtos.Loan dto(UserContext ctx, Loan__c l, EMI_Installment__c next) {
@@ -71,6 +96,9 @@ public without sharing class LoanService {
         d.borrowerName = l.Borrower_Member__c == null ? null : FinanceDtos.personName(l.Borrower_Member__r?.First_Name__c, l.Borrower_Member__r?.Last_Name__c);
         d.next = next == null ? null : CommitmentDtos.installment(next);
         d.canPay = AccessGuard.can(ctx, 'LOANS', 'PAY') && l.Status__c == 'Active';
+        d.canEdit = AccessGuard.can(ctx, 'LOANS', 'EDIT');
+        d.loanAccountNumberMasked = DepositDtos.mask(l.Loan_Account_No__c);
+        d.loanAccountNumber = d.canEdit ? l.Loan_Account_No__c : d.loanAccountNumberMasked;
         d.interestRemaining = 0;
         d.installmentsLeft = 0;
         if (l.Status__c == 'Active' && d.outstanding > 0 && l.EMI_Amount__c != null && l.EMI_Amount__c > 0) {
@@ -144,6 +172,7 @@ public without sharing class LoanService {
         }
         Id borrower = new LedgerScope(ctx).memberFor(VkfRest.toId(LedgerUtil.text(body, 'borrowerId')), new PortalUserSelector(ctx));
         String lender = LedgerUtil.limited(LedgerUtil.text(body, 'lender'), 80, 'Lender');
+        String accountNo = accountNumber(LedgerUtil.text(body, 'loanAccountNumber'));
 
         Financial_Account__c loanAccount = new Financial_Account__c(
             Family__c = ctx.familyId, Name = name, Type__c = 'Loan', Institution__c = lender, Opening_Balance__c = owed,
@@ -154,7 +183,7 @@ public without sharing class LoanService {
             Family__c = ctx.familyId, Name = name, Lender__c = lender, Loan_Type__c = loanType, Principal__c = principal,
             Annual_Rate__c = rate, Rate_Type__c = rateType, Tenure_Months__c = tenure, Start_Date__c = firstEmi, EMI_Amount__c = emi, Outstanding_Principal__c = owed,
             Installments_Paid__c = paid, Debit_Account__c = debit?.Id, Loan_Account__c = loanAccount.Id, Auto_Debit__c = autoDebit,
-            Borrower_Member__c = borrower, Status__c = 'Active'
+            Borrower_Member__c = borrower, Status__c = 'Active', Loan_Account_No__c = accountNo
         );
         insert as system loan;
         syncWindow(loan.Id);
@@ -162,15 +191,45 @@ public without sharing class LoanService {
         return listOne(ctx, loan.Id);
     }
 
+    /** Fields that change the loan's maths; editing any of them re-prices the loan. */
+    private static final Set<String> TERMS = new Set<String>{
+        'principal', 'annualRate', 'tenureMonths', 'firstEmiDate', 'emiAmount', 'installmentsPaid', 'outstandingAmount'
+    };
+
+    /**
+     * Edits a loan. Details (name, lender, account number, type, borrower, debit account) just change.
+     * A correction to the terms re-prices it: EMIs paid here keep their numbers, the outstanding becomes
+     * the bank's figure (or is worked out again), and the loan account's ledger follows - by moving its
+     * opening balance while it has no entries, otherwise with one adjustment entry.
+     */
     public static CommitmentDtos.Loan updateLoan(UserContext ctx, Id loanId, Map<String, Object> body) {
         AccessGuard.require(ctx, 'LOANS', 'EDIT');
-        Loan__c l = new CommitmentSelector(ctx).loanById(loanId);
+        CommitmentSelector selector = new CommitmentSelector(ctx);
+        Loan__c l = visible(ctx, selector, loanId);
         Loan__c changes = new Loan__c(Id = l.Id);
+        Financial_Account__c account = new Financial_Account__c(Id = l.Loan_Account__c);
+        Boolean accountChanged = false;
         if (LedgerUtil.has(body, 'name')) {
             changes.Name = LedgerUtil.text(body, 'name');
             if (String.isBlank(changes.Name) || changes.Name.length() > 80) {
                 throw new PortalException('VALIDATION').withError('Loan name is required (up to 80 characters).');
             }
+            account.Name = changes.Name;
+            accountChanged = true;
+        }
+        if (LedgerUtil.has(body, 'lender')) {
+            changes.Lender__c = LedgerUtil.limited(LedgerUtil.text(body, 'lender'), 80, 'Lender');
+            account.Institution__c = changes.Lender__c;
+            accountChanged = true;
+        }
+        if (LedgerUtil.has(body, 'loanType')) {
+            changes.Loan_Type__c = LedgerUtil.text(body, 'loanType');
+            if (!TYPES.contains(changes.Loan_Type__c)) {
+                throw new PortalException('VALIDATION').withError('Choose a loan type.');
+            }
+        }
+        if (LedgerUtil.has(body, 'loanAccountNumber')) {
+            changes.Loan_Account_No__c = accountNumber(LedgerUtil.text(body, 'loanAccountNumber'));
         }
         if (LedgerUtil.has(body, 'rateType')) {
             changes.Rate_Type__c = LedgerUtil.text(body, 'rateType');
@@ -178,19 +237,151 @@ public without sharing class LoanService {
                 throw new PortalException('VALIDATION').withError('Choose fixed or floating interest.');
             }
         }
+        if (LedgerUtil.has(body, 'borrowerId')) {
+            changes.Borrower_Member__c = new LedgerScope(ctx).memberFor(VkfRest.toId(LedgerUtil.text(body, 'borrowerId')), new PortalUserSelector(ctx));
+            account.Owner_Member__c = changes.Borrower_Member__c;
+            accountChanged = true;
+        }
         if (LedgerUtil.has(body, 'debitAccountId')) {
             Id debitId = VkfRest.toId(LedgerUtil.text(body, 'debitAccountId'));
-            changes.Debit_Account__c = debitId == null ? null : TransactionService.usableAccount(ctx, debitId).Id;
+            Financial_Account__c debit = debitId == null ? null : TransactionService.usableAccount(ctx, debitId);
+            if (debit != null && LedgerUtil.isLiability(debit.Type__c)) {
+                throw new PortalException('VALIDATION').withError('EMIs are paid from a bank, cash or wallet account.');
+            }
+            changes.Debit_Account__c = debit?.Id;
         }
         if (LedgerUtil.has(body, 'autoDebit')) {
             changes.Auto_Debit__c = LedgerUtil.bool(body, 'autoDebit');
-            if (changes.Auto_Debit__c && (LedgerUtil.has(body, 'debitAccountId') ? changes.Debit_Account__c : l.Debit_Account__c) == null) {
-                throw new PortalException('VALIDATION').withError('Auto-debit needs the account the EMI is taken from.');
-            }
+        }
+        if ((LedgerUtil.has(body, 'autoDebit') ? changes.Auto_Debit__c : l.Auto_Debit__c) == true &&
+            (LedgerUtil.has(body, 'debitAccountId') ? changes.Debit_Account__c : l.Debit_Account__c) == null) {
+            throw new PortalException('VALIDATION').withError('Auto-debit needs the account the EMI is taken from.');
+        }
+        Boolean reprice = false;
+        for (String key : body.keySet()) {
+            reprice = reprice || TERMS.contains(key);
+        }
+        Decimal owed;
+        if (reprice) {
+            owed = correctTerms(l, body, changes);
         }
         update as system changes;
-        AuditService.log(ctx, 'LOAN_UPDATED', 'Loan__c', l.Id, String.join(new List<String>(body.keySet()), ','));
+        if (accountChanged) {
+            update as system account;
+        }
+        if (reprice) {
+            moveBalance(ctx, l, owed);
+            syncWindow(l.Id);
+        }
+        AuditService.log(ctx, reprice ? 'LOAN_CORRECTED' : 'LOAN_UPDATED', 'Loan__c', l.Id, String.join(new List<String>(body.keySet()), ','));
         return listOne(ctx, l.Id);
+    }
+
+    /** Validates corrected terms onto `changes` and returns what is owed under them. */
+    private static Decimal correctTerms(Loan__c l, Map<String, Object> body, Loan__c changes) {
+        if (l.Status__c != 'Active') {
+            throw new PortalException('CONFLICT').withError('This loan is closed.');
+        }
+        List<String> errors = new List<String>();
+        Decimal principal = LedgerUtil.has(body, 'principal') ? LedgerUtil.dec(body, 'principal', 'Loan amount') : l.Principal__c;
+        Decimal rate = LedgerUtil.has(body, 'annualRate') ? LedgerUtil.dec(body, 'annualRate', 'Interest rate') : l.Annual_Rate__c;
+        Decimal tenure = LedgerUtil.has(body, 'tenureMonths') ? LedgerUtil.dec(body, 'tenureMonths', 'Tenure') : l.Tenure_Months__c;
+        Date firstEmi = LedgerUtil.has(body, 'firstEmiDate') ? LedgerUtil.dateValue(body, 'firstEmiDate', 'First EMI date') : l.Start_Date__c;
+        Decimal paidValue = LedgerUtil.has(body, 'installmentsPaid') ? LedgerUtil.dec(body, 'installmentsPaid', 'EMIs paid') : l.Installments_Paid__c;
+        Decimal bankOutstanding = LedgerUtil.dec(body, 'outstandingAmount', 'Outstanding amount');
+        if (principal == null || principal <= 0 || principal > LedgerUtil.MAX_AMOUNT) {
+            errors.add('Loan amount must be more than zero.');
+        }
+        if (rate == null || rate < 0 || rate > 50) {
+            errors.add('Interest rate must be between 0 and 50%.');
+        }
+        if (tenure == null || tenure < 1 || tenure > 480 || tenure != tenure.round()) {
+            errors.add('Tenure must be between 1 and 480 months.');
+        }
+        if (firstEmi == null) {
+            errors.add('First EMI date is required.');
+        }
+        Integer paid = paidValue == null ? 0 : paidValue.intValue();
+        Integer paidHere = paidHere(l.Id);
+        if (paid < paidHere) {
+            errors.add(paidHere + (paidHere == 1 ? ' EMI was' : ' EMIs were') + ' recorded here, so EMIs paid can\'t be fewer.');
+        }
+        if (tenure != null && (paid < 0 || paid >= tenure)) {
+            errors.add('EMIs paid must be less than the tenure.');
+        }
+        if (bankOutstanding != null && (bankOutstanding <= 0 || bankOutstanding > LedgerUtil.MAX_AMOUNT)) {
+            errors.add('Outstanding amount must be more than zero.');
+        }
+        if (!errors.isEmpty()) {
+            throw new PortalException('VALIDATION').withErrors(errors);
+        }
+        Decimal quotedEmi = LedgerUtil.dec(body, 'emiAmount', 'EMI');
+        Boolean termsMoved = principal != l.Principal__c || rate != l.Annual_Rate__c || tenure != l.Tenure_Months__c;
+        Decimal emi = quotedEmi != null
+            ? LedgerUtil.amount(quotedEmi, 'EMI')
+            : termsMoved || LedgerUtil.has(body, 'emiAmount') ? EmiCalculator.emi(principal, rate, tenure.intValue()) : l.EMI_Amount__c;
+
+        changes.Principal__c = principal;
+        changes.Annual_Rate__c = rate;
+        changes.Tenure_Months__c = tenure;
+        changes.Start_Date__c = firstEmi;
+        changes.Installments_Paid__c = paid;
+        changes.EMI_Amount__c = emi;
+        // Without the bank's figure, work it out again only while nothing has been paid here.
+        if (bankOutstanding != null) {
+            return bankOutstanding.setScale(2, RoundingMode.HALF_UP);
+        }
+        return paidHere == 0 && !hasEntries(l.Loan_Account__c) ? EmiCalculator.outstandingAfter(principal, rate, emi, paid) : null;
+    }
+
+    /** Brings the loan account's balance to `owed`; null leaves the ledger as it is. */
+    private static void moveBalance(UserContext ctx, Loan__c l, Decimal owed) {
+        if (owed == null) {
+            return;
+        }
+        if (hasEntries(l.Loan_Account__c)) {
+            AccountService.reconcile(ctx, l.Loan_Account__c, new Map<String, Object>{
+                'actualBalance' => owed, 'date' => String.valueOf(Date.today()), 'note' => 'Outstanding corrected to the bank\'s figure'
+            });
+        } else {
+            update as system new Financial_Account__c(Id = l.Loan_Account__c, Opening_Balance__c = owed, Current_Balance__c = owed);
+        }
+    }
+
+    /**
+     * Removes a loan added by mistake, with its schedule and loan account. Only while nothing has been
+     * paid or adjusted on it, so no history is lost; otherwise prepay it in full to close it.
+     */
+    public static void deleteLoan(UserContext ctx, Id loanId) {
+        AccessGuard.require(ctx, 'LOANS', 'EDIT');
+        Loan__c l = visible(ctx, new CommitmentSelector(ctx), loanId);
+        if (hasEntries(l.Loan_Account__c) || paidHere(l.Id) > 0) {
+            throw new PortalException('CONFLICT').withError('Payments are recorded against this loan, so it can\'t be deleted. Prepay the outstanding to close it instead.');
+        }
+        delete as system [SELECT Id FROM Loan_Rate_Change__c WHERE Loan__c = :l.Id WITH SYSTEM_MODE];
+        delete as system [SELECT Id FROM EMI_Installment__c WHERE Loan__c = :l.Id WITH SYSTEM_MODE];
+        delete as system new Loan__c(Id = l.Id);
+        if (l.Loan_Account__c != null) {
+            delete as system new Financial_Account__c(Id = l.Loan_Account__c);
+        }
+        AuditService.log(ctx, 'LOAN_DELETED', 'Loan__c', l.Id, l.Name);
+    }
+
+    private static Integer paidHere(Id loanId) {
+        return [SELECT COUNT() FROM EMI_Installment__c WHERE Loan__c = :loanId AND Status__c = 'Paid' WITH SYSTEM_MODE];
+    }
+
+    private static Boolean hasEntries(Id accountId) {
+        return accountId != null && [SELECT COUNT() FROM Transaction__c WHERE Account__c = :accountId WITH SYSTEM_MODE LIMIT 1] > 0;
+    }
+
+    private static final Pattern ACCOUNT_NUMBER = Pattern.compile('^[A-Za-z0-9/ -]{4,30}$');
+
+    private static String accountNumber(String value) {
+        if (value != null && !ACCOUNT_NUMBER.matcher(value).matches()) {
+            throw new PortalException('VALIDATION').withError('Loan account number can be 4 to 30 letters, digits, spaces, / or -.');
+        }
+        return value;
     }
 
     /**
@@ -439,7 +630,9 @@ public without sharing class LoanService {
         CommitmentSelector selector = new CommitmentSelector(ctx);
         Loan__c l = selector.loanById(loanId);
         List<EMI_Installment__c> open = selector.installments(new Set<Id>{ l.Id }, CommitmentSelector.OPEN_EMI);
-        return dto(ctx, l, open.isEmpty() ? null : open[0]);
+        CommitmentDtos.Loan d = dto(ctx, l, open.isEmpty() ? null : open[0]);
+        markDeletable(new List<CommitmentDtos.Loan>{ d });
+        return d;
     }
 
     private static Financial_Account__c payingAccount(UserContext ctx, Loan__c l, Map<String, Object> body) {

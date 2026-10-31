@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Card_Interest_Rate__c</fullName>
+    <description>Interest on balances carried past the due date, per month.</description>
+    <label>Finance Charge % per Month</label>
+    <precision>4</precision>
+    <scale>2</scale>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+</CustomField>
