@@ -1,9 +1,12 @@
+import type { CreditGroup, CreditOverview } from '../src/api/creditTypes';
 // Deterministic local browser fixtures. Production builds use the real Salesforce SDK.
 const permissions = [
   'DASHBOARD:READ',
   'TRANSACTIONS:READ',
   'TRANSACTIONS:CREATE',
   'ACCOUNTS:READ',
+  'ACCOUNTS:EDIT',
+  'ACCOUNTS:CREATE',
   'BUDGETS:READ',
   'REPORTS:READ',
   'RECURRING:READ',
@@ -74,7 +77,140 @@ const accounts = [
     isLiability: false,
     color: 'sky',
   },
+  {
+    id: 'card',
+    name: 'AXIS BANK NEO',
+    type: 'Credit Card',
+    institution: 'AXIS BANK',
+    balance: 29613.72,
+    creditLimit: 314000,
+    ownerId: 'admin',
+    status: 'Active',
+    canUse: true,
+    canManage: true,
+    isLiability: true,
+    color: 'orange',
+    card: {
+      lastStatementDate: '2026-10-16',
+      nextStatementDate: '2026-11-16',
+      dueDate: '2026-11-05',
+      cycleSpend: 29613.72,
+      available: 284386.28,
+      utilisationPct: 9.43,
+      statement: {
+        amount: 0,
+        amountPaid: 0,
+        dueDate: '2026-11-05',
+        status: 'Paid',
+      },
+      bill: {
+        billId: 'bill',
+        instanceId: 'bill-instance',
+        amount: 16985.59,
+        amountPaid: 0,
+        dueDate: '2026-11-04',
+        status: 'Due',
+      },
+    },
+  },
 ];
+
+const sharedCards = [
+  { id: 'shared-one', name: 'Everyday card', balance: 30000, last4: '1234' },
+  { id: 'shared-two', name: 'Travel card', balance: 20000, last4: '5678' },
+];
+let sharedGroup: CreditGroup | null = {
+  id: 'shared-pool',
+  name: 'Example Bank Duo',
+  issuer: 'Example Bank',
+  creditLimit: 300000,
+  outstanding: 50000,
+  available: 250000,
+  utilisationPct: 16.7,
+  overLimit: 0,
+  activeCardCount: 2,
+  version: 1,
+  cardIds: sharedCards.map(c => c.id),
+  cards: sharedCards.map(c => ({ ...c, status: 'Active' })),
+};
+function sharedFixture() {
+  return sessionStorage.getItem('vkf.fixture.shared-credit') === '1';
+}
+function creditOverview(): CreditOverview {
+  const group = sharedFixture() ? sharedGroup : null;
+  if (!sharedFixture())
+    return {
+      canManage: true,
+      groups: [],
+      totals: {
+        creditLimit: 314000,
+        outstanding: 29613.72,
+        available: 284386.28,
+        facilities: 1,
+        restrictedCards: 0,
+        complete: true,
+      },
+    };
+  const independentCards = sharedCards.filter(
+    c => !group?.cardIds.includes(c.id)
+  );
+  return {
+    canManage: true,
+    groups: group ? [group] : [],
+    totals: {
+      creditLimit: (group?.creditLimit ?? 0) + independentCards.length * 50000,
+      outstanding: 50000,
+      available:
+        (group?.available ?? 0) +
+        independentCards.reduce((v, c) => v + 50000 - c.balance, 0),
+      facilities: (group ? 1 : 0) + independentCards.length,
+      restrictedCards: 0,
+      complete: true,
+    },
+  };
+}
+function creditAccounts() {
+  return [
+    ...accounts.filter(a => a.type !== 'Credit Card'),
+    ...sharedCards.map((c, index) => {
+      const g = sharedGroup?.cardIds.includes(c.id) ? sharedGroup : undefined;
+      return {
+        ...c,
+        type: 'Credit Card',
+        institution: 'Example Bank',
+        status: 'Active',
+        ownerId: 'admin',
+        canUse: true,
+        canManage: true,
+        isLiability: true,
+        color: index === 0 ? 'teal' : 'violet',
+        isShared: false,
+        creditLimit: g?.creditLimit ?? 50000,
+        independentCreditLimit: 50000,
+        creditLimitGroupId: g?.id,
+        sharedCredit: g,
+        sharedCreditRestricted: false,
+        card: {
+          lastStatementDate: '2026-10-16',
+          nextStatementDate: '2026-11-16',
+          dueDate: '2026-11-04',
+          cycleSpend: c.balance,
+          available: g?.available ?? 50000 - c.balance,
+          utilisationPct: g?.utilisationPct ?? (c.balance / 50000) * 100,
+          bill: {
+            billId: 'sample-bill-' + index,
+            instanceId: 'sample-instance-' + index,
+            amount: index === 0 ? 18000 : 6500,
+            amountPaid: 0,
+            dueDate: '2026-11-04',
+            status: 'Due',
+          },
+        },
+      };
+    }),
+  ];
+}
+
 const categories = [
   {
     id: 'c1',
@@ -185,8 +321,38 @@ export async function createDataSDK() {
             : { ...appearance, family: body, locked: body.locked === true };
         data = appearance;
       } else if (path === '/notifications') data = { items: [], unread: 0 };
-      else if (path === '/accounts') data = accounts;
-      else if (path === '/categories') data = categories;
+      else if (path === '/accounts')
+        data = sharedFixture() ? creditAccounts() : accounts;
+      else if (
+        path === '/accounts/credit-groups' ||
+        path.startsWith('/accounts/credit-groups/')
+      ) {
+        if (method !== 'GET' && sharedFixture()) {
+          if (sharedGroup && body.expectedVersion !== sharedGroup.version) {
+            status = 409;
+            data = {
+              code: 'CONFLICT',
+              errors: ['This group changed since you opened it.'],
+            };
+          } else if (path.endsWith('/archive')) sharedGroup = null;
+          else if (sharedGroup) {
+            const chosen = sharedCards.filter(c => body.cardIds.includes(c.id));
+            const owed = chosen.reduce((v, c) => v + c.balance, 0);
+            sharedGroup = {
+              ...sharedGroup,
+              ...body,
+              version: sharedGroup.version + 1,
+              outstanding: owed,
+              available: Math.max(0, body.creditLimit - owed),
+              overLimit: Math.max(0, owed - body.creditLimit),
+              utilisationPct: (owed / body.creditLimit) * 100,
+              activeCardCount: chosen.length,
+              cards: chosen.map(c => ({ ...c, status: 'Active' })),
+            };
+          }
+        }
+        data ??= creditOverview();
+      } else if (path === '/categories') data = categories;
       else if (path === '/enhancements/settings')
         data = {
           enabled: method === 'PATCH' ? body.enabled : enabled,

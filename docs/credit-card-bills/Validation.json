@@ -1,0 +1,39 @@
+{
+  "targetOrg": "VKFINANCE",
+  "backend": {
+    "id": "0AfjV000005DioLSAS",
+    "status": "Succeeded",
+    "checkOnly": true,
+    "testsPassed": 169,
+    "testErrors": 0
+  },
+  "permissions": {
+    "id": "0AfjV000005DjKbSAK",
+    "status": "Succeeded",
+    "checkOnly": true
+  },
+  "frontend": {
+    "build": "passed",
+    "unitTestsPassed": 57,
+    "browserTestsPassed": 5,
+    "browserData": "local fixtures"
+  },
+  "deploymentSettingRestored": true,
+  "featureDeployed": true,
+  "existingBillsLinked": true,
+  "release": {
+    "date": "2026-10-29",
+    "backendDeploymentId": "0AfjV000005Dn3FSAS",
+    "backendStatus": "Succeeded",
+    "checkOnly": false,
+    "apexTestsPassed": 169,
+    "portalDeploymentId": "0AfjV000005DmC2SAK",
+    "portalStatus": "Succeeded",
+    "publishJobId": "08PjV00000DXRtoUAH",
+    "publishedBundle": "index-Bs7Hl8By.js",
+    "liveAssetsVerified": true,
+    "existingBillLinkVerified": true,
+    "linkingLeftBalancesUnchanged": true,
+    "deploymentSettingRestored": true
+  }
+}

@@ -1,6 +1,7 @@
 /** Shapes of the /vkf/v1 ledger endpoints. The server omits null fields, so most are optional. */
 
 import type { Statement } from "./commitmentTypes";
+import type { CreditGroupSummary } from "./creditTypes";
 
 export const ACCOUNT_TYPES = [
 	"Savings",
@@ -42,6 +43,15 @@ export type TxnType =
 	| "Adjustment";
 export type EntryType = "Income" | "Expense" | "Refund";
 
+export interface CardBill {
+	billId: string;
+	instanceId: string;
+	amount?: number;
+	amountPaid: number;
+	dueDate: string;
+	status: import("./commitmentTypes").DueStatus;
+}
+
 export interface CardCycle {
 	lastStatementDate: string;
 	nextStatementDate: string;
@@ -51,6 +61,8 @@ export interface CardCycle {
 	utilisationPct?: number;
 	/** The bill: the statement for the last closed cycle. Missing until the daily job writes it. */
 	statement?: Statement;
+	/** An explicitly linked bill takes precedence over the computed statement. */
+	bill?: CardBill;
 }
 
 export interface Account {
@@ -64,6 +76,10 @@ export interface Account {
 	balance: number;
 	isLiability: boolean;
 	creditLimit?: number;
+	independentCreditLimit?: number;
+	creditLimitGroupId?: string;
+	sharedCredit?: CreditGroupSummary;
+	sharedCreditRestricted?: boolean;
 	statementDay?: number;
 	paymentDueDays?: number;
 	minDuePct?: number;

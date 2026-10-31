@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { CalendarClock, Users } from "lucide-react";
+import { CalendarClock, Layers3, Users } from "lucide-react";
 import { ACCOUNT_GRADIENTS, ACCOUNT_ICONS, accountColor } from "@/components/finance/icons";
 import { utilisationStatus } from "@/components/finance/ui";
 import type { Account, CardCycle } from "@/api/financeTypes";
@@ -8,14 +8,14 @@ import { cn } from "@/lib/utils";
 
 /** The bill in words: what is left to pay and by when, or when the next statement closes. */
 function billNote(card: Partial<CardCycle>, currency: string): string {
-	const bill = card.statement;
-	const next = `Next statement ${formatShortDate(card.nextStatementDate)}`;
-	if (!bill) return `Statement ${formatShortDate(card.nextStatementDate)} · Due ${formatShortDate(card.dueDate)}`;
-	if (bill.status === "Paid") return `${bill.amount > 0 ? "Bill paid" : "Nothing to pay"} · ${next}`;
+	const bill = card.bill ?? card.statement;
+	const next = card.nextStatementDate ? ` · Next statement ${formatShortDate(card.nextStatementDate)}` : "";
+	if (!bill || bill.amount === undefined) return "No bill recorded";
+	if (bill.status === "Paid") return `${bill.amount > 0 ? "Bill paid" : "Nothing to pay"}${next}`;
 	const left = formatMoney(Math.max(0, bill.amount - bill.amountPaid), currency);
 	if (bill.status === "Overdue") return `Was due ${formatShortDate(bill.dueDate)} · ${left} to pay`;
 	if (bill.status === "Partially Paid") return `${left} left · Due ${formatShortDate(bill.dueDate)}`;
-	return `Due ${formatShortDate(bill.dueDate)} · Minimum ${formatMoney(bill.minimumDue, currency)}`;
+	return `Due ${formatShortDate(bill.dueDate)}${"minimumDue" in bill ? ` · Minimum ${formatMoney(bill.minimumDue, currency)}` : ""}`;
 }
 
 /** A bank-card style tile. Text stays white on every gradient; status uses an icon and words. */
@@ -33,7 +33,10 @@ export function AccountCard({
 }) {
 	const Icon = ACCOUNT_ICONS[account.type];
 	const card = account.card;
-	const pct = card?.utilisationPct;
+	const pct = account.sharedCreditRestricted ? undefined : account.sharedCredit?.utilisationPct ?? card?.utilisationPct;
+	const bill = card?.bill ?? card?.statement;
+	const available = account.creditLimitGroupId ? account.sharedCredit?.available : card?.available ?? (account.creditLimit !== undefined ? account.creditLimit - account.balance : undefined);
+	const displayedLimit = account.sharedCredit?.creditLimit ?? account.creditLimit;
 	const closed = account.status === "Closed";
 
 	return (
@@ -55,6 +58,7 @@ export function AccountCard({
 						{account.institution || account.type}
 					</p>
 					<h3 className="mt-1 truncate text-lg font-semibold">{account.name || "New account"}</h3>
+					{account.creditLimitGroupId && <p className="mt-2 flex items-center gap-1.5 text-[11px] text-white/85"><Layers3 className="size-3.5 shrink-0" />{account.sharedCredit?.name ?? "Shared credit limit"}</p>}
 				</div>
 				{menu}
 			</div>
@@ -65,7 +69,7 @@ export function AccountCard({
 				</p>
 				<p className="text-2xl font-semibold tracking-tight tabular-nums">{formatMoney(account.balance, currency)}</p>
 
-				{card && account.creditLimit ? (
+				{account.type === "Credit Card" ? (
 					<div className="mt-3">
 						<div className="h-1.5 overflow-hidden rounded-full bg-white/25" aria-hidden="true">
 							<div
@@ -75,21 +79,32 @@ export function AccountCard({
 						</div>
 						{pct !== undefined && (
 							<p className="mt-1.5 text-[11px] text-white/80">
-								{pct.toFixed(0)}% used
+								{pct.toFixed(0)}% {account.creditLimitGroupId ? "of shared limit used" : "used"}
 								{utilisationStatus(pct) !== "good" && " · keep under 30%"}
 							</p>
 						)}
 						<dl className="mt-3 grid grid-cols-2 gap-3">
 							<div>
-								<dt className="text-xs text-white/70">Available limit</dt>
-								<dd className="font-semibold tabular-nums">{formatMoney(card.available ?? 0, currency)}</dd>
+								<dt className="text-xs text-white/70">Available amount</dt>
+								<dd className="font-semibold tabular-nums">{account.sharedCreditRestricted ? "Restricted" : available === undefined ? "—" : formatMoney(available, currency)}</dd>
 							</div>
 							<div>
 								<dt className="text-xs text-white/70">Bill amount</dt>
-								<dd className="font-semibold tabular-nums">{card.statement ? formatMoney(card.statement.amount, currency) : "—"}</dd>
+								<dd className="font-semibold tabular-nums">{bill?.amount === undefined ? "—" : formatMoney(bill.amount, currency)}</dd>
+							</div>
+							<div>
+								<dt className="text-xs text-white/70">Total credit limit</dt>
+								<dd className="font-semibold tabular-nums">{account.sharedCreditRestricted ? "Restricted" : displayedLimit === undefined ? "—" : formatMoney(displayedLimit, currency)}</dd>
+							</div>
+							<div>
+								<dt className="text-xs text-white/70">Bill due date</dt>
+								<dd className="font-semibold">{bill?.dueDate ? formatShortDate(bill.dueDate) : "—"}</dd>
 							</div>
 						</dl>
-						{card.nextStatementDate && (
+						{account.sharedCredit && <p className="mt-2 text-[11px] text-white/80">One limit across {account.sharedCredit.activeCardCount} active cards · counted once</p>}
+						{account.sharedCreditRestricted && <p className="mt-2 text-[11px] text-white/80">Shared totals are private because some linked cards are outside your access.</p>}
+						{(account.sharedCredit?.overLimit ?? 0) > 0 && <p className="mt-2 rounded-lg bg-black/20 px-2.5 py-1.5 text-xs font-semibold">Shared limit exceeded by {formatMoney(account.sharedCredit!.overLimit, currency)}</p>}
+						{card && (
 							<p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-black/15 px-2.5 py-1 text-[11px]">
 								<CalendarClock className="size-3.5" aria-hidden="true" />
 								{billNote(card, currency)}

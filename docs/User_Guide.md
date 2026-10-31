@@ -77,6 +77,8 @@ and corrects any difference.
 > **Never type a full card number, CVV, PIN or bank password anywhere in VK Finance.** It only ever
 > needs the last 4 digits of a card, so you can tell your cards apart.
 
+**Cards sharing one bank limit:** a Family Admin or Co-Admin can open **Accounts → Shared credit limits → Create shared limit**, enter the bank-confirmed facility limit and choose its cards. Availability uses the combined balances, while each card keeps its own bill and due date. The overview counts that shared limit once. Grouping never moves money. Archiving a group restores each card's saved independent limit. Shared totals are private when you cannot see every linked card.
+
 ## 5. Budgets, bills, loans and regular payments
 
 - **Budgets:** set an amount per category for the month. A bar turns amber when spending is running

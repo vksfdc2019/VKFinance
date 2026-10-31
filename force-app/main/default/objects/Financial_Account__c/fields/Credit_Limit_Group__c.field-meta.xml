@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Credit_Limit_Group__c</fullName><deleteConstraint>Restrict</deleteConstraint>
+    <description>Shared credit facility. Membership is managed atomically through the portal group manager.</description>
+    <label>Credit Limit Group</label><referenceTo>Credit_Limit_Group__c</referenceTo>
+    <relationshipLabel>Cards</relationshipLabel><relationshipName>Cards</relationshipName>
+    <required>false</required><type>Lookup</type>
+</CustomField>

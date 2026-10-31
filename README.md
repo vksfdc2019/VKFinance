@@ -30,6 +30,7 @@ data storage without changing any balance.
 
 | Document | For |
 | --- | --- |
+| [Shared credit limits](docs/Shared_Credit_Limits.md) | One bank facility across multiple cards: setup, visibility, reporting, archive and operations |
 | [Archive](docs/Archive.md) | Nightly big-object and Google Sheets archive: what moves, guarantees, settings, Google setup and operations |
 | [Phase 6 enhancements](docs/Phase6_Enhancements.md) | Released optional features; per-family switches, limits, deployment evidence and live-site checks |
 | [Implementation guide (PDF)](docs/VKFinance_Implementation_Document.pdf) / [Word](docs/VKFinance_Implementation_Document.docx) | Developers and administrators: 12 diagrams, architecture, security, APIs, full data dictionary, deployment and operations |

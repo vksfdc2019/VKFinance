@@ -1,0 +1,31 @@
+{
+  "targetOrg": "VKFINANCE",
+  "site": "https://orgfarm-db588f31ab-dev-ed.develop.my.site.com/VKFinancePortal",
+  "checks": [
+    {
+      "name": "Guest API creates one shared facility and counts its limit once",
+      "passed": true
+    },
+    {
+      "name": "Payment and void update shared availability without stored balance drift",
+      "passed": true
+    },
+    {
+      "name": "Over-limit display and stale-editor protection work on the live API",
+      "passed": true
+    },
+    {
+      "name": "Authenticated live phone browser can edit the shared facility",
+      "passed": true
+    },
+    {
+      "name": "Archiving restores independent limits and preserves balances",
+      "passed": true
+    }
+  ],
+  "error": null,
+  "cleanup": {
+    "familiesRemoved": 1,
+    "completed": true
+  }
+}

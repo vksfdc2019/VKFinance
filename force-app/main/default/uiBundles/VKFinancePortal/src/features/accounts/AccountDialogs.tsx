@@ -54,7 +54,7 @@ export function AccountDialog({
 	const [last4, setLast4] = useState(account?.last4 ?? "");
 	const [opening, setOpening] = useState(account?.openingBalance !== undefined ? String(account.openingBalance) : "");
 	const [openingDate, setOpeningDate] = useState(account?.openingDate ?? todayIso());
-	const [creditLimit, setCreditLimit] = useState(account?.creditLimit ? String(account.creditLimit) : "");
+	const [creditLimit, setCreditLimit] = useState((account?.independentCreditLimit ?? account?.creditLimit) ? String(account?.independentCreditLimit ?? account?.creditLimit) : "");
 	const [statementDay, setStatementDay] = useState(account?.statementDay ? String(account.statementDay) : "");
 	const [dueDays, setDueDays] = useState(account?.paymentDueDays ? String(account.paymentDueDays) : "20");
 	const [minDue, setMinDue] = useState(account?.minDuePct !== undefined ? String(account.minDuePct) : "5");
@@ -85,7 +85,7 @@ export function AccountDialog({
 		if (!account) input.type = type;
 		else if (type !== account.type) input.type = type;
 		if (isCard) {
-			input.creditLimit = num(creditLimit);
+			if (!account?.creditLimitGroupId) input.creditLimit = num(creditLimit);
 			input.statementDay = num(statementDay);
 			input.paymentDueDays = num(dueDays);
 			input.minDuePct = num(minDue);
@@ -104,7 +104,14 @@ export function AccountDialog({
 	}
 
 	const previewBalance = account ? account.balance + ((num(opening) ?? 0) - (account.openingBalance ?? 0)) : (num(opening) ?? 0);
-	const previewLimit = isCard ? num(creditLimit) : null;
+	const previewLimit = isCard ? (account?.creditLimitGroupId ? account.creditLimit ?? null : num(creditLimit)) : null;
+	const previewGroup = account?.sharedCredit ? { ...account.sharedCredit } : undefined;
+	if (previewGroup && account) {
+		previewGroup.outstanding += Math.max(0, previewBalance) - Math.max(0, account.balance);
+		previewGroup.available = Math.max(0, previewGroup.creditLimit - previewGroup.outstanding);
+		previewGroup.overLimit = Math.max(0, previewGroup.outstanding - previewGroup.creditLimit);
+		previewGroup.utilisationPct = previewGroup.outstanding / previewGroup.creditLimit * 100;
+	}
 	const preview = {
 		name,
 		type,
@@ -116,9 +123,12 @@ export function AccountDialog({
 		isShared: shared,
 		status: "Active" as const,
 		creditLimit: previewLimit ?? undefined,
+		creditLimitGroupId: account?.creditLimitGroupId,
+		sharedCredit: previewGroup,
+		sharedCreditRestricted: account?.sharedCreditRestricted,
 		card:
 			previewLimit && previewLimit > 0
-				? { ...account?.card, available: previewLimit - previewBalance, utilisationPct: (previewBalance / previewLimit) * 100 }
+				? { ...account?.card, available: previewGroup?.available ?? previewLimit - previewBalance, utilisationPct: previewGroup?.utilisationPct ?? (previewBalance / previewLimit) * 100 }
 				: undefined,
 	};
 
@@ -186,7 +196,12 @@ export function AccountDialog({
 
 							{isCard && (
 								<div className="grid gap-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 p-3 sm:grid-cols-2">
-									<TextField id="acct-limit" label="Credit limit" inputMode="decimal" value={creditLimit} onChange={(e) => setCreditLimit(e.target.value)} />
+									{account?.creditLimitGroupId ? (
+										<div className="rounded-lg border border-brand-200 bg-brand-50 p-3 text-xs text-brand-900 dark:border-brand-800 dark:bg-brand-950/40 dark:text-brand-100">
+											<p className="font-semibold">{account.sharedCredit?.name ?? "Shared credit limit"}</p>
+											<p className="mt-1">Manage this facility from Shared credit limits on the Accounts page.</p>
+										</div>
+									) : <TextField id="acct-limit" label="Credit limit" inputMode="decimal" value={creditLimit} onChange={(e) => setCreditLimit(e.target.value)} />}
 									<TextField
 										id="acct-statement"
 										label="Statement day"

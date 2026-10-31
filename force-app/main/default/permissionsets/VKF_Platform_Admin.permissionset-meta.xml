@@ -1064,6 +1064,31 @@
     <fieldPermissions><editable>false</editable><field
     >Financial_Account__c.Archived_Net__c</field><readable
     >true</readable></fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Financial_Account__c.Credit_Limit_Group__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Credit_Limit_Group__c.Issuer__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Credit_Limit_Group__c.Active__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>true</editable>
+        <field>Bill__c.Credit_Card_Account__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <editable>false</editable>
+        <field>Transaction__c.Bill_Payment_Amount__c</field>
+        <readable>true</readable>
+    </fieldPermissions>
     <!-- End Phase 6 support fields -->
     <hasActivationRequired>false</hasActivationRequired>
     <label>VKF Platform Admin</label>
@@ -1306,6 +1331,15 @@
     >true</allowRead><modifyAllRecords>false</modifyAllRecords><object
     >Archive_Record__b</object><viewAllRecords
     >false</viewAllRecords></objectPermissions>
+    <objectPermissions>
+        <allowCreate>false</allowCreate>
+        <allowDelete>false</allowDelete>
+        <allowEdit>false</allowEdit>
+        <allowRead>true</allowRead>
+        <modifyAllRecords>false</modifyAllRecords>
+        <object>Credit_Limit_Group__c</object>
+        <viewAllRecords>true</viewAllRecords>
+    </objectPermissions>
     <!-- End Phase 6 support objects -->
     <tabSettings>
         <tab>VKF_Onboarding</tab>

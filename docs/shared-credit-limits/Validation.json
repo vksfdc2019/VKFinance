@@ -1,0 +1,35 @@
+{
+  "targetOrg": "VKFINANCE",
+  "backendValidation": {
+    "id": "0AfjV000005Dxk9SAC",
+    "status": "Succeeded",
+    "checkOnly": true,
+    "apexTestsPassed": 182,
+    "testErrors": 0
+  },
+  "frontend": {
+    "unitTestsPassed": 63,
+    "browserTestsPassed": 6,
+    "themeCheck": "passed",
+    "browserData": "local fixtures",
+    "build": "passed"
+  },
+  "deploymentSettingRestored": true,
+  "existingCardsAutomaticallyGrouped": false,
+  "featureDeployed": true,
+  "release": {
+    "date": "2026-10-29",
+    "backendDeploymentId": "0AfjV000005DxYsSAK",
+    "backendStatus": "Succeeded",
+    "apexTestsPassed": 183,
+    "testErrors": 0,
+    "portalDeploymentId": "0AfjV000005E0IDSA0",
+    "portalStatus": "Succeeded",
+    "publishJobId": "08PjV00000DYVBrUAP",
+    "publishedBundle": "index-Dy0bGuB1.js",
+    "liveAssetsVerified": true,
+    "livePilotChecksPassed": 5,
+    "livePilotCleanupCompleted": true,
+    "deploymentSettingRestored": true
+  }
+}

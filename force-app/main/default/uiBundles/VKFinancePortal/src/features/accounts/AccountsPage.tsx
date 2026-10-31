@@ -1,3 +1,4 @@
+import { SharedCreditPanel } from "./SharedCreditPanel";
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { ArrowLeftRight, CreditCard, FileText, ListOrdered, MoreVertical, Pencil, Plus, Power, Receipt, Scale, Wallet } from "lucide-react";
@@ -155,6 +156,7 @@ export default function AccountsPage() {
 			</div>
 
 			<FormErrors errors={errors} />
+			{accounts && accounts.some((a) => a.type === "Credit Card") && <SharedCreditPanel currency={currency} version={version} onChanged={refresh} />}
 			{!accounts && loading ? (
 				<div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
 					{[0, 1, 2].map((i) => (

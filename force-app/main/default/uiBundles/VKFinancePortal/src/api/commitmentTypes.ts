@@ -20,6 +20,8 @@ export interface Bill {
 	expectedAmount?: number;
 	payFromAccountId?: string;
 	payFromAccountName?: string;
+	creditCardAccountId?: string;
+	creditCardAccountName?: string;
 	autoPay: boolean;
 	reminderDays?: number;
 	responsibleId?: string;
@@ -43,6 +45,7 @@ export interface BillInstance {
 	payFromAccountId?: string;
 	responsibleName?: string;
 	daysLeft: number;
+	creditCardAccountId?: string;
 	canPay: boolean;
 }
 
@@ -62,6 +65,7 @@ export interface BillInput {
 	nextDueDate?: string;
 	expectedAmount?: number | null;
 	payFromAccountId?: string | null;
+	creditCardAccountId?: string | null;
 	autoPay?: boolean;
 	reminderDays?: number;
 	responsibleId?: string | null;
