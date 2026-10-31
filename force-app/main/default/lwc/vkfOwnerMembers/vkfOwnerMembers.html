@@ -1,0 +1,63 @@
+<template>
+  <template lwc:if={loading}>
+    <div class="grid">
+      <div class="card"><div class="skeleton" style="height: 88px"></div></div>
+      <div class="card"><div class="skeleton" style="height: 88px"></div></div>
+    </div>
+  </template>
+
+  <template lwc:elseif={error}>
+    <div class="card empty" role="alert">
+      <div class="empty-icon">⚠️</div>
+      {error}
+    </div>
+  </template>
+
+  <template lwc:else>
+    <div class="grid fade-in">
+      <template for:each={members} for:item="m">
+        <article key={m.id} class={m.cardClass}>
+          <div class="top">
+            <div class="avatar big" style={m.avatar}>{m.initials}</div>
+            <div class="row-main">
+              <div class="row-title">{m.name}</div>
+              <div class="row-sub">{m.subtitle}</div>
+            </div>
+            <span class={m.roleClass}>{m.role}</span>
+          </div>
+          <div class="facts">
+            <template for:each={m.facts} for:item="f">
+              <span key={f.label} class={f.cls}>{f.label}</span>
+            </template>
+          </div>
+          <dl class="details">
+            <div>
+              <dt>Username</dt>
+              <dd>{m.username}</dd>
+            </div>
+            <template lwc:if={m.email}
+              ><div>
+                <dt>Email</dt>
+                <dd>{m.email}</dd>
+              </div></template
+            >
+            <template lwc:if={m.mobile}
+              ><div>
+                <dt>Mobile</dt>
+                <dd>{m.mobile}</dd>
+              </div></template
+            >
+            <div>
+              <dt>Last sign-in</dt>
+              <dd>{m.lastLogin}</dd>
+            </div>
+          </dl>
+        </article>
+      </template>
+    </div>
+    <p class="note muted">
+      Member changes (roles, unlocks, password resets) stay in the portal, where
+      they need the admin's step-up check.
+    </p>
+  </template>
+</template>

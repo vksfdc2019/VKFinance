@@ -1,0 +1,95 @@
+<template>
+  <template lwc:if={loading}>
+    <div class="card"><div class="skeleton" style="height: 180px"></div></div>
+  </template>
+
+  <template lwc:elseif={error}>
+    <div class="card empty" role="alert">
+      <div class="empty-icon">⚠️</div>
+      {error}
+    </div>
+  </template>
+
+  <template lwc:elseif={hasBudget}>
+    <div class="fade-in">
+      <section class="card head">
+        <div
+          class="ring"
+          style={summary.ringStyle}
+          role="img"
+          aria-label={summary.ariaLabel}
+        >
+          <div class="ring-inner">
+            <span class="ring-pct num">{summary.pct}</span>
+            <span class="ring-sub">used</span>
+          </div>
+        </div>
+        <div class="head-text">
+          <div class="card-title">Budget</div>
+          <div class="head-spent num">{summary.spent}</div>
+          <div class="muted">of {summary.planned} planned</div>
+          <div class="pace">
+            <span class={summary.paceClass}>{summary.paceText}</span>
+            <span class="chip">{summary.dayText}</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2 class="card-title">By category</h2>
+        <ul class="list">
+          <template for:each={lines} for:item="l">
+            <li key={l.key} class="line">
+              <div class="line-head">
+                <span class="line-name">
+                  <span class="swatch" style={l.swatch}></span>
+                  {l.name}
+                  <template lwc:if={l.essential}
+                    ><span class="chip">Essential</span></template
+                  >
+                </span>
+                <span class={l.amountClass}
+                  >{l.spent} <span class="muted">/ {l.planned}</span></span
+                >
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill" style={l.bar}></div>
+              </div>
+              <div class="line-foot">
+                <span class={l.leftClass}>{l.leftText}</span>
+              </div>
+            </li>
+          </template>
+        </ul>
+      </section>
+
+      <template lwc:if={unbudgeted.length}>
+        <section class="card">
+          <h2 class="card-title">Spending without a budget</h2>
+          <ul class="list">
+            <template for:each={unbudgeted} for:item="u">
+              <li key={u.key} class="row">
+                <span class="swatch" style={u.swatch}></span>
+                <div class="row-main">
+                  <div class="row-title">{u.name}</div>
+                </div>
+                <div class="row-amount num">{u.spent}</div>
+              </li>
+            </template>
+          </ul>
+        </section>
+      </template>
+    </div>
+  </template>
+
+  <template lwc:else>
+    <div class="card empty">
+      <div class="empty-icon">🎯</div>
+      <p>No budget for this month.</p>
+      <p class="muted">
+        The family admin sets budgets in the portal under
+        <strong>Budgets</strong>.
+      </p>
+    </div>
+  </template>
+</template>

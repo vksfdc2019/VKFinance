@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomTab xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description
+  >Owner Workspace: pick a family and work inside it, on desktop or the Salesforce mobile app.</description>
+    <label>Owner Workspace</label>
+    <lwcComponent>vkfOwnerWorkspace</lwcComponent>
+    <motif>Custom16: Bank</motif>
+</CustomTab>

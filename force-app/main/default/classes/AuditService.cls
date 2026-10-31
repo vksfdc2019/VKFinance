@@ -7,24 +7,53 @@
  * This class only publishes audit events, so the system-mode exception stays this narrow.
  */
 public without sharing class AuditService {
-    public static void log(UserContext ctx, String eventType, String objectName, Id recordId, String details) {
-        log(ctx?.familyId, ctx?.userId, eventType, objectName, recordId, details);
-    }
+  /**
+   * Set by OwnerContext for the rest of the request: every event is then tagged with the
+   * platform owner's Salesforce user, so the trail never credits a family member with the change.
+   */
+  public static Id actingOwnerId;
 
-    public static void log(Id familyId, Id actorId, String eventType, String objectName, Id recordId, String details) {
-        Database.SaveResult result = EventBus.publish(
-            new Audit_Event__e(
-                Family_Id__c = familyId,
-                Actor_Id__c = actorId,
-                Event_Type__c = eventType,
-                Object_Name__c = objectName,
-                Record_Id__c = recordId,
-                Details__c = details == null ? null : details.left(32000),
-                Occurred_At__c = Datetime.now()
-            )
-        );
-        if (!result.isSuccess()) {
-            System.debug(LoggingLevel.ERROR, 'Audit event not published: ' + result.getErrors());
-        }
+  public static void log(
+    UserContext ctx,
+    String eventType,
+    String objectName,
+    Id recordId,
+    String details
+  ) {
+    log(ctx?.familyId, ctx?.userId, eventType, objectName, recordId, details);
+  }
+
+  public static void log(
+    Id familyId,
+    Id actorId,
+    String eventType,
+    String objectName,
+    Id recordId,
+    String details
+  ) {
+    if (actingOwnerId != null) {
+      details =
+        '[Owner ' +
+        actingOwnerId +
+        '] ' +
+        (details == null ? '' : details);
     }
+    Database.SaveResult result = EventBus.publish(
+      new Audit_Event__e(
+        Family_Id__c = familyId,
+        Actor_Id__c = actorId,
+        Event_Type__c = eventType,
+        Object_Name__c = objectName,
+        Record_Id__c = recordId,
+        Details__c = details == null ? null : details.left(32000),
+        Occurred_At__c = Datetime.now()
+      )
+    );
+    if (!result.isSuccess()) {
+      System.debug(
+        LoggingLevel.ERROR,
+        'Audit event not published: ' + result.getErrors()
+      );
+    }
+  }
 }

@@ -1,0 +1,107 @@
+@import "c/vkfOwnerTokens";
+
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 12px;
+  background: radial-gradient(120% 140% at 100% 0%, #fef3c7 0%, #ffffff 55%);
+}
+
+.summary-label {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--vkf-muted);
+}
+
+.summary-value {
+  margin: 4px 0 8px;
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.summary-chips {
+  display: flex;
+  gap: 6px;
+}
+
+.summary .segmented {
+  align-self: flex-start;
+}
+
+.dues {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.due {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-left: 4px solid var(--vkf-accent);
+}
+
+.due_overdue {
+  border-left-color: var(--vkf-expense);
+  background: linear-gradient(90deg, #fff1f2 0%, #ffffff 40%);
+}
+
+.due-meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+  font-size: 0.75rem;
+}
+
+.right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.pay-btn {
+  border: 0;
+  border-radius: var(--vkf-radius-pill);
+  padding: 7px 18px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--vkf-hero);
+  box-shadow: 0 6px 16px rgba(15, 76, 92, 0.25);
+  cursor: pointer;
+  transition: transform 0.12s ease;
+}
+
+.pay-btn:active {
+  transform: scale(0.96);
+}
+
+.pay-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.hint {
+  font-size: 0.6875rem;
+  color: var(--vkf-muted);
+}
+
+@media (min-width: 768px) {
+  .summary {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .dues {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

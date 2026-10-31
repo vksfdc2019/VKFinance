@@ -1,15 +1,18 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
     <brand>
         <headerColor>#0F4C5C</headerColor>
         <shouldOverrideOrgTheme>false</shouldOverrideOrgTheme>
     </brand>
-    <description>Platform owner console for VK Finance: families, portal users and sessions.</description>
+    <description
+  >Platform owner console for VK Finance: the Owner Workspace (desktop and Salesforce mobile app), families, portal users and sessions.</description>
+    <formFactors>Small</formFactors>
     <formFactors>Large</formFactors>
     <isNavAutoTempTabsDisabled>false</isNavAutoTempTabsDisabled>
     <isNavPersonalizationDisabled>false</isNavPersonalizationDisabled>
     <label>VK Finance Console</label>
     <navType>Standard</navType>
+    <tabs>VKF_Owner_Workspace</tabs>
     <tabs>VKF_Onboarding</tabs>
     <tabs>Family__c</tabs>
     <tabs>Portal_User__c</tabs>

@@ -1,0 +1,278 @@
+/*
+ * Owner Workspace design tokens and shared primitives. Every vkfOwner* stylesheet imports
+ * this file (@import 'c/vkfOwnerTokens';) so the modal, which renders outside the shell,
+ * gets the same look. Change the palette here only.
+ */
+:host {
+  --vkf-brand: #0f4c5c;
+  --vkf-brand-strong: #0b3a46;
+  --vkf-accent: #14b8a6;
+  --vkf-accent-soft: #ccfbf1;
+  --vkf-hero: linear-gradient(
+    135deg,
+    #0b3a46 0%,
+    #0f4c5c 38%,
+    #0e7490 72%,
+    #14b8a6 100%
+  );
+  /* Neutrals follow SLDS 2 global hooks (theme- and dark-mode-aware); hex values are fallbacks. */
+  --vkf-ink: var(--slds-g-color-on-surface-2, #0f172a);
+  --vkf-ink-2: var(--slds-g-color-on-surface-1, #334155);
+  --vkf-muted: var(--slds-g-color-on-surface-1, #64748b);
+  --vkf-line: var(--slds-g-color-border-1, #e2e8f0);
+  --vkf-canvas: var(--slds-g-color-surface-1, #f3f6fa);
+  --vkf-surface: var(--slds-g-color-surface-container-1, #ffffff);
+  --vkf-surface-2: var(--slds-g-color-surface-container-2, #f8fafc);
+  --vkf-income: #059669;
+  --vkf-income-soft: #d1fae5;
+  --vkf-expense: #e11d48;
+  --vkf-expense-soft: #ffe4e6;
+  --vkf-warn: #d97706;
+  --vkf-warn-soft: #fef3c7;
+  --vkf-radius: 20px;
+  --vkf-radius-sm: 12px;
+  --vkf-radius-pill: 999px;
+  --vkf-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(15, 23, 42, 0.06);
+  --vkf-shadow-lift: 0 12px 32px rgba(15, 76, 92, 0.28);
+  --vkf-gap: 16px;
+  --vkf-font-num:
+    "SF Pro Display", "Segoe UI", system-ui, -apple-system, sans-serif;
+  display: block;
+  color: var(--vkf-ink);
+}
+
+.card {
+  background: var(--vkf-surface);
+  border: 1px solid var(--vkf-line);
+  border-radius: var(--vkf-radius);
+  box-shadow: var(--vkf-shadow);
+  padding: 18px;
+}
+
+.card-title {
+  margin: 0 0 12px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--vkf-muted);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.num {
+  font-family: var(--vkf-font-num);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.muted {
+  color: var(--vkf-muted);
+}
+
+.positive {
+  color: var(--vkf-income);
+}
+
+.negative {
+  color: var(--vkf-expense);
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 10px;
+  border-radius: var(--vkf-radius-pill);
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: var(--vkf-surface-2);
+  color: var(--vkf-ink-2);
+  border: 1px solid var(--vkf-line);
+  white-space: nowrap;
+}
+
+.chip_good {
+  background: var(--vkf-income-soft);
+  color: #047857;
+  border-color: transparent;
+}
+
+.chip_bad {
+  background: var(--vkf-expense-soft);
+  color: #be123c;
+  border-color: transparent;
+}
+
+.chip_warn {
+  background: var(--vkf-warn-soft);
+  color: #b45309;
+  border-color: transparent;
+}
+
+.avatar {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: #fff;
+  background: var(--vkf-brand);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--vkf-line);
+}
+
+.row:last-child {
+  border-bottom: 0;
+}
+
+.row-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.row-title {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.row-sub {
+  font-size: 0.8125rem;
+  color: var(--vkf-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.row-amount {
+  font-weight: 700;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.empty {
+  text-align: center;
+  padding: 28px 12px;
+  color: var(--vkf-muted);
+}
+
+.empty-icon {
+  font-size: 2rem;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.segmented {
+  display: inline-flex;
+  padding: 4px;
+  gap: 4px;
+  border-radius: var(--vkf-radius-pill);
+  background: var(--vkf-surface-2);
+  border: 1px solid var(--vkf-line);
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.segment {
+  border: 0;
+  background: transparent;
+  padding: 8px 14px;
+  border-radius: var(--vkf-radius-pill);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  color: var(--vkf-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.segment:focus-visible {
+  outline: 2px solid var(--vkf-accent);
+  outline-offset: 2px;
+}
+
+.segment_active {
+  background: var(--vkf-surface);
+  color: var(--vkf-brand);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12);
+}
+
+.skeleton {
+  border-radius: var(--vkf-radius-sm);
+  background: linear-gradient(90deg, #eef2f7 0%, #f8fafc 50%, #eef2f7 100%);
+  background-size: 200% 100%;
+  animation: vkf-shimmer 1.3s ease-in-out infinite;
+  min-height: 16px;
+}
+
+.bar-track {
+  height: 8px;
+  border-radius: var(--vkf-radius-pill);
+  background: #eef2f7;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: var(--vkf-radius-pill);
+  background: var(--vkf-accent);
+  transition: width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.fade-in {
+  animation: vkf-fade 0.28s ease-out both;
+}
+
+@keyframes vkf-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes vkf-fade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton,
+  .fade-in,
+  .bar-fill,
+  .segment {
+    animation: none;
+    transition: none;
+  }
+}

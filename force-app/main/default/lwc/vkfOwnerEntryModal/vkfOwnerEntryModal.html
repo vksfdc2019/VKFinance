@@ -1,0 +1,182 @@
+<template>
+  <lightning-modal-header label={label}>
+    <span class="sub"
+      >Recorded in {familyName} and tagged as an owner change in the audit
+      trail.</span
+    >
+  </lightning-modal-header>
+
+  <lightning-modal-body>
+    <template lwc:if={loading}>
+      <div class="skeleton" style="height: 56px; margin-bottom: 12px"></div>
+      <div class="skeleton" style="height: 220px"></div>
+    </template>
+
+    <template lwc:elseif={loadError}>
+      <div class="alert" role="alert">{loadError}</div>
+    </template>
+
+    <template lwc:else>
+      <div class="form">
+        <div class="segmented types" role="tablist" aria-label="Entry type">
+          <template for:each={types} for:item="t">
+            <button
+              key={t.value}
+              class={t.cls}
+              data-value={t.value}
+              aria-selected={t.selected}
+              role="tab"
+              onclick={handleType}
+            >
+              {t.label}
+            </button>
+          </template>
+        </div>
+
+        <label class={amountClass}>
+          <span class="amount-symbol">{currencySymbol}</span>
+          <input
+            class="amount-input num"
+            type="number"
+            inputmode="decimal"
+            min="0.01"
+            step="0.01"
+            placeholder="0"
+            aria-label="Amount"
+            value={form.amount}
+            data-field="amount"
+            oninput={handleNativeInput}
+          />
+        </label>
+
+        <template lwc:if={isTransfer}>
+          <div class="pair">
+            <lightning-combobox
+              name="fromAccountId"
+              label="From"
+              value={form.fromAccountId}
+              options={transferAccounts}
+              onchange={handleChange}
+              required
+            ></lightning-combobox>
+            <lightning-combobox
+              name="toAccountId"
+              label="To"
+              value={form.toAccountId}
+              options={transferAccounts}
+              onchange={handleChange}
+              required
+            ></lightning-combobox>
+          </div>
+        </template>
+        <template lwc:else>
+          <lightning-combobox
+            name="accountId"
+            label="Account"
+            value={form.accountId}
+            options={entryAccounts}
+            onchange={handleChange}
+            required
+          ></lightning-combobox>
+          <lightning-combobox
+            name="categoryId"
+            label="Category"
+            value={form.categoryId}
+            options={categoryOptions}
+            onchange={handleChange}
+            required
+          ></lightning-combobox>
+          <template lwc:if={quickCategories.length}>
+            <div class="quick" aria-label="Quick categories">
+              <template for:each={quickCategories} for:item="c">
+                <button
+                  key={c.value}
+                  class={c.cls}
+                  data-value={c.value}
+                  onclick={handleQuickCategory}
+                >
+                  {c.label}
+                </button>
+              </template>
+            </div>
+          </template>
+        </template>
+
+        <div class="pair">
+          <lightning-input
+            type="date"
+            name="date"
+            label="Date"
+            value={form.date}
+            max={today}
+            onchange={handleChange}
+            required
+          ></lightning-input>
+          <template lwc:if={isTransfer}>
+            <lightning-input
+              name="notes"
+              label="Note"
+              value={form.notes}
+              max-length="255"
+              onchange={handleChange}
+            ></lightning-input>
+          </template>
+          <template lwc:else>
+            <lightning-combobox
+              name="paymentMode"
+              label="Paid by"
+              value={form.paymentMode}
+              options={paymentModes}
+              onchange={handleChange}
+            ></lightning-combobox>
+          </template>
+        </div>
+
+        <template lwc:if={showDetails}>
+          <lightning-input
+            name="payee"
+            label={payeeLabel}
+            value={form.payee}
+            max-length="120"
+            onchange={handleChange}
+          ></lightning-input>
+          <div class="pair">
+            <lightning-combobox
+              name="memberId"
+              label="For member"
+              value={form.memberId}
+              options={memberOptions}
+              onchange={handleChange}
+            ></lightning-combobox>
+            <lightning-input
+              name="notes"
+              label="Note"
+              value={form.notes}
+              max-length="255"
+              onchange={handleChange}
+            ></lightning-input>
+          </div>
+        </template>
+
+        <template lwc:if={saveError}>
+          <div class="alert" role="alert">{saveError}</div>
+        </template>
+      </div>
+    </template>
+  </lightning-modal-body>
+
+  <lightning-modal-footer>
+    <div class="footer">
+      <button class="btn btn_ghost" onclick={handleCancel} disabled={saving}>
+        Cancel
+      </button>
+      <button
+        class="btn btn_primary"
+        onclick={handleSave}
+        disabled={saveDisabled}
+      >
+        {saveLabel}
+      </button>
+    </div>
+  </lightning-modal-footer>
+</template>

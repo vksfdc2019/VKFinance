@@ -1,0 +1,94 @@
+@import "c/vkfOwnerTokens";
+
+.grid {
+  display: grid;
+  gap: 12px;
+}
+
+.member {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.member_inactive {
+  opacity: 0.65;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.avatar.big {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  font-size: 1rem;
+}
+
+.role {
+  flex: none;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: var(--vkf-radius-pill);
+  background: var(--vkf-surface-2);
+  color: var(--vkf-ink-2);
+  border: 1px solid var(--vkf-line);
+}
+
+.role_admin {
+  background: var(--vkf-accent-soft);
+  color: var(--vkf-brand);
+  border-color: transparent;
+}
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+  margin: 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--vkf-line);
+  font-size: 0.8125rem;
+}
+
+.details dt {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--vkf-muted);
+}
+
+.details dd {
+  margin: 2px 0 0;
+  overflow-wrap: anywhere;
+}
+
+.note {
+  margin: 14px 4px 0;
+  font-size: 0.8125rem;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}

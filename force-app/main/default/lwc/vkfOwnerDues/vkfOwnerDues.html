@@ -1,0 +1,84 @@
+<template>
+  <section class="card summary">
+    <div>
+      <div class="summary-label">Due in the next {days} days</div>
+      <div class="summary-value num">{summary.total}</div>
+      <div class="summary-chips">
+        <span class="chip">{summary.count}</span>
+        <template lwc:if={summary.overdue}>
+          <span class="chip chip_bad">{summary.overdue}</span>
+        </template>
+      </div>
+    </div>
+    <div class="segmented" role="tablist" aria-label="Window">
+      <template for:each={windows} for:item="w">
+        <button
+          key={w.value}
+          class={w.cls}
+          data-value={w.value}
+          aria-selected={w.selected}
+          role="tab"
+          onclick={handleWindow}
+        >
+          {w.label}
+        </button>
+      </template>
+    </div>
+  </section>
+
+  <template lwc:if={loading}>
+    <div class="card">
+      <div class="skeleton" style="height: 56px; margin-bottom: 10px"></div>
+      <div class="skeleton" style="height: 56px; margin-bottom: 10px"></div>
+      <div class="skeleton" style="height: 56px"></div>
+    </div>
+  </template>
+
+  <template lwc:elseif={error}>
+    <div class="card empty" role="alert">
+      <div class="empty-icon">⚠️</div>
+      {error}
+    </div>
+  </template>
+
+  <template lwc:elseif={items.length}>
+    <ul class="dues fade-in">
+      <template for:each={items} for:item="d">
+        <li key={d.key} class={d.cardClass}>
+          <div class="avatar" style={d.avatar}>{d.initials}</div>
+          <div class="row-main">
+            <div class="row-title">{d.title}</div>
+            <div class="row-sub">{d.subtitle}</div>
+            <div class="due-meta">
+              <span class={d.badgeClass}>{d.badge}</span>
+              <span class="muted">{d.date}</span>
+            </div>
+          </div>
+          <div class="right">
+            <div class="row-amount num">{d.amount}</div>
+            <template lwc:if={d.payable}>
+              <button
+                class="pay-btn"
+                data-key={d.key}
+                onclick={handlePay}
+                disabled={busy}
+              >
+                Pay
+              </button>
+            </template>
+            <template lwc:else>
+              <span class="hint">Pay by transfer</span>
+            </template>
+          </div>
+        </li>
+      </template>
+    </ul>
+  </template>
+
+  <template lwc:else>
+    <div class="card empty">
+      <div class="empty-icon">🎉</div>
+      <p>Nothing due in the next {days} days.</p>
+    </div>
+  </template>
+</template>

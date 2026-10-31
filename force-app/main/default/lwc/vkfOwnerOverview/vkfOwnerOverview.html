@@ -1,0 +1,181 @@
+<template>
+  <template lwc:if={loading}>
+    <div class="grid">
+      <div class="card span-2">
+        <div class="skeleton" style="height: 120px"></div>
+      </div>
+      <div class="card"><div class="skeleton" style="height: 70px"></div></div>
+      <div class="card"><div class="skeleton" style="height: 70px"></div></div>
+      <div class="card span-2">
+        <div class="skeleton" style="height: 160px"></div>
+      </div>
+    </div>
+  </template>
+
+  <template lwc:elseif={error}>
+    <div class="card empty" role="alert">
+      <div class="empty-icon">⚠️</div>
+      <p>{error}</p>
+    </div>
+  </template>
+
+  <template lwc:elseif={data}>
+    <div class="grid fade-in">
+      <!-- Net worth -->
+      <section class="card worth span-2" aria-label="Net worth">
+        <div class="worth-label">Net worth</div>
+        <div class="worth-value num">{worth.net}</div>
+        <div class="worth-split">
+          <div>
+            <span class="dot dot_assets"></span>
+            <span class="muted">Assets</span>
+            <strong class="num">{worth.assets}</strong>
+          </div>
+          <div>
+            <span class="dot dot_liab"></span>
+            <span class="muted">Liabilities</span>
+            <strong class="num">{worth.liabilities}</strong>
+          </div>
+        </div>
+        <div class="worth-bar" aria-hidden="true">
+          <span class="worth-bar-fill" style={worth.assetStyle}></span>
+        </div>
+      </section>
+
+      <!-- KPIs -->
+      <template for:each={kpis} for:item="kpi">
+        <section key={kpi.key} class="card kpi">
+          <div class="kpi-label">{kpi.label}</div>
+          <div class={kpi.valueClass}>{kpi.value}</div>
+          <template lwc:if={kpi.delta}>
+            <span class={kpi.deltaClass}>{kpi.delta}</span>
+          </template>
+        </section>
+      </template>
+
+      <!-- Spending by category -->
+      <section class="card span-2">
+        <h2 class="card-title">
+          Where the money went
+          <template lwc:if={budgetLine}
+            ><span class="chip">{budgetLine}</span></template
+          >
+        </h2>
+        <template lwc:if={categories.length}>
+          <ul class="list">
+            <template for:each={categories} for:item="c">
+              <li key={c.key} class="cat">
+                <div class="cat-head">
+                  <span class="cat-name"
+                    ><span class="swatch" style={c.swatch}></span>{c.name}</span
+                  >
+                  <span class="num cat-amt">{c.amount}</span>
+                </div>
+                <div class="bar-track">
+                  <div class="bar-fill" style={c.bar}></div>
+                </div>
+              </li>
+            </template>
+          </ul>
+        </template>
+        <template lwc:else>
+          <div class="empty">
+            <div class="empty-icon">🧾</div>
+            No spending this month.
+          </div>
+        </template>
+      </section>
+
+      <!-- Trend -->
+      <section class="card span-2">
+        <h2 class="card-title">
+          Six-month trend
+          <span class="legend"
+            ><span class="dot dot_in"></span>In
+            <span class="dot dot_out"></span>Out</span
+          >
+        </h2>
+        <div class="trend" role="img" aria-label={trendLabel}>
+          <template for:each={trend} for:item="t">
+            <div key={t.key} class="trend-col" title={t.title}>
+              <div class="trend-bars">
+                <span class="trend-bar trend-bar_in" style={t.inStyle}></span>
+                <span class="trend-bar trend-bar_out" style={t.outStyle}></span>
+              </div>
+              <span class="trend-month">{t.label}</span>
+            </div>
+          </template>
+        </div>
+      </section>
+
+      <!-- Accounts -->
+      <section class="card span-2">
+        <h2 class="card-title">
+          Accounts <span class="chip">{accounts.length}</span>
+        </h2>
+        <template lwc:if={accounts.length}>
+          <div class="accounts">
+            <template for:each={accounts} for:item="a">
+              <article key={a.id} class="account" style={a.style}>
+                <div class="account-type">{a.type}</div>
+                <div class="account-name">{a.name}</div>
+                <div class="account-balance num">{a.balance}</div>
+                <div class="account-owner">{a.owner}</div>
+              </article>
+            </template>
+          </div>
+        </template>
+        <template lwc:else>
+          <div class="empty">No accounts yet.</div>
+        </template>
+      </section>
+
+      <!-- Coming up -->
+      <section class="card">
+        <h2 class="card-title">Coming up</h2>
+        <template lwc:if={upcoming.length}>
+          <ul class="list">
+            <template for:each={upcoming} for:item="d">
+              <li key={d.key} class="row">
+                <div class="avatar" style={d.avatar}>{d.initials}</div>
+                <div class="row-main">
+                  <div class="row-title">{d.title}</div>
+                  <div class="row-sub">{d.when}</div>
+                </div>
+                <div class="row-amount num">{d.amount}</div>
+              </li>
+            </template>
+          </ul>
+        </template>
+        <template lwc:else>
+          <div class="empty">
+            <div class="empty-icon">✅</div>
+            Nothing due soon.
+          </div>
+        </template>
+      </section>
+
+      <!-- Recent -->
+      <section class="card">
+        <h2 class="card-title">Recent activity</h2>
+        <template lwc:if={recent.length}>
+          <ul class="list">
+            <template for:each={recent} for:item="t">
+              <li key={t.id} class="row">
+                <div class="avatar" style={t.avatar}>{t.initials}</div>
+                <div class="row-main">
+                  <div class="row-title">{t.title}</div>
+                  <div class="row-sub">{t.sub}</div>
+                </div>
+                <div class={t.amountClass}>{t.amount}</div>
+              </li>
+            </template>
+          </ul>
+        </template>
+        <template lwc:else>
+          <div class="empty">No transactions yet.</div>
+        </template>
+      </section>
+    </div>
+  </template>
+</template>

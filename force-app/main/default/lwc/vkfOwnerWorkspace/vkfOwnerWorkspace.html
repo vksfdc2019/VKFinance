@@ -1,0 +1,164 @@
+<template>
+  <div class="shell">
+    <header class="hero">
+      <div class="hero-glow"></div>
+      <div class="hero-top">
+        <div class="eyebrow">
+          <span class="pulse"></span>
+          Owner Workspace
+        </div>
+        <button
+          class="icon-btn"
+          title="Refresh"
+          aria-label="Refresh"
+          onclick={handleRefresh}
+          disabled={loadingFamilies}
+        >
+          <lightning-icon
+            icon-name="utility:refresh"
+            size="x-small"
+            variant="inverse"
+          ></lightning-icon>
+        </button>
+      </div>
+
+      <template lwc:if={loadingFamilies}>
+        <div class="hero-skeleton"></div>
+      </template>
+      <template lwc:elseif={hasFamilies}>
+        <h1 class="family-name">{family.name}</h1>
+        <div class="hero-meta">
+          <span class="meta-pill">{family.familyCode}</span>
+          <span class={statusClass}>{family.status}</span>
+          <span class="meta-pill">{memberLabel}</span>
+          <template lwc:if={family.adminName}>
+            <span class="meta-pill">Admin · {family.adminName}</span>
+          </template>
+        </div>
+        <div class="hero-controls">
+          <div class="picker">
+            <lightning-combobox
+              name="family"
+              label="Family"
+              variant="label-hidden"
+              value={familyId}
+              options={familyOptions}
+              onchange={handleFamilyChange}
+            ></lightning-combobox>
+          </div>
+          <template lwc:if={showMonth}>
+            <div class="month" role="group" aria-label="Month">
+              <button
+                class="month-btn"
+                aria-label="Previous month"
+                onclick={handlePrevMonth}
+              >
+                ‹
+              </button>
+              <span class="month-label">{monthText}</span>
+              <button
+                class="month-btn"
+                aria-label="Next month"
+                onclick={handleNextMonth}
+                disabled={isCurrentMonth}
+              >
+                ›
+              </button>
+            </div>
+          </template>
+        </div>
+      </template>
+    </header>
+
+    <template lwc:if={error}>
+      <div class="banner" role="alert">{error}</div>
+    </template>
+
+    <template lwc:if={hasFamilies}>
+      <nav class="tabs" aria-label="Sections">
+        <div class="segmented">
+          <template for:each={tabs} for:item="tab">
+            <button
+              key={tab.value}
+              class={tab.cls}
+              data-tab={tab.value}
+              aria-current={tab.current}
+              onclick={handleTab}
+            >
+              {tab.label}
+            </button>
+          </template>
+        </div>
+      </nav>
+
+      <main class="content">
+        <template lwc:if={isOverview}>
+          <c-vkf-owner-overview
+            family-id={familyId}
+            month={month}
+            currency-code={currencyCode}
+            refresh-token={refreshToken}
+          ></c-vkf-owner-overview>
+        </template>
+        <template lwc:elseif={isLedger}>
+          <c-vkf-owner-ledger
+            family-id={familyId}
+            month={month}
+            currency-code={currencyCode}
+            refresh-token={refreshToken}
+            onchanged={handleChanged}
+          ></c-vkf-owner-ledger>
+        </template>
+        <template lwc:elseif={isDues}>
+          <c-vkf-owner-dues
+            family-id={familyId}
+            currency-code={currencyCode}
+            refresh-token={refreshToken}
+            onchanged={handleChanged}
+          ></c-vkf-owner-dues>
+        </template>
+        <template lwc:elseif={isBudget}>
+          <c-vkf-owner-budget
+            family-id={familyId}
+            month={month}
+            currency-code={currencyCode}
+            refresh-token={refreshToken}
+          ></c-vkf-owner-budget>
+        </template>
+        <template lwc:else>
+          <c-vkf-owner-members
+            family-id={familyId}
+            refresh-token={refreshToken}
+          ></c-vkf-owner-members>
+        </template>
+      </main>
+
+      <template lwc:if={canWrite}>
+        <button
+          class="fab"
+          aria-label="Add entry"
+          title="Add entry"
+          onclick={handleAdd}
+        >
+          <lightning-icon
+            icon-name="utility:add"
+            size="small"
+            variant="inverse"
+          ></lightning-icon>
+          <span class="fab-label">Add entry</span>
+        </button>
+      </template>
+    </template>
+
+    <template lwc:elseif={showEmpty}>
+      <div class="empty card">
+        <div class="empty-icon">🏡</div>
+        <p><strong>No families yet.</strong></p>
+        <p>
+          Onboard a family from the <em>Onboard Family</em> tab, then come back
+          here.
+        </p>
+      </div>
+    </template>
+  </div>
+</template>
