@@ -2,10 +2,12 @@
  * /vkf/v1/loans/* - loans and EMIs.
  *   GET   /loans
  *   GET   /loans/{id}/schedule
+ *   GET   /loans/{id}/rates      rate change history, newest first
  *   POST  /loans
  *   PATCH /loans/{id}
  *   POST  /loans/{id}/pay        pays the next EMI { accountId?, date? }
  *   POST  /loans/{id}/prepay     { amount, accountId?, date? }
+ *   POST  /loans/{id}/rate       { annualRate, adjust: EMI|Tenure, emiAmount?, effectiveDate?, note? }
  */
 @RestResource(urlMapping='/vkf/v1/loans/*')
 global with sharing class VkfLoansResource {
@@ -19,6 +21,8 @@ global with sharing class VkfLoansResource {
                 VkfRest.ok(LoanService.listLoans(ctx));
             } else if (parts.size() == 2 && parts[1] == 'schedule') {
                 VkfRest.ok(LoanService.schedule(ctx, VkfRest.toId(parts[0])));
+            } else if (parts.size() == 2 && parts[1] == 'rates') {
+                VkfRest.ok(LoanService.rateChanges(ctx, VkfRest.toId(parts[0])));
             } else {
                 throw new PortalException('NOT_FOUND');
             }
@@ -41,6 +45,8 @@ global with sharing class VkfLoansResource {
                 VkfRest.ok(LoanService.payEmi(ctx, VkfRest.toId(parts[0]), body));
             } else if (parts.size() == 2 && parts[1] == 'prepay') {
                 VkfRest.ok(LoanService.prepay(ctx, VkfRest.toId(parts[0]), body));
+            } else if (parts.size() == 2 && parts[1] == 'rate') {
+                VkfRest.ok(LoanService.changeRate(ctx, VkfRest.toId(parts[0]), body));
             } else {
                 throw new PortalException('NOT_FOUND');
             }

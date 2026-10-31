@@ -79,7 +79,7 @@ describe("transaction titles", () => {
 });
 
 describe("commitments", async () => {
-	const { emiFor } = await import("@/features/commitments/LoansPage");
+	const { emiFor, monthsToRepay } = await import("@/features/commitments/LoansPage");
 	const { dueText } = await import("@/features/commitments/shared");
 
 	it("computes the same EMI as the server", () => {
@@ -87,6 +87,14 @@ describe("commitments", async () => {
 		expect(emiFor(100000, 12, 12)).toBe(8884.88);
 		expect(emiFor(1200, 0, 12)).toBe(100);
 		expect(emiFor(0, 9, 12)).toBe(0);
+	});
+
+	it("works out how many EMIs are left at a new rate", () => {
+		expect(monthsToRepay(1000000, 9, emiFor(1000000, 9, 60))).toBe(60);
+		expect(monthsToRepay(1000000, 10, emiFor(1000000, 9, 60))).toBeGreaterThan(60);
+		expect(monthsToRepay(1200, 0, 100)).toBe(12);
+		expect(monthsToRepay(100000, 12, 1000)).toBe(Infinity);
+		expect(monthsToRepay(0, 9, 1000)).toBe(0);
 	});
 
 	it("describes due dates in plain words", () => {

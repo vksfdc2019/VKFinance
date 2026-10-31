@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { Banknote, CalendarRange, Landmark, Plus, Table2, Zap } from "lucide-react";
+import { Banknote, CalendarRange, Landmark, Percent, Plus, Table2, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -16,7 +16,7 @@ import { commitmentApi, familyApi, financeApi } from "@/api/endpoints";
 import { errorMessages } from "@/api/vkfClient";
 import type { Account } from "@/api/financeTypes";
 import type { Member } from "@/api/types";
-import { LOAN_TYPES, type Loan, type LoanSchedule } from "@/api/commitmentTypes";
+import { LOAN_TYPES, RATE_TYPES, type Loan, type LoanSchedule, type RateChange } from "@/api/commitmentTypes";
 import { currencySymbol, formatDate, formatMoney, todayIso } from "@/lib/format";
 import { useAsync } from "@/lib/useAsync";
 import { useAuth } from "@/features/auth/AuthContext";
@@ -32,6 +32,16 @@ export function emiFor(principal: number, annualRate: number, months: number): n
 	return Math.round(((principal * r * f) / (f - 1)) * 100) / 100;
 }
 
+/** EMIs needed to repay `outstanding` at a fixed EMI; Infinity when the EMI doesn't cover the interest. */
+export function monthsToRepay(outstanding: number, annualRate: number, emi: number): number {
+	if (!(outstanding > 0)) return 0;
+	if (!(emi > 0)) return Infinity;
+	if (!annualRate) return Math.ceil(outstanding / emi);
+	const r = annualRate / 1200;
+	if (emi <= outstanding * r) return Infinity;
+	return Math.ceil(-Math.log(1 - (outstanding * r) / emi) / Math.log(1 + r) - 1e-9);
+}
+
 export default function LoansPage() {
 	const { can } = useAuth();
 	const { version, refresh, currency } = useLedger();
@@ -40,6 +50,7 @@ export default function LoansPage() {
 	const [paying, setPaying] = useState<Loan | null>(null);
 	const [prepaying, setPrepaying] = useState<Loan | null>(null);
 	const [scheduleFor, setScheduleFor] = useState<Loan | null>(null);
+	const [rating, setRating] = useState<Loan | null>(null);
 	const active = (loans ?? []).filter((l) => l.status === "Active");
 
 	return (
@@ -115,6 +126,7 @@ export default function LoansPage() {
 															Auto-debit
 														</Badge>
 													)}
+													<Badge variant="outline">{l.rateType}</Badge>
 													{l.status === "Closed" && <Badge variant="outline">Closed</Badge>}
 												</div>
 												<p className="text-xs text-slate-500 dark:text-slate-400">
@@ -164,6 +176,12 @@ export default function LoansPage() {
 													Prepay
 												</Button>
 											)}
+											{can("LOANS:EDIT") && l.status === "Active" && (
+												<Button size="sm" variant="outline" onClick={() => setRating(l)}>
+													<Percent />
+													Rate changed
+												</Button>
+											)}
 											<Button size="sm" variant="ghost" onClick={() => setScheduleFor(l)}>
 												<Table2 />
 												Schedule
@@ -210,6 +228,17 @@ export default function LoansPage() {
 				/>
 			)}
 			{scheduleFor && <ScheduleDialog loan={scheduleFor} currency={currency} onClose={() => setScheduleFor(null)} />}
+			{rating && (
+				<RateDialog
+					loan={rating}
+					currency={currency}
+					onClose={() => setRating(null)}
+					onDone={() => {
+						setRating(null);
+						refresh();
+					}}
+				/>
+			)}
 		</>
 	);
 }
@@ -269,6 +298,138 @@ function ScheduleDialog({ loan, currency, onClose }: { loan: Loan; currency: str
 						</tbody>
 					</table>
 				</div>
+			</DialogContent>
+		</Dialog>
+	);
+}
+
+function RateDialog({ loan, currency, onClose, onDone }: { loan: Loan; currency: string; onClose: () => void; onDone: () => void }) {
+	const { data: history } = useAsync<RateChange[]>(() => commitmentApi.rateChanges(loan.id), [loan.id]);
+	const [rate, setRate] = useState("");
+	const [adjust, setAdjust] = useState<"EMI" | "Tenure">("Tenure");
+	const [bankEmi, setBankEmi] = useState("");
+	const [effectiveDate, setEffectiveDate] = useState(todayIso());
+	const [note, setNote] = useState("");
+	const [errors, setErrors] = useState<string[]>([]);
+	const [saving, setSaving] = useState(false);
+
+	const newRate = rate === "" ? NaN : Number(rate);
+	const quoted = Number(bankEmi.replace(/,/g, "")) || 0;
+	const preview = useMemo(() => {
+		if (Number.isNaN(newRate)) return null;
+		const emi = quoted || (adjust === "EMI" ? emiFor(loan.outstanding, newRate, Math.max(1, loan.installmentsLeft)) : loan.emi);
+		return { emi, left: monthsToRepay(loan.outstanding, newRate, emi) };
+	}, [newRate, quoted, adjust, loan]);
+
+	async function submit(e: FormEvent) {
+		e.preventDefault();
+		setSaving(true);
+		try {
+			const updated = await commitmentApi.changeRate(loan.id, {
+				annualRate: newRate,
+				adjust,
+				emiAmount: quoted || undefined,
+				effectiveDate,
+				note: note.trim() || undefined,
+			});
+			toast.success(`${loan.name} is now at ${updated.annualRate}% · EMI ${formatMoney(updated.emi, currency)} · ${updated.installmentsLeft} EMIs left`);
+			onDone();
+		} catch (error) {
+			setErrors(errorMessages(error));
+			setSaving(false);
+		}
+	}
+
+	return (
+		<Dialog open onOpenChange={(open) => !open && !saving && onClose()}>
+			<DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-lg">
+				<form onSubmit={submit} noValidate className="space-y-4">
+					<DialogHeader>
+						<DialogTitle>{loan.name} · rate change</DialogTitle>
+						<DialogDescription>
+							Now {loan.annualRate}% ({loan.rateType.toLowerCase()}) · EMI {formatMoney(loan.emi, currency)} · {loan.installmentsLeft} EMIs left on{" "}
+							{formatMoney(loan.outstanding, currency)}. The new rate applies from the next unpaid EMI.
+						</DialogDescription>
+					</DialogHeader>
+					<div className="grid gap-3 sm:grid-cols-2">
+						<TextField id="rate-new" label="New rate (% a year)" inputMode="decimal" autoFocus value={rate} onChange={(e) => setRate(e.target.value.replace(/[^0-9.]/g, ""))} />
+						<TextField id="rate-date" label="Effective from" type="date" value={effectiveDate} onChange={(e) => setEffectiveDate(e.target.value)} />
+						<div className="grid gap-1.5 sm:col-span-2">
+							<Label htmlFor="rate-adjust">The bank changed</Label>
+							<Select value={adjust} onValueChange={(v) => setAdjust(v as "EMI" | "Tenure")}>
+								<SelectTrigger id="rate-adjust" className="w-full">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="Tenure">The number of EMIs (EMI stays the same)</SelectItem>
+									<SelectItem value="EMI">The EMI amount (end date stays the same)</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
+						<TextField
+							id="rate-emi"
+							label="New EMI as per bank (optional)"
+							inputMode="decimal"
+							value={bankEmi}
+							onChange={(e) => setBankEmi(e.target.value.replace(/[^0-9.,]/g, ""))}
+							hint="Leave blank to calculate it."
+						/>
+						<TextField id="rate-note" label="Note (optional)" placeholder="e.g. Repo rate cut" maxLength={255} value={note} onChange={(e) => setNote(e.target.value)} />
+					</div>
+					{preview && (
+						<div className="rounded-xl bg-slate-50 dark:bg-slate-800/40 px-4 py-3 text-sm">
+							{Number.isFinite(preview.left) ? (
+								<>
+									EMI <span className="font-semibold tabular-nums">{formatMoney(preview.emi, currency)}</span> · {preview.left} EMIs left
+									{preview.left !== loan.installmentsLeft && (
+										<span className="text-slate-500 dark:text-slate-400">
+											{" "}
+											({preview.left > loan.installmentsLeft ? "+" : ""}
+											{preview.left - loan.installmentsLeft})
+										</span>
+									)}
+								</>
+							) : (
+								<span className="text-orange-700 dark:text-orange-300">At {newRate}% this EMI doesn&apos;t cover the interest - choose &ldquo;The EMI amount&rdquo;.</span>
+							)}
+						</div>
+					)}
+					<FormErrors errors={errors} />
+					<DialogFooter>
+						<Button type="button" variant="outline" onClick={onClose}>
+							Cancel
+						</Button>
+						<Button type="submit" disabled={saving || Number.isNaN(newRate)}>
+							{saving && <Spinner />}
+							Apply new rate
+						</Button>
+					</DialogFooter>
+				</form>
+				{history && history.length > 0 && (
+					<section aria-labelledby="rate-history" className="border-t border-slate-100 dark:border-slate-800 pt-4">
+						<h3 id="rate-history" className="mb-2 text-sm font-medium text-slate-900 dark:text-slate-100">
+							Rate history
+						</h3>
+						<ol className="space-y-2 text-sm">
+							{history.map((h) => (
+								<li key={h.id} className="flex flex-wrap items-baseline justify-between gap-x-3">
+									<span>
+										<span className="text-slate-500 dark:text-slate-400">{formatDate(h.effectiveDate)} · </span>
+										<span className="tabular-nums">
+											{h.oldRate}% → {h.newRate}%
+										</span>
+										{h.note && <span className="text-slate-500 dark:text-slate-400"> · {h.note}</span>}
+									</span>
+									<span className="text-xs tabular-nums text-slate-500 dark:text-slate-400">
+										{h.adjusted === "EMI"
+											? `EMI ${formatMoney(h.oldEmi, currency)} → ${formatMoney(h.newEmi, currency)}`
+											: `${h.oldEmisLeft ?? "?"} → ${h.newEmisLeft ?? "?"} EMIs left`}
+									</span>
+								</li>
+							))}
+						</ol>
+					</section>
+				)}
 			</DialogContent>
 		</Dialog>
 	);
@@ -371,9 +532,12 @@ function LoanDialog({ currency, onClose, onSaved }: { currency: string; onClose:
 		loanType: "Home",
 		principal: "",
 		annualRate: "",
+		rateType: "Fixed",
 		tenureMonths: "",
 		firstEmiDate: todayIso(),
 		installmentsPaid: "0",
+		bankEmi: "",
+		bankOutstanding: "",
 		debitAccountId: "",
 		autoDebit: false,
 		borrowerId: profile?.userId ?? "",
@@ -392,11 +556,16 @@ function LoanDialog({ currency, onClose, onSaved }: { currency: string; onClose:
 	const principal = Number(form.principal.replace(/,/g, "")) || 0;
 	const rate = Number(form.annualRate) || 0;
 	const months = Number(form.tenureMonths) || 0;
+	const bankEmi = Number(form.bankEmi.replace(/,/g, "")) || 0;
+	const bankOutstanding = Number(form.bankOutstanding.replace(/,/g, "")) || 0;
 	const preview = useMemo(() => {
-		const emi = emiFor(principal, rate, months);
+		const calculated = emiFor(principal, rate, months);
+		const emi = bankEmi || calculated;
 		const total = emi * months;
-		return { emi, interest: Math.max(0, total - principal), total };
-	}, [principal, rate, months]);
+		return { emi, calculated, interest: Math.max(0, total - principal), total };
+	}, [principal, rate, months, bankEmi]);
+	// More than 1% apart usually means the bank's loan amount, tenure or an earlier rate differs from what was typed.
+	const emiMismatch = bankEmi > 0 && preview.calculated > 0 && Math.abs(bankEmi - preview.calculated) / preview.calculated > 0.01;
 
 	async function submit(e: FormEvent) {
 		e.preventDefault();
@@ -408,9 +577,12 @@ function LoanDialog({ currency, onClose, onSaved }: { currency: string; onClose:
 				loanType: form.loanType,
 				principal,
 				annualRate: rate,
+				rateType: form.rateType,
 				tenureMonths: months,
 				firstEmiDate: form.firstEmiDate,
 				installmentsPaid: Number(form.installmentsPaid) || 0,
+				emiAmount: bankEmi || undefined,
+				outstandingAmount: bankOutstanding || undefined,
 				debitAccountId: form.debitAccountId || undefined,
 				autoDebit: form.autoDebit,
 				borrowerId: isAdmin ? form.borrowerId : undefined,
@@ -454,9 +626,40 @@ function LoanDialog({ currency, onClose, onSaved }: { currency: string; onClose:
 							</div>
 							<TextField id="loan-principal" label="Loan amount" inputMode="decimal" value={form.principal} onChange={(e) => set("principal")(e.target.value)} />
 							<TextField id="loan-rate" label="Interest rate (% a year)" inputMode="decimal" value={form.annualRate} onChange={(e) => set("annualRate")(e.target.value)} />
+							<div className="grid gap-1.5">
+								<Label htmlFor="loan-rate-type">Interest</Label>
+								<Select value={form.rateType} onValueChange={set("rateType")}>
+									<SelectTrigger id="loan-rate-type" className="w-full">
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										{RATE_TYPES.map((t) => (
+											<SelectItem key={t} value={t}>
+												{t}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
+							</div>
 							<TextField id="loan-tenure" label="Tenure (months)" inputMode="numeric" value={form.tenureMonths} onChange={(e) => set("tenureMonths")(e.target.value.replace(/\D/g, ""))} />
 							<TextField id="loan-first" label="First EMI date" type="date" value={form.firstEmiDate} onChange={(e) => set("firstEmiDate")(e.target.value)} />
 							<TextField id="loan-paid" label="EMIs already paid" inputMode="numeric" value={form.installmentsPaid} onChange={(e) => set("installmentsPaid")(e.target.value.replace(/\D/g, ""))} />
+							<TextField
+								id="loan-bank-emi"
+								label="EMI as per bank (optional)"
+								inputMode="decimal"
+								value={form.bankEmi}
+								onChange={(e) => set("bankEmi")(e.target.value.replace(/[^0-9.,]/g, ""))}
+								hint="Leave blank to calculate it."
+							/>
+							<TextField
+								id="loan-bank-outstanding"
+								label="Outstanding as per bank (optional)"
+								inputMode="decimal"
+								value={form.bankOutstanding}
+								onChange={(e) => set("bankOutstanding")(e.target.value.replace(/[^0-9.,]/g, ""))}
+								hint="From your loan statement."
+							/>
 							<div className="grid gap-1.5 sm:col-span-2">
 								<Label htmlFor="loan-debit">EMI paid from</Label>
 								<Select value={form.debitAccountId} onValueChange={set("debitAccountId")}>
@@ -505,6 +708,12 @@ function LoanDialog({ currency, onClose, onSaved }: { currency: string; onClose:
 							<p className="mt-1 text-3xl font-semibold tabular-nums">
 								<AnimatedMoney value={preview.emi} currency={currency} />
 							</p>
+							{emiMismatch && (
+								<p className="mt-2 text-xs text-orange-200">
+									Calculated EMI is {formatMoney(preview.calculated, currency)}. The bank&apos;s loan amount, tenure or an earlier rate may differ - we&apos;ll use the
+									bank&apos;s EMI.
+								</p>
+							)}
 							<div className="mt-4 flex h-2 gap-0.5 overflow-hidden rounded-full bg-white/15" aria-hidden="true">
 								<div className="rounded-l-full bg-sky-300 transition-[width] duration-500" style={{ width: `${100 - interestShare}%` }} />
 								<div className="flex-1 rounded-r-full bg-orange-300" />

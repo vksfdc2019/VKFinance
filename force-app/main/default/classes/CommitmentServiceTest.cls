@@ -195,6 +195,77 @@ private class CommitmentServiceTest {
     }
 
     @IsTest
+    static void floatingRatesRepriceTheLoanAndKeepAHistory() {
+        VkfTestData.fastPolicy();
+        UserContext admin = VkfTestData.ctx('admina');
+        CommitmentDtos.Loan loan = LoanService.createLoan(admin, new Map<String, Object>{
+            'name' => 'Home loan', 'loanType' => 'Home', 'principal' => 2012000, 'annualRate' => 9.5, 'rateType' => 'Floating', 'tenureMonths' => 85,
+            'firstEmiDate' => String.valueOf(Date.today().addMonths(-31)), 'installmentsPaid' => 31, 'emiAmount' => 35539, 'outstandingAmount' => 1300000
+        });
+        Assert.areEqual('Floating', loan.rateType);
+        Assert.areEqual(35539, loan.emi, 'the bank\'s EMI is kept');
+        Assert.areEqual(1300000, loan.outstanding, 'the bank\'s outstanding is kept');
+        Integer leftBefore = loan.installmentsLeft;
+
+        Test.startTest();
+        CommitmentDtos.Loan dearer = LoanService.changeRate(admin, loan.id, new Map<String, Object>{
+            'annualRate' => 10.25, 'adjust' => 'Tenure', 'effectiveDate' => String.valueOf(Date.today().addDays(-60)), 'note' => 'Repo rate hike'
+        });
+        Assert.areEqual(10.25, dearer.annualRate);
+        Assert.areEqual(35539, dearer.emi, 'the EMI stays');
+        Assert.isTrue(dearer.installmentsLeft > leftBefore, 'a higher rate stretches the tenure');
+        Assert.areEqual(EmiCalculator.schedule(1300000, 10.25, 35539, 1, Date.today(), 1)[0].interest, dearer.next.interest, 'the next EMI is split at the new rate');
+
+        CommitmentDtos.Loan cheaper = LoanService.changeRate(admin, loan.id, new Map<String, Object>{
+            'annualRate' => 9, 'adjust' => 'EMI', 'effectiveDate' => String.valueOf(Date.today().addDays(-30))
+        });
+        Assert.areEqual(EmiCalculator.emi(1300000, 9, dearer.installmentsLeft), cheaper.emi);
+        Assert.isTrue(Math.abs(cheaper.installmentsLeft - dearer.installmentsLeft) <= 1, 'the end date stays');
+
+        CommitmentDtos.Loan quoted = LoanService.changeRate(admin, loan.id, new Map<String, Object>{ 'annualRate' => 9, 'emiAmount' => 33000 });
+        Assert.areEqual(33000, quoted.emi, 'an EMI quoted by the bank wins');
+
+        List<CommitmentDtos.RateChange> history = LoanService.rateChanges(admin, loan.id);
+        Assert.areEqual(3, history.size());
+        Assert.areEqual(33000, history[0].newEmi, 'newest first');
+        Assert.areEqual('EMI', history[0].adjusted);
+        Assert.areEqual(9.5, history[2].oldRate);
+        Assert.areEqual(10.25, history[2].newRate);
+        Assert.areEqual('Tenure', history[2].adjusted);
+        Assert.areEqual(leftBefore, history[2].oldEmisLeft);
+        Assert.areEqual(dearer.installmentsLeft, history[2].newEmisLeft);
+        Assert.areEqual('Repo rate hike', history[2].note);
+        Test.stopTest();
+
+        for (String bad : new List<String>{ '{"annualRate":9}', '{"annualRate":40,"adjust":"Tenure"}', '{"annualRate":8,"adjust":"Both"}', '{"annualRate":80}' }) {
+            try {
+                LoanService.changeRate(admin, loan.id, body(bad));
+                Assert.fail('expected a validation error: ' + bad);
+            } catch (PortalException e) {
+                Assert.areEqual('VALIDATION', e.code(), bad);
+            }
+        }
+        for (String bad : new List<String>{
+            '{"name":"x","loanType":"Home","principal":1000,"annualRate":10,"rateType":"Variable","tenureMonths":12,"firstEmiDate":"2026-01-01"}',
+            '{"name":"x","loanType":"Home","principal":1000,"annualRate":10,"tenureMonths":12,"firstEmiDate":"2026-01-01","outstandingAmount":2000}'
+        }) {
+            try {
+                LoanService.createLoan(admin, body(bad));
+                Assert.fail('expected a validation error: ' + bad);
+            } catch (PortalException e) {
+                Assert.areEqual('VALIDATION', e.code());
+            }
+        }
+        try {
+            LoanService.changeRate(VkfTestData.ctx('membera'), loan.id, new Map<String, Object>{ 'annualRate' => 8 });
+            Assert.fail('members cannot change a loan');
+        } catch (PortalException e) {
+            Assert.areEqual('NOT_AUTHORIZED', e.code());
+        }
+        Assert.areEqual('Fixed', LoanService.updateLoan(admin, loan.id, new Map<String, Object>{ 'rateType' => 'Fixed' }).rateType);
+    }
+
+    @IsTest
     static void cardStatementsCloseCyclesAndTrackPayments() {
         VkfTestData.fastPolicy();
         UserContext admin = VkfTestData.ctx('admina');

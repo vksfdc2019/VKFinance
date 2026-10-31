@@ -74,7 +74,7 @@ public without sharing class CommitmentSelector extends FamilyScopedSelector {
         List<Loan__c> rows = [
             SELECT
                 Id, Name, Borrower_Member__c, Borrower_Member__r.First_Name__c, Borrower_Member__r.Last_Name__c, Lender__c, Loan_Type__c,
-                Principal__c, Annual_Rate__c, Tenure_Months__c, Start_Date__c, EMI_Amount__c, Outstanding_Principal__c, Installments_Paid__c,
+                Principal__c, Annual_Rate__c, Rate_Type__c, Tenure_Months__c, Start_Date__c, EMI_Amount__c, Outstanding_Principal__c, Installments_Paid__c,
                 Debit_Account__c, Debit_Account__r.Name, Loan_Account__c, Loan_Account__r.Current_Balance__c, Auto_Debit__c, Status__c
             FROM Loan__c
             WHERE Family__c = :fid
@@ -114,6 +114,21 @@ public without sharing class CommitmentSelector extends FamilyScopedSelector {
             WITH SYSTEM_MODE
             ORDER BY Loan__c, Installment_No__c
             LIMIT 5000
+        ];
+    }
+
+    /** Newest first. */
+    public List<Loan_Rate_Change__c> rateChanges(Id loanId) {
+        Id fid = familyId;
+        return [
+            SELECT
+                Id, Loan__c, Effective_Date__c, Old_Rate__c, New_Rate__c, Old_EMI__c, New_EMI__c, Old_EMIs_Left__c, New_EMIs_Left__c,
+                Outstanding__c, Adjusted__c, Note__c, CreatedDate
+            FROM Loan_Rate_Change__c
+            WHERE Family__c = :fid AND Loan__c = :loanId
+            WITH SYSTEM_MODE
+            ORDER BY Effective_Date__c DESC, CreatedDate DESC
+            LIMIT 200
         ];
     }
 

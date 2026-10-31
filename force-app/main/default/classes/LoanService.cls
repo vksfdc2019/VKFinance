@@ -9,6 +9,7 @@
 public without sharing class LoanService {
     public static final Integer WINDOW = 12;
     public static final List<String> TYPES = new List<String>{ 'Home', 'Car', 'Personal', 'Education', 'Gold', 'Consumer Durable', 'Card EMI', 'Other' };
+    public static final List<String> RATE_TYPES = new List<String>{ 'Fixed', 'Floating' };
 
     public static String statusFor(Date due, Date today) {
         return due < today ? 'Overdue' : due <= today.addDays(7) ? 'Due' : 'Upcoming';
@@ -54,6 +55,7 @@ public without sharing class LoanService {
         d.loanType = l.Loan_Type__c;
         d.principal = l.Principal__c;
         d.annualRate = l.Annual_Rate__c;
+        d.rateType = l.Rate_Type__c == null ? 'Fixed' : l.Rate_Type__c;
         d.tenureMonths = l.Tenure_Months__c == null ? null : l.Tenure_Months__c.intValue();
         d.firstEmiDate = l.Start_Date__c;
         d.emi = l.EMI_Amount__c;
@@ -99,6 +101,11 @@ public without sharing class LoanService {
         Decimal tenure = LedgerUtil.dec(body, 'tenureMonths', 'Tenure');
         Date firstEmi = LedgerUtil.dateValue(body, 'firstEmiDate', 'First EMI date');
         Decimal paidAlready = LedgerUtil.dec(body, 'installmentsPaid', 'EMIs already paid');
+        Decimal bankOutstanding = LedgerUtil.dec(body, 'outstandingAmount', 'Outstanding amount');
+        String rateType = String.isBlank(LedgerUtil.text(body, 'rateType')) ? 'Fixed' : LedgerUtil.text(body, 'rateType');
+        if (!RATE_TYPES.contains(rateType)) {
+            errors.add('Choose fixed or floating interest.');
+        }
         if (principal == null || principal <= 0 || principal > LedgerUtil.MAX_AMOUNT) {
             errors.add('Loan amount must be more than zero.');
         }
@@ -115,12 +122,16 @@ public without sharing class LoanService {
         if (tenure != null && (paid < 0 || paid >= tenure)) {
             errors.add('EMIs already paid must be less than the tenure.');
         }
+        if (bankOutstanding != null && principal != null && (bankOutstanding <= 0 || bankOutstanding > principal)) {
+            errors.add('Outstanding amount must be more than zero and no more than the loan amount.');
+        }
         if (!errors.isEmpty()) {
             throw new PortalException('VALIDATION').withErrors(errors);
         }
         Decimal emi = LedgerUtil.dec(body, 'emiAmount', 'EMI');
         emi = emi == null ? EmiCalculator.emi(principal, rate, tenure.intValue()) : LedgerUtil.amount(emi, 'EMI');
-        Decimal owed = EmiCalculator.outstandingAfter(principal, rate, emi, paid);
+        // The bank's own outstanding figure wins over our reconstruction of the EMIs already paid.
+        Decimal owed = bankOutstanding != null ? bankOutstanding.setScale(2, RoundingMode.HALF_UP) : EmiCalculator.outstandingAfter(principal, rate, emi, paid);
 
         Id debitId = VkfRest.toId(LedgerUtil.text(body, 'debitAccountId'));
         Financial_Account__c debit = debitId == null ? null : TransactionService.usableAccount(ctx, debitId);
@@ -141,7 +152,7 @@ public without sharing class LoanService {
         insert as system loanAccount;
         Loan__c loan = new Loan__c(
             Family__c = ctx.familyId, Name = name, Lender__c = lender, Loan_Type__c = loanType, Principal__c = principal,
-            Annual_Rate__c = rate, Tenure_Months__c = tenure, Start_Date__c = firstEmi, EMI_Amount__c = emi, Outstanding_Principal__c = owed,
+            Annual_Rate__c = rate, Rate_Type__c = rateType, Tenure_Months__c = tenure, Start_Date__c = firstEmi, EMI_Amount__c = emi, Outstanding_Principal__c = owed,
             Installments_Paid__c = paid, Debit_Account__c = debit?.Id, Loan_Account__c = loanAccount.Id, Auto_Debit__c = autoDebit,
             Borrower_Member__c = borrower, Status__c = 'Active'
         );
@@ -161,6 +172,12 @@ public without sharing class LoanService {
                 throw new PortalException('VALIDATION').withError('Loan name is required (up to 80 characters).');
             }
         }
+        if (LedgerUtil.has(body, 'rateType')) {
+            changes.Rate_Type__c = LedgerUtil.text(body, 'rateType');
+            if (!RATE_TYPES.contains(changes.Rate_Type__c)) {
+                throw new PortalException('VALIDATION').withError('Choose fixed or floating interest.');
+            }
+        }
         if (LedgerUtil.has(body, 'debitAccountId')) {
             Id debitId = VkfRest.toId(LedgerUtil.text(body, 'debitAccountId'));
             changes.Debit_Account__c = debitId == null ? null : TransactionService.usableAccount(ctx, debitId).Id;
@@ -174,6 +191,71 @@ public without sharing class LoanService {
         update as system changes;
         AuditService.log(ctx, 'LOAN_UPDATED', 'Loan__c', l.Id, String.join(new List<String>(body.keySet()), ','));
         return listOne(ctx, l.Id);
+    }
+
+    /**
+     * A new interest rate from the next unpaid EMI. The bank either keeps the EMI and changes how many are left
+     * (adjust = Tenure) or keeps the end date and changes the EMI (adjust = EMI). An EMI quoted by the bank wins over the maths.
+     */
+    public static CommitmentDtos.Loan changeRate(UserContext ctx, Id loanId, Map<String, Object> body) {
+        AccessGuard.require(ctx, 'LOANS', 'EDIT');
+        CommitmentSelector selector = new CommitmentSelector(ctx);
+        Loan__c l = visible(ctx, selector, loanId);
+        if (l.Status__c != 'Active') {
+            throw new PortalException('CONFLICT').withError('This loan is closed.');
+        }
+        Decimal rate = LedgerUtil.dec(body, 'annualRate', 'Interest rate');
+        if (rate == null || rate < 0 || rate > 50) {
+            throw new PortalException('VALIDATION').withError('Interest rate must be between 0 and 50%.');
+        }
+        String adjust = String.isBlank(LedgerUtil.text(body, 'adjust')) ? 'Tenure' : LedgerUtil.text(body, 'adjust');
+        if (adjust != 'EMI' && adjust != 'Tenure') {
+            throw new PortalException('VALIDATION').withError('Choose whether the EMI or the tenure changes.');
+        }
+        Decimal bankEmi = LedgerUtil.dec(body, 'emiAmount', 'EMI');
+        if (rate == l.Annual_Rate__c && (bankEmi == null || bankEmi == l.EMI_Amount__c)) {
+            throw new PortalException('VALIDATION').withError('The loan is already at ' + rate + '%.');
+        }
+        Date effective = LedgerUtil.has(body, 'effectiveDate') ? LedgerUtil.dateValue(body, 'effectiveDate', 'Effective date') : Date.today();
+        String note = LedgerUtil.limited(LedgerUtil.text(body, 'note'), 255, 'Note');
+
+        CommitmentDtos.Loan before = dto(ctx, l, null);
+        if (before.outstanding <= 0) {
+            throw new PortalException('CONFLICT').withError('Nothing is left to repay on this loan.');
+        }
+        Decimal emi = bankEmi != null
+            ? LedgerUtil.amount(bankEmi, 'EMI')
+            : adjust == 'EMI' ? EmiCalculator.emi(before.outstanding, rate, Math.max(1, before.installmentsLeft)) : l.EMI_Amount__c;
+        List<EmiCalculator.Row> rows;
+        try {
+            rows = EmiCalculator.schedule(before.outstanding, rate, emi, 1, Date.today(), 600);
+        } catch (PortalException e) {
+            throw new PortalException('VALIDATION').withError('At ' + rate + '% an EMI of ' + emi + ' doesn\'t cover the interest - let the EMI change instead.');
+        }
+        if (rows.isEmpty() || rows[rows.size() - 1].closing > 0) {
+            throw new PortalException('VALIDATION').withError('At ' + rate + '% this EMI would take over 50 years to repay - let the EMI change instead.');
+        }
+
+        insert as system new Loan_Rate_Change__c(
+            Loan__c = l.Id, Family__c = ctx.familyId, Effective_Date__c = effective, Old_Rate__c = l.Annual_Rate__c, New_Rate__c = rate,
+            Old_EMI__c = l.EMI_Amount__c, New_EMI__c = emi, Old_EMIs_Left__c = before.installmentsLeft, New_EMIs_Left__c = rows.size(),
+            Outstanding__c = before.outstanding, Adjusted__c = bankEmi != null && bankEmi != l.EMI_Amount__c ? 'EMI' : adjust, Note__c = note
+        );
+        update as system new Loan__c(Id = l.Id, Annual_Rate__c = rate, EMI_Amount__c = emi);
+        syncWindow(l.Id);
+        AuditService.log(ctx, 'LOAN_RATE_CHANGED', 'Loan__c', l.Id, l.Annual_Rate__c + '% -> ' + rate + '%, EMI ' + emi);
+        return listOne(ctx, l.Id);
+    }
+
+    public static List<CommitmentDtos.RateChange> rateChanges(UserContext ctx, Id loanId) {
+        AccessGuard.require(ctx, 'LOANS', 'READ');
+        CommitmentSelector selector = new CommitmentSelector(ctx);
+        Loan__c l = visible(ctx, selector, loanId);
+        List<CommitmentDtos.RateChange> result = new List<CommitmentDtos.RateChange>();
+        for (Loan_Rate_Change__c c : selector.rateChanges(l.Id)) {
+            result.add(CommitmentDtos.rateChange(c));
+        }
+        return result;
     }
 
     public static CommitmentDtos.Schedule schedule(UserContext ctx, Id loanId) {

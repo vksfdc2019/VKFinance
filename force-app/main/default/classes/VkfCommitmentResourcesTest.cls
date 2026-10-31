@@ -82,6 +82,12 @@ private class VkfCommitmentResourcesTest {
         res = VkfTestData.call('PATCH', '/vkf/v1/loans/' + loanId, '{"autoDebit":true}', token);
         VkfLoansResource.patch();
         Assert.areEqual(true, VkfTestData.json(res).get('autoDebit'));
+        res = VkfTestData.call('POST', '/vkf/v1/loans/' + loanId + '/rate', '{"annualRate":9.75,"adjust":"EMI"}', token);
+        VkfLoansResource.post();
+        Assert.areEqual(200, res.statusCode, res.responseBody.toString());
+        res = VkfTestData.call('GET', '/vkf/v1/loans/' + loanId + '/rates', null, token);
+        VkfLoansResource.get();
+        Assert.areEqual(1, ((List<Object>) JSON.deserializeUntyped(res.responseBody.toString())).size());
         res = VkfTestData.call('GET', '/vkf/v1/loans', null, token);
         VkfLoansResource.get();
         Assert.areEqual(200, res.statusCode);

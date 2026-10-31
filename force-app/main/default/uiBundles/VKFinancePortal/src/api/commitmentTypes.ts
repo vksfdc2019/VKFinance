@@ -2,6 +2,7 @@
 
 export const BILL_FREQUENCIES = ["Monthly", "Bi-monthly", "Quarterly", "Half-yearly", "Yearly", "One-time"] as const;
 export const LOAN_TYPES = ["Home", "Car", "Personal", "Education", "Gold", "Consumer Durable", "Card EMI", "Other"] as const;
+export const RATE_TYPES = ["Fixed", "Floating"] as const;
 export const RULE_FREQUENCIES = ["Weekly", "Monthly", "Quarterly", "Yearly"] as const;
 
 export type DueStatus = "Upcoming" | "Due" | "Overdue" | "Partially Paid" | "Paid" | "Skipped" | "Unpaid";
@@ -87,6 +88,7 @@ export interface Loan {
 	loanType: (typeof LOAN_TYPES)[number];
 	principal: number;
 	annualRate: number;
+	rateType: (typeof RATE_TYPES)[number];
 	tenureMonths: number;
 	firstEmiDate: string;
 	emi: number;
@@ -113,13 +115,39 @@ export interface LoanInput {
 	loanType: string;
 	principal: number;
 	annualRate: number;
+	rateType?: string;
 	tenureMonths: number;
 	firstEmiDate: string;
 	emiAmount?: number;
 	installmentsPaid?: number;
+	/** As per the bank; otherwise worked out from the EMIs already paid. */
+	outstandingAmount?: number;
 	debitAccountId?: string;
 	autoDebit?: boolean;
 	borrowerId?: string;
+}
+
+export interface RateChange {
+	id: string;
+	effectiveDate: string;
+	oldRate: number;
+	newRate: number;
+	oldEmi: number;
+	newEmi: number;
+	oldEmisLeft?: number;
+	newEmisLeft?: number;
+	outstanding: number;
+	adjusted: "EMI" | "Tenure";
+	note?: string;
+}
+
+export interface RateChangeInput {
+	annualRate: number;
+	adjust: "EMI" | "Tenure";
+	/** The EMI the bank quoted; overrides the calculated one. */
+	emiAmount?: number;
+	effectiveDate?: string;
+	note?: string;
 }
 
 export interface LoanSchedule {

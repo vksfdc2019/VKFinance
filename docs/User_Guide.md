@@ -84,7 +84,11 @@ and corrects any difference.
 - **Bills:** add each bill once with its due day. VK Finance creates it every month, reminds you
   before it's due, and can pay it automatically from an account you choose.
 - **Loans and EMIs:** add the loan's amount, rate and tenure. You'll see each EMI split into
-  principal and interest, the outstanding balance and the date you'll be debt-free.
+  principal and interest, the outstanding balance and the date you'll be debt-free. Mark it
+  fixed or floating, and enter the EMI and outstanding from your bank statement if they differ
+  from the calculated ones. When the bank changes the rate, use **Rate changed** on the loan:
+  choose whether the bank changed the EMI or the number of EMIs left. Every change is kept in
+  the loan's rate history.
 - **Recurring entries** (salary, rent, SIPs, pocket money) can post themselves, or ask you first.
 - **The bell** (top left) collects reminders, overdue alerts and security notices.
 

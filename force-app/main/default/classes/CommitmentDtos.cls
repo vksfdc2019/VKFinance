@@ -58,6 +58,7 @@ public inherited sharing class CommitmentDtos {
         public String loanType;
         public Decimal principal;
         public Decimal annualRate;
+        public String rateType;
         public Integer tenureMonths;
         public Date firstEmiDate;
         public Decimal emi;
@@ -94,6 +95,20 @@ public inherited sharing class CommitmentDtos {
         public Loan loan;
         public List<Installment> rows = new List<Installment>();
         public Decimal totalInterestRemaining = 0;
+    }
+
+    public class RateChange {
+        public Id id;
+        public Date effectiveDate;
+        public Decimal oldRate;
+        public Decimal newRate;
+        public Decimal oldEmi;
+        public Decimal newEmi;
+        public Integer oldEmisLeft;
+        public Integer newEmisLeft;
+        public Decimal outstanding;
+        public String adjusted;
+        public String note;
     }
 
     public class Statement {
@@ -176,6 +191,22 @@ public inherited sharing class CommitmentDtos {
         d.closing = i.Closing_Balance__c;
         d.status = i.Status__c;
         d.paidOn = i.Paid_On__c;
+        return d;
+    }
+
+    public static RateChange rateChange(Loan_Rate_Change__c c) {
+        RateChange d = new RateChange();
+        d.id = c.Id;
+        d.effectiveDate = c.Effective_Date__c;
+        d.oldRate = c.Old_Rate__c;
+        d.newRate = c.New_Rate__c;
+        d.oldEmi = c.Old_EMI__c;
+        d.newEmi = c.New_EMI__c;
+        d.oldEmisLeft = c.Old_EMIs_Left__c == null ? null : c.Old_EMIs_Left__c.intValue();
+        d.newEmisLeft = c.New_EMIs_Left__c == null ? null : c.New_EMIs_Left__c.intValue();
+        d.outstanding = c.Outstanding__c;
+        d.adjusted = c.Adjusted__c;
+        d.note = c.Note__c;
         return d;
     }
 

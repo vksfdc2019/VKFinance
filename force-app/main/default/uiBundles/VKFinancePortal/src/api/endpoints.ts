@@ -34,6 +34,8 @@ import type {
 	Loan,
 	LoanInput,
 	LoanSchedule,
+	RateChange,
+	RateChangeInput,
 	RecurringRule,
 	RuleInput,
 	Statement,
@@ -146,6 +148,8 @@ export const commitmentApi = {
 	payEmi: (loanId: string, input: { accountId?: string; date?: string }) => vkf<Loan>("POST", `/loans/${id(loanId)}/pay`, input),
 	prepay: (loanId: string, input: { amount: number; accountId?: string; date?: string }) =>
 		vkf<Loan>("POST", `/loans/${id(loanId)}/prepay`, input),
+	rateChanges: (loanId: string) => vkf<RateChange[]>("GET", `/loans/${id(loanId)}/rates`),
+	changeRate: (loanId: string, input: RateChangeInput) => vkf<Loan>("POST", `/loans/${id(loanId)}/rate`, input),
 
 	statements: (accountId: string) => vkf<Statement[]>("GET", `/accounts/${id(accountId)}/statements`),
 
