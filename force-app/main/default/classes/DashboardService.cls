@@ -10,14 +10,17 @@ public without sharing class DashboardService {
     public static FinanceDtos.Dashboard build(UserContext ctx, Map<String, String> params) {
         AccessGuard.require(ctx, 'DASHBOARD', 'READ');
         LedgerScope scope = new LedgerScope(ctx);
-        Date start = LedgerUtil.monthStart(params.get('month'));
-        Date finish = LedgerUtil.monthEnd(start);
+        BudgetMonth.Period period = BudgetMonth.named(ctx.familyId, params.get('month'));
+        Date start = period.startDate;
+        Date finish = period.endDate;
         CategorySelector categories = CategoryService.ensureSeeded(ctx);
         TransactionSelector selector = new TransactionSelector(ctx);
         TransactionSelector.Filter base = selector.scoped();
 
         FinanceDtos.Dashboard d = new FinanceDtos.Dashboard();
-        d.month = LedgerUtil.monthKey(start);
+        d.month = period.key;
+        d.periodStart = start;
+        d.periodEnd = finish;
         d.currencyCode = ctx.currencyCode;
         d.wholeFamily = scope.wholeFamily();
 
@@ -35,7 +38,7 @@ public without sharing class DashboardService {
             }
         }
 
-        addTrendAndKpis(d, selector, base, start, finish);
+        addTrendAndKpis(d, ctx.familyId, selector, base, period);
         addCategories(d, selector, base, categories, start, finish);
         addAccounts(d, ctx, base.memberId);
         if (base.memberId == null) {
@@ -47,7 +50,7 @@ public without sharing class DashboardService {
         d.recent = TransactionService.toDtos(ctx, selector.page(recent, 8));
 
         if (scope.wholeFamily() && base.memberId == null && AccessGuard.can(ctx, 'BUDGETS', 'READ')) {
-            FinanceDtos.BudgetView budget = BudgetService.view(ctx, start);
+            FinanceDtos.BudgetView budget = BudgetService.view(ctx, period.anchor);
             if (budget.exists) {
                 d.budget = new FinanceDtos.BudgetSummary();
                 d.budget.planned = budget.totalPlanned;
@@ -62,24 +65,21 @@ public without sharing class DashboardService {
         return d;
     }
 
-    private static void addTrendAndKpis(FinanceDtos.Dashboard d, TransactionSelector selector, TransactionSelector.Filter base, Date start, Date finish) {
+    private static void addTrendAndKpis(FinanceDtos.Dashboard d, Id familyId, TransactionSelector selector, TransactionSelector.Filter base, BudgetMonth.Period period) {
         Map<String, FinanceDtos.MonthPoint> points = new Map<String, FinanceDtos.MonthPoint>();
         for (Integer i = TREND_MONTHS - 1; i >= 0; i--) {
             FinanceDtos.MonthPoint p = new FinanceDtos.MonthPoint();
-            p.month = LedgerUtil.monthKey(start.addMonths(-i));
+            p.month = LedgerUtil.monthKey(period.anchor.addMonths(-i));
             points.put(p.month, p);
             d.trend.add(p);
         }
         TransactionSelector.Filter f = base.copy();
-        f.fromDate = start.addMonths(-(TREND_MONTHS - 1));
-        f.toDate = finish;
+        f.fromDate = BudgetMonth.of(familyId, period.anchor.addMonths(-(TREND_MONTHS - 1))).startDate;
+        f.toDate = period.endDate;
         f.types = new Set<String>{ 'Income', 'Expense', 'Refund', 'Bill Payment' };
-        for (AggregateResult ar : selector.aggregate(
-            'CALENDAR_YEAR(Txn_Date__c) y, CALENDAR_MONTH(Txn_Date__c) m, Type__c t, SUM(Amount__c) s',
-            f,
-            'CALENDAR_YEAR(Txn_Date__c), CALENDAR_MONTH(Txn_Date__c), Type__c'
-        )) {
-            String key = LedgerUtil.monthKey(Date.newInstance((Integer) ar.get('y'), (Integer) ar.get('m'), 1));
+        // By day, so each day lands in the family's month - which need not follow calendar months.
+        for (AggregateResult ar : selector.aggregate('Txn_Date__c day, Type__c t, SUM(Amount__c) s', f, 'Txn_Date__c, Type__c')) {
+            String key = BudgetMonth.containing(familyId, (Date) ar.get('day')).key;
             FinanceDtos.MonthPoint p = points.get(key);
             if (p == null) {
                 continue;
@@ -95,7 +95,7 @@ public without sharing class DashboardService {
             }
         }
         FinanceDtos.MonthPoint current = points.get(d.month);
-        FinanceDtos.MonthPoint previous = points.get(LedgerUtil.monthKey(start.addMonths(-1)));
+        FinanceDtos.MonthPoint previous = points.get(LedgerUtil.monthKey(period.anchor.addMonths(-1)));
         d.kpis.income = current.income;
         d.kpis.expenses = current.expenses;
         d.kpis.net = current.income - current.expenses;

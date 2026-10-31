@@ -17,6 +17,8 @@ public inherited sharing class PortalDtos {
         public String familyName;
         public String familyCode;
         public String currencyCode;
+        /** Day the family's month starts (1 = calendar months). */
+        public Integer monthStartDay;
         public Boolean mustChangePassword;
         public Boolean mfaEnabled;
         public String sessionScope;
@@ -76,6 +78,7 @@ public inherited sharing class PortalDtos {
         p.familyName = ctx.familyName;
         p.familyCode = ctx.familyCode;
         p.currencyCode = ctx.currencyCode;
+        p.monthStartDay = BudgetMonth.startDay(ctx.familyId);
         p.mustChangePassword = ctx.mustChangePassword == true;
         p.mfaEnabled = ctx.mfaEnabled == true;
         p.sessionScope = ctx.scope;

@@ -464,12 +464,12 @@ public without sharing class ReportService {
 
     private static void budget(Scope s, Report r) {
         AccessGuard.require(s.ctx, 'BUDGETS', 'READ');
-        Date month = s.fromDate.toStartOfMonth();
-        FinanceDtos.BudgetView v = BudgetService.view(s.ctx, month);
+        BudgetMonth.Period period = BudgetMonth.containing(s.ctx.familyId, s.fromDate);
+        FinanceDtos.BudgetView v = BudgetService.view(s.ctx, period.anchor);
         r.title = 'Budget vs actual';
-        r.subtitle = 'Plan and spending for ' + LedgerUtil.monthKey(month);
-        r.fromDate = month;
-        r.toDate = LedgerUtil.monthEnd(month);
+        r.subtitle = 'Plan and spending for ' + period.key;
+        r.fromDate = period.startDate;
+        r.toDate = period.endDate;
         r.kpis.add(new Kpi('Planned', v.totalPlanned, 'money', null));
         r.kpis.add(new Kpi('Spent', v.totalSpent, 'money', null));
         r.kpis.add(new Kpi('Left', v.totalPlanned - v.totalSpent, 'money', null));

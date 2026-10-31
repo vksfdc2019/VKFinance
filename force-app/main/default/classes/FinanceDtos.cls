@@ -138,6 +138,8 @@ public inherited sharing class FinanceDtos {
 
     public class BudgetView {
         public String month;
+        public Date periodStart;
+        public Date periodEnd;
         public Boolean exists = false;
         public Boolean canEdit = false;
         public Decimal totalPlanned = 0;
@@ -160,6 +162,9 @@ public inherited sharing class FinanceDtos {
 
     public class Dashboard {
         public String month;
+        /** The family's month: calendar dates, or from the month start day (e.g. 30 Oct to 29 Nov). */
+        public Date periodStart;
+        public Date periodEnd;
         public String currencyCode;
         public Id memberId;
         public Boolean wholeFamily;

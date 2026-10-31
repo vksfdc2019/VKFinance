@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { authApi } from "@/api/endpoints";
 import { SESSION_EXPIRED_EVENT, sessionStore } from "@/api/vkfClient";
+import { setMonthStartDay } from "@/lib/format";
 import type { CompletedLogin, LoginResult, Profile } from "@/api/types";
 
 export type AuthStatus = "loading" | "anonymous" | "restricted" | "authenticated";
@@ -40,6 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 	const accept = useCallback((result: CompletedLogin) => {
 		sessionStore.set(result.token);
+		setMonthStartDay(result.profile.monthStartDay);
 		setProfile(result.profile);
 		setStatus(statusFor(result.profile));
 		setSignOutReason(null);
@@ -47,6 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 	const refresh = useCallback(async () => {
 		const current = await authApi.session();
+		setMonthStartDay(current.monthStartDay);
 		setProfile(current);
 		setStatus(statusFor(current));
 	}, []);

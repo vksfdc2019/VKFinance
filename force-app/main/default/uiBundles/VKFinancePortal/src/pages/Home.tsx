@@ -15,7 +15,7 @@ import type { DueItem } from "@/api/commitmentTypes";
 import { DeltaPill, EmptyState, MonthSwitcher, PageHeader, Panel, StatusMeter, budgetStatus, utilisationStatus } from "@/components/finance/ui";
 import { financeApi } from "@/api/endpoints";
 import type { Dashboard } from "@/api/financeTypes";
-import { formatMoney, formatPercent, monthKey, monthLabel, percentChange } from "@/lib/format";
+import { formatMoney, formatPercent, monthKey, monthLabel, monthPeriod, percentChange } from "@/lib/format";
 import { useAsync } from "@/lib/useAsync";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/features/auth/AuthContext";
@@ -34,7 +34,8 @@ function monthProgress(month: string) {
 	const current = monthKey(now);
 	if (month < current) return 1;
 	if (month > current) return 0;
-	return now.getDate() / new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+	const { start, end } = monthPeriod(month);
+	return (Math.floor((now.getTime() - start.getTime()) / 86_400_000) + 1) / (Math.round((end.getTime() - start.getTime()) / 86_400_000) + 1);
 }
 
 export default function HomePage() {

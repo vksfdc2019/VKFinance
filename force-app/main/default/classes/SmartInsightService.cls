@@ -2,24 +2,27 @@
 public without sharing class SmartInsightService {
     public static List<Map<String, Object>> insights(UserContext ctx) {
         EnhancementService.requireFeature(ctx, 'INSIGHTS', 'READ');
-        Date today = Date.today(), month = today.toStartOfMonth();
+        Date today = Date.today();
+        BudgetMonth.Period period = BudgetMonth.containing(ctx.familyId, today);
+        Date month = period.startDate;
+        Integer elapsed = month.daysBetween(today) + 1;
         TransactionSelector selector = new TransactionSelector(ctx);
         TransactionSelector.Filter filter = selector.scoped();
         filter.types = new Set<String>{ 'Expense', 'Bill Payment', 'Refund' };
-        filter.fromDate = month.addMonths(-3); filter.toDate = month.addDays(-1);
+        filter.fromDate = BudgetMonth.of(ctx.familyId, period.anchor.addMonths(-3)).startDate; filter.toDate = month.addDays(-1);
         Map<Id, Decimal> baseline = categoryTotals(selector, filter);
         filter.fromDate = month; filter.toDate = today;
         Map<Id, Decimal> current = categoryTotals(selector, filter);
         Map<Id, Category__c> categories = new CategorySelector(ctx).byIdMap();
         List<Map<String, Object>> result = new List<Map<String, Object>>();
-        if (today.day() >= 7) {
+        if (elapsed >= 7) {
             for (Id categoryId : current.keySet()) {
                 Decimal average = (baseline.containsKey(categoryId) ? baseline.get(categoryId) : 0) / 3;
-                Decimal expected = average * today.day() / Date.daysInMonth(today.year(), today.month());
+                Decimal expected = average * elapsed / period.days();
                 Decimal actual = current.get(categoryId);
                 if (average >= 300 && actual > expected * 1.5 && actual - expected >= 300 && categories.containsKey(categoryId)) {
                     String name = categories.get(categoryId).Name;
-                    result.add(tip('PACE:' + LedgerUtil.monthKey(month) + ':' + categoryId, 'Spending pace', name + ' is running ahead',
+                    result.add(tip('PACE:' + period.key + ':' + categoryId, 'Spending pace', name + ' is running ahead',
                         'Spending is above the same-day pace implied by the previous three complete months. A planned one-off purchase can explain this.',
                         actual, expected.setScale(2), '/reports/category?categoryId=' + categoryId, 'warning'));
                 }
@@ -32,7 +35,7 @@ public without sharing class SmartInsightService {
         for (Recurring_Rule__c rule : rules) {
             Decimal monthly = rule.Frequency__c == 'Weekly' ? rule.Amount__c * 52 / 12 : rule.Frequency__c == 'Quarterly' ? rule.Amount__c / 3 :
                 rule.Frequency__c == 'Yearly' ? rule.Amount__c / 12 : rule.Amount__c;
-            result.add(tip('REPEAT:' + LedgerUtil.monthKey(month) + ':' + rule.Id, 'Recurring review', 'Still using ' + rule.Name + '?',
+            result.add(tip('REPEAT:' + period.key + ':' + rule.Id, 'Recurring review', 'Still using ' + rule.Name + '?',
                 'This active recurring expense is a candidate for review. The app cannot determine whether you use the service; nothing is cancelled automatically.',
                 monthly.setScale(2), null, '/recurring', 'info'));
         }

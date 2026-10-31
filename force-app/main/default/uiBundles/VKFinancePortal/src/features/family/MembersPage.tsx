@@ -26,6 +26,7 @@ import {
 	TemporaryPasswordDialog,
 	type PasswordConfirmation,
 } from "./MemberDialogs";
+import { MonthStartCard } from "./MonthStartCard";
 
 function StatusBadge({ member }: { member: Member }) {
 	if (member.locked) return <Badge variant="destructive">Locked</Badge>;
@@ -141,6 +142,7 @@ export default function MembersPage() {
 					Add member
 				</Button>
 			</div>
+			<MonthStartCard />
 			<FormErrors errors={errors} />
 			<Card>
 				<CardHeader>

@@ -7,6 +7,8 @@
  *   POST   /family/members/{id}/reset-password
  *   POST   /family/members/{id}/reset-mfa
  *   DELETE /family/members/{id}/sessions
+ *   GET    /family/settings          { monthStartDay, current period }
+ *   PUT    /family/settings          { monthStartDay } (Family Admin)
  *   PUT    /family/appearance        {preset, brand?, radius, locked} (admins)
  *   DELETE /family/appearance        (back to the VK Finance default; admins)
  */
@@ -20,6 +22,8 @@ global with sharing class VkfFamilyResource {
             List<String> parts = VkfRest.segmentsAfter(req, 'family');
             if (parts.size() == 1 && parts[0] == 'members') {
                 VkfRest.ok(MemberService.listMembers(ctx));
+            } else if (parts.size() == 1 && parts[0] == 'settings') {
+                VkfRest.ok(BudgetMonth.settings(ctx));
             } else {
                 throw new PortalException('NOT_FOUND');
             }
@@ -84,6 +88,10 @@ global with sharing class VkfFamilyResource {
         try {
             UserContext ctx = SessionService.require(VkfRest.sessionToken(req), VkfRest.userAgent(req));
             List<String> parts = VkfRest.segmentsAfter(req, 'family');
+            if (parts.size() == 1 && parts[0] == 'settings') {
+                VkfRest.ok(BudgetMonth.save(ctx, VkfRest.body(req)));
+                return;
+            }
             if (parts.size() != 1 || parts[0] != 'appearance') {
                 throw new PortalException('NOT_FOUND');
             }

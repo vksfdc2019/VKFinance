@@ -495,8 +495,9 @@ public without sharing class DuesProcessor {
     Set<Id> admins,
     Summary s
   ) {
-    Date start = today.toStartOfMonth();
-    Budget__c budget = new BudgetSelector(admin).forMonth(start);
+    BudgetMonth.Period period = BudgetMonth.containing(familyId, today);
+    Date start = period.startDate;
+    Budget__c budget = new BudgetSelector(admin).forMonth(period.anchor);
     if (budget == null || budget.Lines__r.isEmpty()) {
       return;
     }
@@ -505,7 +506,7 @@ public without sharing class DuesProcessor {
       admin,
       categories,
       start,
-      LedgerUtil.monthEnd(start)
+      period.endDate
     );
     Map<Id, Category__c> all = categories.byIdMap();
     for (Budget_Line__c line : budget.Lines__r) {

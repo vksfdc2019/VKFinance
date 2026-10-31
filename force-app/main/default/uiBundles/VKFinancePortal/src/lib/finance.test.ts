@@ -135,3 +135,27 @@ describe("reports", async () => {
 		expect(layout[1].hidden).toBe(true);
 	});
 });
+
+describe("family month", async () => {
+	const { monthKey, monthPeriod, monthRange, setMonthStartDay, shiftMonth } = await import("@/lib/format");
+	const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+	it("starts on payday when the family says so", () => {
+		setMonthStartDay(30);
+		expect(monthKey(new Date(2026, 9, 30))).toBe("2026-11");
+		expect(monthKey(new Date(2026, 9, 29))).toBe("2026-10");
+		expect(monthKey(new Date(2026, 10, 1))).toBe("2026-11");
+		const nov = monthPeriod("2026-11");
+		expect([iso(nov.start), iso(nov.end)]).toEqual(["2026-10-30", "2026-11-29"]);
+		const feb = monthPeriod("2027-02");
+		expect([iso(feb.start), iso(feb.end)]).toEqual(["2027-01-30", "2027-02-27"]);
+		expect(monthRange("2026-11")).toBe("30 Oct – 29 Nov");
+		expect(shiftMonth("2026-11", 1)).toBe("2026-12");
+		setMonthStartDay(10);
+		expect(monthKey(new Date(2026, 10, 9))).toBe("2026-10");
+		expect(shiftMonth("2026-11", -1)).toBe("2026-10");
+		setMonthStartDay(1);
+		expect(monthKey(new Date(2026, 10, 30))).toBe("2026-11");
+		expect(monthRange("2026-11")).toBe("");
+	});
+});

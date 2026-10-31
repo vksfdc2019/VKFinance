@@ -31,6 +31,8 @@ export interface Profile {
 	familyName: string;
 	familyCode: string;
 	currencyCode?: string;
+	/** Day the family month starts (1 = calendar months). */
+	monthStartDay?: number;
 	mustChangePassword: boolean;
 	mfaEnabled: boolean;
 	sessionScope: "FULL" | "CHANGE_PASSWORD";
@@ -127,4 +129,12 @@ export interface SecurityOverview {
 	lastLogin?: string;
 	activeSessions: number;
 	activity: SecurityEvent[];
+}
+
+/** Family-wide settings; only the Family Admin can change them. */
+export interface FamilySettings {
+	/** 1-31; 1 = calendar months. With 30, "November" runs 30 Oct to 29 Nov. */
+	monthStartDay: number;
+	current: { key: string; startDate: string; endDate: string };
+	canEdit: boolean;
 }

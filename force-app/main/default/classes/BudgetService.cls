@@ -5,13 +5,13 @@
 public without sharing class BudgetService {
     public static FinanceDtos.BudgetView getBudget(UserContext ctx, String month) {
         AccessGuard.require(ctx, 'BUDGETS', 'READ');
-        return view(ctx, LedgerUtil.monthStart(month));
+        return view(ctx, BudgetMonth.named(ctx.familyId, month).anchor);
     }
 
     /** Replaces the month's plan. Lines with no amount (or zero) are removed. */
     public static FinanceDtos.BudgetView saveBudget(UserContext ctx, String month, Map<String, Object> body) {
         AccessGuard.require(ctx, 'BUDGETS', 'EDIT');
-        Date start = LedgerUtil.monthStart(month);
+        Date start = BudgetMonth.named(ctx.familyId, month).anchor;
         Object raw = body.get('lines');
         if (!(raw instanceof List<Object>)) {
             throw new PortalException('VALIDATION').withError('Send the budget as a list of lines.');
@@ -41,7 +41,7 @@ public without sharing class BudgetService {
     /** Starts a month from the previous month's plan. */
     public static FinanceDtos.BudgetView copyPrevious(UserContext ctx, String month) {
         AccessGuard.require(ctx, 'BUDGETS', 'EDIT');
-        Date start = LedgerUtil.monthStart(month);
+        Date start = BudgetMonth.named(ctx.familyId, month).anchor;
         BudgetSelector selector = new BudgetSelector(ctx);
         Budget__c previous = selector.forMonth(start.addMonths(-1));
         if (previous == null || previous.Lines__r.isEmpty()) {
@@ -92,19 +92,24 @@ public without sharing class BudgetService {
         delete as system deletes;
     }
 
-    public static FinanceDtos.BudgetView view(UserContext ctx, Date start) {
-        Date finish = LedgerUtil.monthEnd(start);
+    /** `anchor` names the month (its 1st); spending is counted over the family's month, which may start on payday. */
+    public static FinanceDtos.BudgetView view(UserContext ctx, Date anchor) {
+        BudgetMonth.Period period = BudgetMonth.of(ctx.familyId, anchor);
+        Date start = period.startDate;
+        Date finish = period.endDate;
         CategorySelector categories = CategoryService.ensureSeeded(ctx);
         Map<Id, Category__c> all = categories.byIdMap();
-        Budget__c budget = new BudgetSelector(ctx).forMonth(start);
+        Budget__c budget = new BudgetSelector(ctx).forMonth(period.anchor);
 
         FinanceDtos.BudgetView v = new FinanceDtos.BudgetView();
-        v.month = LedgerUtil.monthKey(start);
+        v.month = period.key;
+        v.periodStart = start;
+        v.periodEnd = finish;
         v.exists = budget != null && !budget.Lines__r.isEmpty();
         v.canEdit = AccessGuard.can(ctx, 'BUDGETS', 'EDIT');
-        v.daysInMonth = Date.daysInMonth(start.year(), start.month());
+        v.daysInMonth = period.days();
         Date today = Date.today();
-        v.daysElapsed = today < start ? 0 : today > finish ? v.daysInMonth : today.day();
+        v.daysElapsed = today < start ? 0 : today > finish ? v.daysInMonth : start.daysBetween(today) + 1;
 
         Map<Id, Decimal> spent = spentByTopCategory(ctx, categories, start, finish);
         Map<Id, FinanceDtos.BudgetLine> lines = new Map<Id, FinanceDtos.BudgetLine>();

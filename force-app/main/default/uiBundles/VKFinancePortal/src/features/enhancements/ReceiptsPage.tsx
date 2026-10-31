@@ -7,7 +7,7 @@ import { errorMessages } from '@/api/vkfClient';
 import { useAuth } from '@/features/auth/AuthContext';
 import { useLedger } from '@/features/ledger/LedgerContext';
 import { useAsync } from '@/lib/useAsync';
-import { formatDate, formatMoney, monthKey } from '@/lib/format';
+import { formatDate, formatMoney, calendarMonthKey as monthKey } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';

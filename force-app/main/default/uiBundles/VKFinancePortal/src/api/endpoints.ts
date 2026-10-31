@@ -4,6 +4,7 @@ import type { CloseDepositInput, Deposit, DepositInput, DepositPortfolio, RenewD
 import type {
 	CompletedLogin,
 	CreatedMember,
+	FamilySettings,
 	DeviceSession,
 	LoginResult,
 	Member,
@@ -82,6 +83,9 @@ export const appearanceApi = {
 };
 
 export const familyApi = {
+	settings: () => vkf<FamilySettings>("GET", "/family/settings"),
+	/** Family Admin only. */
+	saveSettings: (input: { monthStartDay: number }) => vkf<FamilySettings>("PUT", "/family/settings", input),
 	members: () => vkf<Member[]>("GET", "/family/members"),
 	addMember: (input: MemberInput) => vkf<CreatedMember>("POST", "/family/members", input),
 	updateMember: (id: string, input: MemberInput) =>

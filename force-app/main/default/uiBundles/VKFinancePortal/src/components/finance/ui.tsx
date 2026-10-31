@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { AlertTriangle, CheckCircle2, ChevronLeft, ChevronRight, OctagonAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { formatMoney, monthKey, monthLabel, shiftMonth } from "@/lib/format";
+import { formatMoney, monthKey, monthLabel, monthRange, shiftMonth } from "@/lib/format";
 
 export function PageHeader({
 	title,
@@ -69,7 +69,8 @@ export function MonthSwitcher({ value, onChange }: { value: string; onChange: (m
 				onClick={() => onChange(current)}
 				title="Jump to this month"
 			>
-				{monthLabel(value)}
+				<span className="block leading-tight">{monthLabel(value)}</span>
+				{monthRange(value) && <span className="block text-[10px] leading-tight font-normal text-slate-500 dark:text-slate-400">{monthRange(value)}</span>}
 			</button>
 			<Button
 				variant="ghost"

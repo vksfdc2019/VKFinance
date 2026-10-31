@@ -277,6 +277,8 @@ export interface BudgetLine {
 
 export interface BudgetView {
 	month: string;
+	periodStart?: string;
+	periodEnd?: string;
 	exists: boolean;
 	canEdit: boolean;
 	totalPlanned: number;
@@ -289,6 +291,8 @@ export interface BudgetView {
 
 export interface Dashboard {
 	month: string;
+	periodStart?: string;
+	periodEnd?: string;
 	currencyCode: string;
 	memberId?: string;
 	wholeFamily: boolean;

@@ -48,9 +48,55 @@ export function formatPercent(value: number | null | undefined, digits = 0): str
 	return value === null || value === undefined || !Number.isFinite(value) ? "—" : `${value.toFixed(digits)}%`;
 }
 
-/** "2026-10" for the month containing the date. */
-export function monthKey(date: Date = new Date()): string {
+let monthStartDay = 1;
+
+/**
+ * The family's month starts on this day (from the profile; 1 = calendar months). Same rule as
+ * BudgetMonth.cls: after the 15th, a month is named for the one it mostly covers, so with 30
+ * "November" runs 30 Oct to 29 Nov. Short months start on their last day.
+ */
+export function setMonthStartDay(day?: number | null): void {
+	monthStartDay = day && day >= 1 && day <= 31 ? Math.floor(day) : 1;
+}
+
+export function getMonthStartDay(): number {
+	return monthStartDay;
+}
+
+function periodStartFor(year: number, monthIndex: number, day: number): Date {
+	if (day <= 1) return new Date(year, monthIndex, 1);
+	const month = day > 15 ? new Date(year, monthIndex - 1, 1) : new Date(year, monthIndex, 1);
+	const last = new Date(month.getFullYear(), month.getMonth() + 1, 0).getDate();
+	return new Date(month.getFullYear(), month.getMonth(), Math.min(day, last));
+}
+
+/** First and last day of the family month named by "2026-11". */
+export function monthPeriod(key: string): { start: Date; end: Date } {
+	const anchor = monthFromKey(key);
+	const start = periodStartFor(anchor.getFullYear(), anchor.getMonth(), monthStartDay);
+	const next = periodStartFor(anchor.getFullYear(), anchor.getMonth() + 1, monthStartDay);
+	return { start, end: new Date(next.getFullYear(), next.getMonth(), next.getDate() - 1) };
+}
+
+/** "30 Oct – 29 Nov" when months start on payday; empty for calendar months. */
+export function monthRange(key: string): string {
+	if (monthStartDay <= 1) return "";
+	const { start, end } = monthPeriod(key);
+	return `${format(start, "d MMM")} – ${format(end, "d MMM")}`;
+}
+
+/** "2026-10" for the calendar month containing the date. */
+export function calendarMonthKey(date: Date = new Date()): string {
 	return format(date, "yyyy-MM");
+}
+
+/** "2026-11" for the family month containing the date - with a 30th start, 30 October is already November. */
+export function monthKey(date: Date = new Date()): string {
+	const day = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+	let anchor = new Date(day.getFullYear(), day.getMonth(), 1);
+	if (day >= periodStartFor(anchor.getFullYear(), anchor.getMonth() + 1, monthStartDay)) anchor = addMonths(anchor, 1);
+	else if (day < periodStartFor(anchor.getFullYear(), anchor.getMonth(), monthStartDay)) anchor = addMonths(anchor, -1);
+	return format(anchor, "yyyy-MM");
 }
 
 export function monthFromKey(key: string): Date {
@@ -58,7 +104,7 @@ export function monthFromKey(key: string): Date {
 }
 
 export function shiftMonth(key: string, delta: number): string {
-	return monthKey(addMonths(monthFromKey(key), delta));
+	return calendarMonthKey(addMonths(monthFromKey(key), delta));
 }
 
 export function monthLabel(key: string, style: "long" | "short" = "long"): string {

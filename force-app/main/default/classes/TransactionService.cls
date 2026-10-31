@@ -14,8 +14,9 @@ public without sharing class TransactionService {
         TransactionSelector.Filter f = selector.scoped();
 
         if (String.isNotBlank(params.get('month'))) {
-            f.fromDate = LedgerUtil.monthStart(params.get('month'));
-            f.toDate = LedgerUtil.monthEnd(f.fromDate);
+            BudgetMonth.Period period = BudgetMonth.named(ctx.familyId, params.get('month'));
+            f.fromDate = period.startDate;
+            f.toDate = period.endDate;
         }
         if (String.isNotBlank(params.get('from'))) {
             f.fromDate = LedgerUtil.dateValue(params.get('from'), 'From');
