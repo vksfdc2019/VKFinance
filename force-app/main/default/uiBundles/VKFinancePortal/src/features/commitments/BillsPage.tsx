@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { CalendarCheck2, MoreHorizontal, Pencil, Plus, ReceiptText, SkipForward, Zap } from "lucide-react";
+import { CalendarCheck2, MoreHorizontal, Pencil, Plus, ReceiptText, SkipForward, Trash2, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -246,6 +246,7 @@ export default function BillsPage() {
 			{editing && (
 				<BillDialog
 					bill={editing === "new" ? undefined : editing}
+					canDelete={!!data?.canDelete}
 					currency={currency}
 					onClose={() => setEditing(null)}
 					onSaved={() => {
@@ -267,7 +268,7 @@ function Stat({ label, value, tone }: { label: string; value: React.ReactNode; t
 	);
 }
 
-function BillDialog({ bill, currency, onClose, onSaved }: { bill?: Bill; currency: string; onClose: () => void; onSaved: () => void }) {
+function BillDialog({ bill, canDelete, currency, onClose, onSaved }: { bill?: Bill; canDelete?: boolean; currency: string; onClose: () => void; onSaved: () => void }) {
 	const { profile } = useAuth();
 	const { loadCategories } = useLedger();
 	const isAdmin = profile?.role === "Family Admin" || profile?.role === "Co-Admin";
@@ -286,6 +287,20 @@ function BillDialog({ bill, currency, onClose, onSaved }: { bill?: Bill; currenc
 	const [refs, setRefs] = useState<{ categories: Category[]; accounts: Account[]; members: Member[] }>();
 	const [errors, setErrors] = useState<string[]>([]);
 	const [saving, setSaving] = useState(false);
+	const [confirmDelete, setConfirmDelete] = useState(false);
+
+	async function remove() {
+		if (!bill) return;
+		setSaving(true);
+		try {
+			await commitmentApi.deleteBill(bill.id);
+			toast.success(`${bill.name} deleted`);
+			onSaved();
+		} catch (error) {
+			setErrors(errorMessages(error));
+			setSaving(false);
+		}
+	}
 
 	useEffect(() => {
 		Promise.all([loadCategories(), financeApi.accounts(), isAdmin ? familyApi.members() : Promise.resolve([])])
@@ -437,14 +452,36 @@ function BillDialog({ bill, currency, onClose, onSaved }: { bill?: Bill; currenc
 						</label>
 					)}
 					<FormErrors errors={errors} />
-					<DialogFooter>
-						<Button type="button" variant="outline" onClick={onClose}>
-							Cancel
-						</Button>
-						<Button type="submit" disabled={saving || !refs}>
-							{saving && <Spinner />}
-							{bill ? "Save" : "Add bill"}
-						</Button>
+					<DialogFooter className="sm:justify-between">
+						{bill && canDelete ? (
+							confirmDelete ? (
+								<div className="flex flex-wrap items-center gap-2 text-sm">
+									<span className="text-slate-600 dark:text-slate-400">Delete this bill? Payments already made stay in your transactions.</span>
+									<Button type="button" variant="destructive" size="sm" disabled={saving} onClick={() => void remove()}>
+										Delete
+									</Button>
+									<Button type="button" variant="ghost" size="sm" onClick={() => setConfirmDelete(false)}>
+										Keep
+									</Button>
+								</div>
+							) : (
+								<Button type="button" variant="ghost" className="text-red-700 dark:text-red-300" onClick={() => setConfirmDelete(true)}>
+									<Trash2 />
+									Delete bill
+								</Button>
+							)
+						) : (
+							<span />
+						)}
+						<div className="flex gap-2">
+							<Button type="button" variant="outline" onClick={onClose}>
+								Cancel
+							</Button>
+							<Button type="submit" disabled={saving || !refs}>
+								{saving && <Spinner />}
+								{bill ? "Save" : "Add bill"}
+							</Button>
+						</div>
 					</DialogFooter>
 				</form>
 			</DialogContent>

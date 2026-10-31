@@ -54,6 +54,7 @@ public without sharing class BillService {
         Map<Id, Category__c> categories = new CategorySelector(ctx).byIdMap();
         CommitmentDtos.BillsView v = new CommitmentDtos.BillsView();
         v.canEdit = AccessGuard.can(ctx, 'BILLS', 'EDIT');
+        v.canDelete = v.canEdit && ctx.isFamilyAdmin();
         Date today = Date.today();
 
         Map<Id, Decimal> paidByBill = new Map<Id, Decimal>();
@@ -119,6 +120,21 @@ public without sharing class BillService {
     }
 
     /** Pays (part of) a due occurrence from an account the caller can use. */
+    /**
+     * Deletes a bill and its schedule - only the Family Admin can. Payments already made stay in the
+     * ledger as ordinary entries; they just stop pointing at the bill.
+     */
+    public static void deleteBill(UserContext ctx, Id billId) {
+        AccessGuard.require(ctx, 'BILLS', 'EDIT');
+        if (!ctx.isFamilyAdmin()) {
+            AuditService.log(ctx, 'ACCESS_DENIED', 'Bill__c', billId, 'BILLS:DELETE');
+            throw new PortalException('NOT_AUTHORIZED').withError('Only the Family Admin can delete a bill. Untick Active to pause it instead.');
+        }
+        Bill__c b = new CommitmentSelector(ctx).billById(billId);
+        delete as system new Bill__c(Id = b.Id);
+        AuditService.log(ctx, 'BILL_DELETED', 'Bill__c', b.Id, b.Name);
+    }
+
     public static CommitmentDtos.BillInstance payInstance(UserContext ctx, Id instanceId, Map<String, Object> body) {
         AccessGuard.require(ctx, 'BILLS', 'PAY');
         CommitmentSelector selector = new CommitmentSelector(ctx);

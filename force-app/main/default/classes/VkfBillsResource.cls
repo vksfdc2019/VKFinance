@@ -3,6 +3,7 @@
  *   GET   /bills
  *   POST  /bills
  *   PATCH /bills/{id}
+ *   DELETE /bills/{id}                  Family Admin only
  *   POST  /bills/instances/{id}/pay     { amount?, accountId?, date?, paymentMode?, notes? }
  *   POST  /bills/instances/{id}/skip
  */
@@ -40,6 +41,23 @@ global with sharing class VkfBillsResource {
             } else {
                 throw new PortalException('NOT_FOUND');
             }
+        } catch (Exception e) {
+            VkfRest.fail(e, sp);
+        }
+    }
+
+    @HttpDelete
+    global static void remove() {
+        RestRequest req = RestContext.request;
+        Savepoint sp = Database.setSavepoint();
+        try {
+            UserContext ctx = SessionService.require(VkfRest.sessionToken(req), VkfRest.userAgent(req));
+            List<String> parts = VkfRest.segmentsAfter(req, 'bills');
+            if (parts.size() != 1) {
+                throw new PortalException('NOT_FOUND');
+            }
+            BillService.deleteBill(ctx, VkfRest.toId(parts[0]));
+            VkfRest.noContent();
         } catch (Exception e) {
             VkfRest.fail(e, sp);
         }

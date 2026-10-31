@@ -49,6 +49,7 @@ public inherited sharing class CommitmentDtos {
         public Decimal dueNext30 = 0;
         public Decimal overdue = 0;
         public Boolean canEdit = false;
+        public Boolean canDelete = false;
     }
 
     public class Loan {

@@ -104,6 +104,34 @@ private class LoanAndCardEditTest {
     }
 
     @IsTest
+    static void onlyTheFamilyAdminDeletesBills() {
+        UserContext admin = VkfTestData.ctx('admina');
+        Id savings = LedgerTestData.account(admin, 'Savings', 'Savings', 10000).id;
+        CommitmentDtos.Bill bill = BillService.createBill(admin, new Map<String, Object>{
+            'name' => 'Duplicate EMI', 'categoryId' => LedgerTestData.categoryId(admin, 'Electricity'), 'frequency' => 'Monthly',
+            'nextDueDate' => String.valueOf(Date.today().addDays(2)), 'expectedAmount' => 1500, 'payFromAccountId' => savings
+        });
+        Id instanceId = BillService.listBills(admin).open[0].id;
+        BillService.payInstance(admin, instanceId, new Map<String, Object>());
+        Assert.isTrue(BillService.listBills(admin).canDelete);
+        Assert.isFalse(BillService.listBills(VkfTestData.ctx('coadmina')).canDelete);
+        try {
+            BillService.deleteBill(VkfTestData.ctx('coadmina'), bill.id);
+            Assert.fail('co-admins cannot delete bills');
+        } catch (PortalException e) {
+            Assert.areEqual('NOT_AUTHORIZED', e.code());
+        }
+
+        String token = VkfTestData.login('admina');
+        RestResponse res = VkfTestData.call('DELETE', '/vkf/v1/bills/' + bill.id, null, token);
+        VkfBillsResource.remove();
+        Assert.areEqual(204, res.statusCode, 'deleted');
+        Assert.areEqual(0, [SELECT COUNT() FROM Bill__c]);
+        Assert.areEqual(0, [SELECT COUNT() FROM Bill_Instance__c], 'its schedule goes too');
+        Assert.areEqual(1, [SELECT COUNT() FROM Transaction__c WHERE Account__c = :savings AND Amount__c = 1500], 'the payment stays in the ledger');
+    }
+
+    @IsTest
     static void creditCardsCarryTheirFullTerms() {
         UserContext admin = VkfTestData.ctx('admina');
         FinanceDtos.Account card = AccountService.createAccount(admin, new Map<String, Object>{

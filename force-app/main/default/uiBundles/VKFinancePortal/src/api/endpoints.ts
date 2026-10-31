@@ -149,6 +149,7 @@ export const commitmentApi = {
 	bills: () => vkf<BillsView>("GET", "/bills"),
 	createBill: (input: BillInput) => vkf<Bill>("POST", "/bills", input),
 	updateBill: (billId: string, input: BillInput) => vkf<Bill>("PATCH", `/bills/${id(billId)}`, input),
+	deleteBill: (billId: string) => vkf<void>("DELETE", `/bills/${id(billId)}`),
 	payBill: (instanceId: string, input: { amount?: number; accountId?: string; date?: string; paymentMode?: string }) =>
 		vkf<BillInstance>("POST", `/bills/instances/${id(instanceId)}/pay`, input),
 	skipBill: (instanceId: string) => vkf<void>("POST", `/bills/instances/${id(instanceId)}/skip`, {}),

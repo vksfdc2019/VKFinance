@@ -56,6 +56,8 @@ export interface BillsView {
 	dueNext30: number;
 	overdue: number;
 	canEdit: boolean;
+	/** Only the Family Admin can delete a bill. */
+	canDelete?: boolean;
 }
 
 export interface BillInput {
