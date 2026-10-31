@@ -17,5 +17,5 @@ The Owner Workspace lets the platform owner open any family and work inside it f
 | Lightning Web Components (9 bundles)                       | Built; 26 Jest tests passing, ESLint clean                                                                                |
 | Console app enabled for phones, new tab, permission set    | Built                                                                                                                     |
 | Org validation (dry run, all local tests)                  | **Passed**: 17/17 components, 196/196 Apex tests — see [Validation evidence](Implementation_Guide.md#validation-evidence) |
-| Deployment to the `VKFinance` org                          | Not yet deployed                                                                                                          |
+| Deployment to the `VKFinance` org                          | **Deployed 31 Oct 2026** (`0AfjV000005RitKSAS`): 17/17 components, 196/196 Apex tests                                     |
 | Physical phone check (Android/iOS Salesforce app)          | Pending after deployment                                                                                                  |
