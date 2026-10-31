@@ -1,6 +1,6 @@
 /**
  * Recurring bills and their due occurrences. Paying posts a Bill Payment expense from the
- * chosen account, so budgets and balances move like any other spend, then the bill rolls
+ * chosen account; a linked credit-card bill posts a transfer instead. Then the bill rolls
  * forward to its next due date. Members see and pay only the bills assigned to them.
  */
 public without sharing class BillService {
@@ -102,6 +102,7 @@ public without sharing class BillService {
         update as system new Bill__c(
             Id = b.Id, Name = b.Name, Category__c = b.Category__c, Consumer_No__c = b.Consumer_No__c, Frequency__c = b.Frequency__c,
             Next_Due_Date__c = b.Next_Due_Date__c, Expected_Amount__c = b.Expected_Amount__c, Pay_From_Account__c = b.Pay_From_Account__c,
+            Credit_Card_Account__c = b.Credit_Card_Account__c,
             Auto_Pay__c = b.Auto_Pay__c, Reminder_Days__c = b.Reminder_Days__c, Responsible_Member__c = b.Responsible_Member__c, Active__c = b.Active__c
         );
         // An unpaid, untouched occurrence follows the bill's new due date and amount.
@@ -121,6 +122,8 @@ public without sharing class BillService {
     public static CommitmentDtos.BillInstance payInstance(UserContext ctx, Id instanceId, Map<String, Object> body) {
         AccessGuard.require(ctx, 'BILLS', 'PAY');
         CommitmentSelector selector = new CommitmentSelector(ctx);
+        // Serialize payments so simultaneous submissions cannot settle the same bill twice.
+        List<Bill_Instance__c> locked = [SELECT Id FROM Bill_Instance__c WHERE Id = :instanceId AND Family__c = :ctx.familyId WITH SYSTEM_MODE FOR UPDATE];
         Bill_Instance__c i = selector.instanceById(instanceId);
         Bill__c b = visibleBill(ctx, selector, i.Bill__c);
         if (!CommitmentSelector.OPEN_BILL.contains(i.Status__c)) {
@@ -138,6 +141,26 @@ public without sharing class BillService {
         }
         Date paidOn = LedgerUtil.txnDate(LedgerUtil.has(body, 'date') ? LedgerUtil.dateValue(body, 'date', 'Date') : Date.today());
 
+        if (b.Credit_Card_Account__c != null) {
+            if (LedgerUtil.isLiability(account.Type__c)) {
+                throw new PortalException('VALIDATION').withError('Pay a credit-card bill from a bank, cash or wallet account.');
+            }
+            if (amount > remaining) {
+                throw new PortalException('VALIDATION').withError('The payment exceeds the remaining bill amount.');
+            }
+            FinanceDtos.Transfer payment = TransferService.createTransfer(ctx, new Map<String, Object>{
+                'fromAccountId' => account.Id, 'toAccountId' => b.Credit_Card_Account__c,
+                'amount' => amount, 'date' => String.valueOf(paidOn),
+                'paymentMode' => LedgerUtil.text(body, 'paymentMode'), 'notes' => LedgerUtil.text(body, 'notes')
+            }, i.Id);
+            if (LedgerUtil.bool(body, 'auto')) {
+                update as system new List<Transaction__c>{
+                    new Transaction__c(Id = payment.outLeg.id, Source__c = 'Auto-pay'),
+                    new Transaction__c(Id = payment.inLeg.id, Source__c = 'Auto-pay')
+                };
+            }
+            return instance(ctx, selector.instanceById(i.Id), b, new CategorySelector(ctx).byIdMap());
+        }
         insert as system new Transaction__c(
             Family__c = ctx.familyId, Account__c = account.Id, Category__c = b.Category__c, Type__c = 'Bill Payment', Direction__c = 'Debit',
             Amount__c = amount, Txn_Date__c = paidOn, Payee__c = b.Name.left(120), Member__c = ctx.userId, Bill_Instance__c = i.Id,
@@ -168,10 +191,89 @@ public without sharing class BillService {
         AuditService.log(ctx, 'BILL_SKIPPED', 'Bill_Instance__c', i.Id, b.Name);
     }
 
+    /** Allocate a normal card transfer to the oldest open linked bill, or the occurrence being paid. */
+    public static void recordCardPayment(UserContext ctx, Id cardId, Id debitId, Id creditId, Decimal amount, Date paidOn, Id requestedInstanceId) {
+        Set<String> open = CommitmentSelector.OPEN_BILL;
+        List<Bill_Instance__c> rows = [
+            SELECT Id, Bill__c, Due_Date__c, Amount_Due__c, Amount_Paid__c, Status__c
+            FROM Bill_Instance__c
+            WHERE Family__c = :ctx.familyId AND Bill__r.Family__c = :ctx.familyId
+                AND Bill__r.Credit_Card_Account__c = :cardId AND Status__c IN :open
+                AND (Bill__r.Active__c = true OR Id = :requestedInstanceId)
+            WITH SYSTEM_MODE FOR UPDATE
+        ];
+        Bill_Instance__c chosen;
+        for (Bill_Instance__c row : rows) {
+            if (requestedInstanceId != null && row.Id != requestedInstanceId) continue;
+            if (row.Amount_Due__c == null || row.Amount_Due__c <= LedgerUtil.zeroIfNull(row.Amount_Paid__c)) continue;
+            if (chosen == null || row.Due_Date__c < chosen.Due_Date__c) chosen = row;
+        }
+        if (chosen == null) {
+            if (requestedInstanceId != null) throw new PortalException('CONFLICT').withError('This card bill is no longer open.');
+            return;
+        }
+        Decimal allocated = Math.min(amount, chosen.Amount_Due__c - LedgerUtil.zeroIfNull(chosen.Amount_Paid__c));
+        update as system new List<Transaction__c>{
+            new Transaction__c(Id = debitId, Bill_Instance__c = chosen.Id, Bill_Payment_Amount__c = allocated),
+            new Transaction__c(Id = creditId, Bill_Instance__c = chosen.Id, Bill_Payment_Amount__c = allocated)
+        };
+        chosen.Amount_Paid__c = LedgerUtil.zeroIfNull(chosen.Amount_Paid__c) + allocated;
+        chosen.Paid_On__c = paidOn;
+        chosen.Status__c = chosen.Amount_Paid__c >= chosen.Amount_Due__c ? 'Paid' : 'Partially Paid';
+        update as system chosen;
+        if (chosen.Status__c == 'Paid') rollForward(new CommitmentSelector(ctx).billById(chosen.Bill__c), chosen.Due_Date__c);
+        AuditService.log(ctx, 'BILL_PAID', 'Bill_Instance__c', chosen.Id, 'Card payment ' + allocated);
+    }
+
+    /** The linked bill overrides the estimated ledger statement without changing either balance. */
+    public static void attachCardBills(UserContext ctx, Map<Id, FinanceDtos.CardCycle> cycles, Date today) {
+        Set<Id> cardIds = cycles.keySet();
+        Map<Id, Bill_Instance__c> selected = new Map<Id, Bill_Instance__c>();
+        for (Bill_Instance__c row : [
+            SELECT Id, Bill__c, Bill__r.Credit_Card_Account__c, Due_Date__c, Amount_Due__c, Amount_Paid__c, Paid_On__c, Status__c
+            FROM Bill_Instance__c
+            WHERE Family__c = :ctx.familyId AND Bill__r.Family__c = :ctx.familyId
+                AND Bill__r.Credit_Card_Account__c IN :cardIds AND Status__c != 'Skipped'
+                AND (Bill__r.Active__c = true OR Status__c = 'Paid')
+            WITH SYSTEM_MODE
+        ]) {
+            Id cardId = row.Bill__r.Credit_Card_Account__c;
+            Bill_Instance__c current = selected.get(cardId);
+            Integer rank = cardBillRank(row, today);
+            Integer currentRank = current == null ? 99 : cardBillRank(current, today);
+            if (current == null || rank < currentRank || (rank == currentRank &&
+                (row.Status__c == 'Paid' ? row.Due_Date__c > current.Due_Date__c : row.Due_Date__c < current.Due_Date__c))) {
+                selected.put(cardId, row);
+            }
+        }
+        for (Id cardId : selected.keySet()) {
+            Bill_Instance__c row = selected.get(cardId);
+            FinanceDtos.CardBill bill = new FinanceDtos.CardBill();
+            bill.billId = row.Bill__c; bill.instanceId = row.Id;
+            bill.amount = row.Amount_Due__c; bill.amountPaid = LedgerUtil.zeroIfNull(row.Amount_Paid__c);
+            bill.dueDate = row.Due_Date__c; bill.status = statusFor(row, today);
+            cycles.get(cardId).bill = bill;
+        }
+    }
+
+    private static Integer cardBillRank(Bill_Instance__c row, Date today) {
+        Date monthStart = today.toStartOfMonth();
+        Date monthEnd = monthStart.addMonths(1).addDays(-1);
+        if (row.Status__c != 'Paid') {
+            if (row.Due_Date__c <= today) return 0;
+            return row.Due_Date__c <= monthEnd ? 1 : 3;
+        }
+        Boolean currentMonth = row.Due_Date__c >= monthStart && row.Due_Date__c <= monthEnd;
+        Boolean paidThisMonth = row.Paid_On__c != null && row.Paid_On__c >= monthStart && row.Paid_On__c <= monthEnd;
+        return currentMonth || paidThisMonth ? 2 : 4;
+    }
+
     /** Called when a bill payment is voided: the occurrence owes that money again. */
     public static void revertPayment(Transaction__c t) {
+        // Both transfer legs carry the bill reference, but its allocation is reversed only once.
+        if (t.Type__c == 'Card Payment' && t.Direction__c == 'Credit') return;
         List<Bill_Instance__c> rows = [
-            SELECT Id, Amount_Due__c, Amount_Paid__c, Due_Date__c, Status__c
+            SELECT Id, Bill__c, Bill__r.Frequency__c, Bill__r.Credit_Card_Account__c, Amount_Due__c, Amount_Paid__c, Due_Date__c, Status__c
             FROM Bill_Instance__c
             WHERE Id = :t.Bill_Instance__c
             WITH SYSTEM_MODE
@@ -181,13 +283,16 @@ public without sharing class BillService {
             return;
         }
         Bill_Instance__c i = rows[0];
-        i.Amount_Paid__c = Math.max(0, LedgerUtil.zeroIfNull(i.Amount_Paid__c) - t.Amount__c);
+        i.Amount_Paid__c = Math.max(0, LedgerUtil.zeroIfNull(i.Amount_Paid__c) - (t.Bill_Payment_Amount__c == null ? t.Amount__c : t.Bill_Payment_Amount__c));
         i.Status__c = 'Due';
         i.Status__c = statusFor(i, Date.today());
         if (i.Amount_Paid__c == 0) {
             i.Paid_On__c = null;
         }
         update as system i;
+        if (i.Bill__r.Credit_Card_Account__c != null && i.Bill__r.Frequency__c == 'One-time') {
+            update as system new Bill__c(Id = i.Bill__c, Active__c = true);
+        }
     }
 
     /** Daily: make sure every active bill has one open occurrence and statuses are current. */
@@ -297,6 +402,30 @@ public without sharing class BillService {
             Id accountId = VkfRest.toId(LedgerUtil.text(body, 'payFromAccountId'));
             b.Pay_From_Account__c = accountId == null ? null : TransactionService.usableAccount(ctx, accountId).Id;
         }
+        if (LedgerUtil.has(body, 'active')) {
+            b.Active__c = LedgerUtil.bool(body, 'active');
+        }
+        if (LedgerUtil.has(body, 'creditCardAccountId')) {
+            Id cardId = VkfRest.toId(LedgerUtil.text(body, 'creditCardAccountId'));
+            if (b.Id != null && cardId != b.Credit_Card_Account__c &&
+                [SELECT COUNT() FROM Bill_Instance__c WHERE Bill__c = :b.Id AND Amount_Paid__c > 0 WITH SYSTEM_MODE] > 0) {
+                errors.add('A bill with payments cannot be moved to a different card.');
+            }
+            b.Credit_Card_Account__c = cardId;
+        }
+        if (b.Credit_Card_Account__c != null) {
+            Financial_Account__c card = TransactionService.usableAccount(ctx, b.Credit_Card_Account__c);
+            if (card.Type__c != 'Credit Card') errors.add('Choose a credit-card account for this bill.');
+            // Lock the account before checking for another active link, including concurrent creates.
+            List<Financial_Account__c> lockedCards = [SELECT Id FROM Financial_Account__c WHERE Id = :card.Id AND Family__c = :ctx.familyId WITH SYSTEM_MODE FOR UPDATE];
+            if ((creating || b.Active__c) && [SELECT COUNT() FROM Bill__c WHERE Family__c = :ctx.familyId
+                AND Credit_Card_Account__c = :card.Id AND Active__c = true AND Id != :b.Id WITH SYSTEM_MODE] > 0) {
+                errors.add('This card already has an active bill. Edit that bill instead.');
+            }
+            if (b.Pay_From_Account__c != null && LedgerUtil.isLiability(new AccountSelector(ctx).byId(b.Pay_From_Account__c).Type__c)) {
+                errors.add('Pay a credit-card bill from a bank, cash or wallet account.');
+            }
+        }
         if (LedgerUtil.has(body, 'autoPay')) {
             b.Auto_Pay__c = LedgerUtil.bool(body, 'autoPay');
         }
@@ -315,9 +444,6 @@ public without sharing class BillService {
             b.Responsible_Member__c = memberId == null ? null : new PortalUserSelector(ctx).memberInFamily(memberId).Id;
         } else if (creating) {
             b.Responsible_Member__c = ctx.userId;
-        }
-        if (LedgerUtil.has(body, 'active')) {
-            b.Active__c = LedgerUtil.bool(body, 'active');
         }
         if (!errors.isEmpty()) {
             throw new PortalException('VALIDATION').withErrors(errors);
@@ -342,6 +468,8 @@ public without sharing class BillService {
         d.expectedAmount = b.Expected_Amount__c;
         d.payFromAccountId = b.Pay_From_Account__c;
         d.payFromAccountName = b.Pay_From_Account__r?.Name;
+        d.creditCardAccountId = b.Credit_Card_Account__c;
+        d.creditCardAccountName = b.Credit_Card_Account__r?.Name;
         d.autoPay = b.Auto_Pay__c;
         d.reminderDays = b.Reminder_Days__c == null ? null : b.Reminder_Days__c.intValue();
         d.responsibleId = b.Responsible_Member__c;
@@ -368,6 +496,7 @@ public without sharing class BillService {
         d.autoPay = b.Auto_Pay__c;
         d.payFromAccountId = b.Pay_From_Account__c;
         d.responsibleName = parent.responsibleName;
+        d.creditCardAccountId = b.Credit_Card_Account__c;
         d.daysLeft = CommitmentDtos.daysUntil(i.Due_Date__c);
         d.canPay = AccessGuard.can(ctx, 'BILLS', 'PAY') && CommitmentSelector.OPEN_BILL.contains(d.status) &&
             (new LedgerScope(ctx).wholeFamily() || b.Responsible_Member__c == ctx.userId) && ctx.role != 'Viewer';

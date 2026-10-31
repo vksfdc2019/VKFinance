@@ -64,6 +64,7 @@ public without sharing class AccountService {
                 }
             }
             CardStatementService.attachLatest(cycles, paidByCard, today);
+            BillService.attachCardBills(ctx, cycles, today);
         }
         List<FinanceDtos.Account> result = new List<FinanceDtos.Account>();
         for (Financial_Account__c a : accounts) {
@@ -78,6 +79,7 @@ public without sharing class AccountService {
             }
             result.add(d);
         }
+        CreditLimitGroupService.attach(ctx, result);
         return result;
     }
 
@@ -154,6 +156,12 @@ public without sharing class AccountService {
                     .withError('This account has transactions, so it can\'t switch between money you have and money you owe.');
             }
             a.Type__c = type;
+        }
+        if (existing.Credit_Limit_Group__c != null && a.Type__c != 'Credit Card') {
+            throw new PortalException('VALIDATION').withError('Remove the card from its shared limit before changing its type.');
+        }
+        if (existing.Credit_Limit_Group__c != null && LedgerUtil.has(body, 'creditLimit')) {
+            throw new PortalException('VALIDATION').withError('Edit the shared limit in Shared credit limits. The independent limit is preserved for when this card leaves the group.');
         }
         applyFields(ctx, a, body, false);
         if (LedgerUtil.has(body, 'ownerId')) {
@@ -260,6 +268,9 @@ public without sharing class AccountService {
     }
 
     private static void applyFields(UserContext ctx, Financial_Account__c a, Map<String, Object> body, Boolean creating) {
+        if (LedgerUtil.has(body, 'creditLimitGroupId')) {
+            throw new PortalException('VALIDATION').withError('Use Shared credit limits to change group membership.');
+        }
         List<String> errors = new List<String>();
         if (creating || LedgerUtil.has(body, 'name')) {
             String name = LedgerUtil.text(body, 'name');

@@ -8,7 +8,7 @@ public without sharing class TransactionSelector extends FamilyScopedSelector {
         'Id, Name, Type__c, Direction__c, Amount__c, Txn_Date__c, Account__c, Account__r.Name, Account__r.Type__c, ' +
         'Category__c, Member__c, Member__r.First_Name__c, Member__r.Last_Name__c, Payee__c, Notes__c, Payment_Mode__c, ' +
         'Reference_No__c, Status__c, Transfer_Group_Id__c, Counter_Transaction__c, Counter_Transaction__r.Account__r.Name, ' +
-        'Source__c, Bill_Instance__c, EMI_Installment__c, CreatedDate';
+        'Source__c, Bill_Instance__c, Bill_Payment_Amount__c, EMI_Installment__c, CreatedDate';
 
     public class Filter {
         public Boolean wholeFamily = false;

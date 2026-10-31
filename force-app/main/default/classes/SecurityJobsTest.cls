@@ -10,7 +10,9 @@ private class SecurityJobsTest {
         VkfTestData.fastPolicy();
         UserContext ctx = VkfTestData.ctx('admina');
         Id savings = LedgerTestData.account(ctx, 'Savings', 'Savings', 1000).id;
-        Id card = LedgerTestData.account(ctx, 'Card', 'Credit Card', 0).id;
+        FinanceDtos.Account createdCard = LedgerTestData.account(ctx, 'Card', 'Credit Card', 0);
+        Assert.isNotNull(createdCard.id, 'A new standalone card must return its persisted account ID.');
+        Id card = createdCard.id;
         LedgerTestData.entry(ctx, 'Expense', 250, card, LedgerTestData.categoryId(ctx, 'Electronics'));
         update as system new Financial_Account__c(Id = savings, Current_Balance__c = 5);
 

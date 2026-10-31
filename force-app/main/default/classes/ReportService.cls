@@ -714,20 +714,27 @@ public without sharing class ReportService {
         Decimal totalSpent = 0;
         Decimal totalOwed = 0;
         r.detail = new Table().col('name', 'Card', 'text').col('spent', 'Spent', 'money').col('paid', 'Paid', 'money')
-            .col('owed', 'Outstanding', 'money').col('limit', 'Limit', 'money').col('used', 'Used', 'percent');
+            .col('owed', 'Outstanding', 'money').col('pool', 'Limit group', 'text').col('limit', 'Limit', 'money').col('used', 'Used', 'percent');
         r.detail.title = 'By card';
-        for (FinanceDtos.Account c : AccountService.toDtos(s.ctx, cards)) {
+        List<FinanceDtos.Account> cardViews = AccountService.toDtos(s.ctx, cards);
+        for (FinanceDtos.Account c : cardViews) {
             Decimal cardSpent = spent.containsKey(c.id) ? spent.get(c.id) : 0;
             totalSpent += cardSpent;
             totalOwed += c.balance;
             r.detail.rows.add(new Map<String, Object>{
                 'id' => c.id, 'name' => c.name, 'spent' => cardSpent, 'paid' => paid.containsKey(c.id) ? paid.get(c.id) : 0, 'owed' => c.balance,
+                'pool' => c.sharedCredit != null ? c.sharedCredit.name : (c.sharedCreditRestricted ? 'Restricted shared limit' : 'Independent'),
                 'limit' => c.creditLimit, 'used' => c.card?.utilisationPct
             });
         }
         r.kpis.add(new Kpi('Spent on cards', totalSpent, 'money', null));
         r.kpis.add(new Kpi('Outstanding now', totalOwed, 'money', null));
         r.kpis.add(new Kpi('Cards', cards.size(), 'number', null));
+        CreditLimitGroupService.CreditTotals credit = CreditLimitGroupService.totals(cardViews);
+        if (credit.complete) {
+            r.kpis.add(new Kpi('Total credit limit', credit.creditLimit, 'money', 'Shared limits counted once'));
+            r.kpis.add(new Kpi('Available credit', credit.available, 'money', 'Across visible credit facilities'));
+        } else r.note = 'Shared credit totals are withheld because some linked cards are outside your visibility.';
         TransactionSelector.Filter byCategory = s.period(s.fromDate, s.toDate, SPEND_TYPES);
         byCategory.accountIds = cardIds;
         rankedCategories(s, r, rollUp(s, spendByCategory(s, byCategory), null), null);
