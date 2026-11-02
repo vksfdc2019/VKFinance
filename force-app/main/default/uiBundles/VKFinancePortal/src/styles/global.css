@@ -318,3 +318,12 @@
   .vk-rise, .vk-pop { animation: none !important; }
   section, table { break-inside: avoid; }
 }
+
+/* Sidebar menu: scrolls only on very short screens, with a slim scrollbar that stays out of the way. */
+.vk-thin-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+.vk-thin-scroll:hover {
+  scrollbar-color: var(--chart-axis) transparent;
+}

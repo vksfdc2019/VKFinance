@@ -65,7 +65,8 @@ export function DonutChart({
 	const focus = rows.find((x) => x.key === active);
 
 	return (
-		<div className="flex flex-col items-center gap-5 sm:flex-row sm:items-center">
+		<div className="@container">
+		<div className="flex flex-col items-center gap-5 @lg:flex-row @lg:items-center">
 			<div className="relative shrink-0" style={{ width: SIZE, height: SIZE }}>
 				<svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`} role="img" aria-label={`${label}: ${rows.map((x) => `${x.label} ${formatPercent((x.value / total) * 100)}`).join(", ")}`}>
 					{arcs.map(({ row, start, end }) => {
@@ -123,6 +124,7 @@ export function DonutChart({
 					);
 				})}
 			</ul>
+		</div>
 		</div>
 	);
 }

@@ -3,6 +3,10 @@ import type { CreditGroup, CreditOverview } from '../src/api/creditTypes';
 // Deterministic local browser fixtures. Production builds use the real Salesforce SDK.
 const permissions = [
   'DASHBOARD:READ',
+  'BILLS:READ',
+  'LOANS:READ',
+  'CATEGORIES:CREATE',
+  'MEMBERS:CREATE',
   'TRANSACTIONS:READ',
   'TRANSACTIONS:CREATE',
   'ACCOUNTS:READ',
