@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatCompact, formatMoney, monthLabel, percentChange, shiftMonth } from "./format";
+import { formatCompact, formatDate, formatDateTime, formatMoney, formatShortDate, monthLabel, percentChange, shiftMonth } from "./format";
 import { niceMax } from "@/components/charts/CashFlowChart";
 import { budgetStatus, utilisationStatus } from "@/components/finance/ui";
 import { queryString } from "@/api/endpoints";
@@ -157,5 +157,12 @@ describe("family month", async () => {
 		setMonthStartDay(1);
 		expect(monthKey(new Date(2026, 10, 30))).toBe("2026-11");
 		expect(monthRange("2026-11")).toBe("");
+	});
+
+	it("shows a dash for a date it cannot read instead of breaking the page", () => {
+		expect(formatDate("10359-02-01")).toBe("—");
+		expect(formatShortDate("NaN-NaN-NaN")).toBe("—");
+		expect(formatDateTime("not a date")).toBe("—");
+		expect(formatShortDate("2026-11-18")).toBe("18 Nov");
 	});
 });

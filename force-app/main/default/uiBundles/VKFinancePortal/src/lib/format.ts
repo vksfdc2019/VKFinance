@@ -1,7 +1,12 @@
-import { addMonths, format, formatDistanceToNow, isToday, isYesterday, parseISO } from "date-fns";
+import { addMonths, format, formatDistanceToNow, isToday, isValid, isYesterday, parseISO } from "date-fns";
+
+/** Formats a date, or "—" when the value is missing or not a real date - a bad value never breaks a page. */
+function safe(date: Date, pattern: string): string {
+	return isValid(date) ? format(date, pattern) : "—";
+}
 
 export function formatDateTime(value?: string | null): string {
-	return value ? format(new Date(value), "d MMM yyyy, h:mm a") : "—";
+	return value ? safe(new Date(value), "d MMM yyyy, h:mm a") : "—";
 }
 
 export function formatRelative(value?: string | null): string {
@@ -117,11 +122,11 @@ export function todayIso(): string {
 }
 
 export function formatDate(iso?: string | null): string {
-	return iso ? format(parseISO(iso), "d MMM yyyy") : "—";
+	return iso ? safe(parseISO(iso), "d MMM yyyy") : "—";
 }
 
 export function formatShortDate(iso?: string | null): string {
-	return iso ? format(parseISO(iso), "d MMM") : "—";
+	return iso ? safe(parseISO(iso), "d MMM") : "—";
 }
 
 /** "Today", "Yesterday" or "Mon, 26 Oct" for grouping a list by day. */

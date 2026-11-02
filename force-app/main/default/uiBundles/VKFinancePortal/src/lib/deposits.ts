@@ -146,10 +146,13 @@ export interface DepositQuote {
 }
 
 /** The figures a bank would quote for these terms, or null until they are complete. */
+/** A whole yyyy-MM-dd date - not one still being typed, and not a 5-digit year a date picker allows. */
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
 export function quoteDeposit(t: DepositTerms): DepositQuote | null {
-	if (!t.startDate || !(t.rate > 0)) return null;
+	if (!t.startDate || !ISO_DATE.test(t.startDate) || !(t.rate > 0)) return null;
 	const maturity = maturityDate(t.startDate, t.months, t.days);
-	if (maturity <= t.startDate) return null;
+	if (!ISO_DATE.test(maturity) || maturity <= t.startDate) return null;
 	if (t.kind === "RD") {
 		if (!(t.instalment > 0) || !(t.months > 0)) return null;
 		const amount = rdMaturity(t.instalment, t.rate, t.months, t.startDate);

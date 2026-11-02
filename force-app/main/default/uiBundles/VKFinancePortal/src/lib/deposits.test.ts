@@ -36,6 +36,10 @@ describe("deposit maths", () => {
 		expect(quoteDeposit({ ...base, kind: "RD", instalment: 10000 })).toMatchObject({ maturityAmount: 124621.32, invested: 120000 });
 		expect(quoteDeposit({ ...base, rate: 0 })).toBeNull();
 		expect(quoteDeposit({ ...base, months: 0 })).toBeNull();
+		// Half-typed or impossible dates give no quote instead of an unreadable maturity date.
+		expect(quoteDeposit({ ...base, startDate: "2026-1" })).toBeNull();
+		expect(quoteDeposit({ ...base, startDate: "20262-11-20" })).toBeNull();
+		expect(quoteDeposit({ ...base, months: 99999 })).toBeNull();
 		expect(tenureLabel(15, 10)).toBe("1 year 3 months 10 days");
 	});
 });
