@@ -55,6 +55,19 @@ public without sharing class CommitmentSelector extends FamilyScopedSelector {
         ];
     }
 
+    /** Instances due between two dates, whatever their status - one month's bills. */
+    public List<Bill_Instance__c> instancesDueBetween(Set<Id> billIds, Date fromDate, Date toDate) {
+        Id fid = familyId;
+        return [
+            SELECT Id, Bill__c, Due_Date__c, Amount_Due__c, Amount_Paid__c, Status__c, Paid_On__c, Unique_Key__c
+            FROM Bill_Instance__c
+            WHERE Family__c = :fid AND Bill__c IN :billIds AND Due_Date__c >= :fromDate AND Due_Date__c <= :toDate
+            WITH SYSTEM_MODE
+            ORDER BY Due_Date__c
+            LIMIT 2000
+        ];
+    }
+
     public Bill_Instance__c instanceById(Id instanceId) {
         Id fid = familyId;
         for (Bill_Instance__c i : [
@@ -113,6 +126,21 @@ public without sharing class CommitmentSelector extends FamilyScopedSelector {
             WHERE Family__c = :fid AND Loan__c IN :loanIds AND Status__c IN :statuses
             WITH SYSTEM_MODE
             ORDER BY Loan__c, Installment_No__c
+            LIMIT 5000
+        ];
+    }
+
+    /** EMIs due between two dates (one month), plus any still open from before it. */
+    public List<EMI_Installment__c> installmentsDueBy(Set<Id> loanIds, Date fromDate, Date toDate) {
+        Id fid = familyId;
+        Set<String> open = OPEN_EMI;
+        return [
+            SELECT Id, Loan__c, Installment_No__c, Due_Date__c, EMI_Amount__c, Status__c, Paid_On__c
+            FROM EMI_Installment__c
+            WHERE Family__c = :fid AND Loan__c IN :loanIds AND Due_Date__c <= :toDate
+                AND (Due_Date__c >= :fromDate OR Status__c IN :open)
+            WITH SYSTEM_MODE
+            ORDER BY Loan__c, Due_Date__c
             LIMIT 5000
         ];
     }

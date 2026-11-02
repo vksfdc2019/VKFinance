@@ -387,6 +387,9 @@ function NetWorthCard({ data, currency, className }: { data: Dashboard; currency
 						<dd className="mt-0.5 text-sm font-semibold tabular-nums">{formatMoney(data.netWorth.liabilities, currency)}</dd>
 					</div>
 				</dl>
+				<Link to="/position" className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-brand-100/80 hover:text-white">
+					Available vs spent <ArrowRight className="size-3.5" aria-hidden="true" />
+				</Link>
 			</div>
 		</div>
 	);

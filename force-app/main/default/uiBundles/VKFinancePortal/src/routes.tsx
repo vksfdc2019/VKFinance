@@ -36,6 +36,7 @@ const InstallPage = lazy(() => import("./features/enhancements/InstallPage"));
 const InsightsPage = lazy(() => import("./features/enhancements/InsightsPage"));
 const ArchivePage = lazy(() => import("./features/archive/ArchivePage"));
 const AppearancePage = lazy(() => import("./features/appearance/AppearancePage"));
+const PositionPage = lazy(() => import("./features/position/PositionPage"));
 
 
 function Root() {
@@ -86,6 +87,10 @@ export const routes: RouteObject[] = [
 									{ path: "install", element: <InstallPage /> },
 									{ path: "insights", element: <InsightsPage /> },
 								] }],
+							},
+							{
+								element: <RequirePermission permission="DASHBOARD:READ" />,
+								children: [{ path: "/position", element: <PositionPage /> }],
 							},
 							{
 								element: <RequirePermission permission="TRANSACTIONS:READ" />,

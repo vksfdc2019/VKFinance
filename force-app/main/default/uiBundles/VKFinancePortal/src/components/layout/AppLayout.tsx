@@ -12,6 +12,7 @@ import {
 	Plus,
 	ReceiptText,
 	Repeat,
+	Scale,
 	ShieldCheck,
 	Sparkles,
 	Tags,
@@ -64,6 +65,7 @@ function Shell() {
 	const location = useLocation();
 	const links: NavItem[] = [
 		{ to: "/", label: "Overview", icon: LayoutDashboard, show: can("DASHBOARD:READ") },
+		{ to: "/position", label: "Money position", icon: Scale, show: can("DASHBOARD:READ") },
 		{ to: "/transactions", label: "Transactions", icon: ArrowLeftRight, show: can("TRANSACTIONS:READ") },
 		{ to: "/accounts", label: "Accounts", icon: Wallet, show: can("ACCOUNTS:READ") },
 		{ to: "/budgets", label: "Budgets", icon: Target, show: can("BUDGETS:READ") },
