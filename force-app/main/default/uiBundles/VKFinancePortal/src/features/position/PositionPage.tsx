@@ -16,6 +16,8 @@ import { cn } from "@/lib/utils";
 import { useAuth } from "@/features/auth/AuthContext";
 import { useLedger } from "@/features/ledger/LedgerContext";
 import { SplitBar, type Segment } from "./SplitBar";
+import { AlertStrip, DueCalendar, Headline as Note, RingRow } from "./Insights";
+import { bankHeadline, billHeadline, cardHeadline, dailyAllowance, daysLeft, loanHeadline, type Tone } from "@/lib/position";
 
 /** Available against spent, side by side for bank accounts, credit cards, bills and loans. */
 export default function PositionPage() {
@@ -49,28 +51,33 @@ export default function PositionPage() {
 				errors.length === 0 && <PositionSkeleton />
 			) : (
 				<>
+					<AlertStrip data={data} currency={currency} />
 					<Reveal index={0}>
 						<Headline data={data} currency={currency} />
+					</Reveal>
+					<RingRow data={data} currency={currency} />
+					<Reveal index={1} className="mt-4">
+						<DueCalendar key={data.month} data={data} currency={currency} />
 					</Reveal>
 					<div className="mt-4 grid gap-4 xl:grid-cols-2">
 						{data.bank && (
 							<Reveal index={1}>
-								<BankPanel bank={data.bank} currency={currency} />
+								<BankPanel bank={data.bank} currency={currency} note={bankHeadline(data, currency)} />
 							</Reveal>
 						)}
 						{data.cards && (
 							<Reveal index={2}>
-								<CardsPanel cards={data.cards} currency={currency} />
+								<CardsPanel cards={data.cards} currency={currency} note={cardHeadline(data, currency)} />
 							</Reveal>
 						)}
 						{data.bills && (
 							<Reveal index={3}>
-								<BillsPanel bills={data.bills} currency={currency} month={data.month} />
+								<BillsPanel bills={data.bills} currency={currency} month={data.month} note={billHeadline(data, currency)} />
 							</Reveal>
 						)}
 						{data.loans && (
 							<Reveal index={4}>
-								<LoansPanel loans={data.loans} currency={currency} />
+								<LoansPanel loans={data.loans} currency={currency} note={loanHeadline(data, currency)} />
 							</Reveal>
 						)}
 					</div>
@@ -84,6 +91,7 @@ function Headline({ data, currency }: { data: MoneyPosition; currency: string })
 	const s = data.summary;
 	const left = s.leftAfterDues;
 	const committed = Math.min(Math.max(s.liquid, 0), s.duesRemaining);
+	const daily = dailyAllowance(data);
 	return (
 		<section className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-800 via-brand-900 to-slate-900 p-5 text-white shadow-lg shadow-brand-900/20 sm:p-6">
 			<div className="pointer-events-none absolute -top-16 -right-10 size-56 rounded-full bg-brand-400/20 blur-2xl" />
@@ -118,6 +126,21 @@ function Headline({ data, currency }: { data: MoneyPosition; currency: string })
 					)}
 				</div>
 				<dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+					{daily !== undefined && (
+						<div className="col-span-2 flex items-center justify-between gap-3 rounded-xl bg-emerald-400/15 px-4 py-3 ring-1 ring-emerald-300/30 dark:ring-emerald-700/30 sm:col-span-4">
+							<div>
+								<dt className="text-[11px] text-emerald-100/80">You can spend about</dt>
+								<dd className="text-xl font-semibold tabular-nums text-emerald-100">
+									{formatMoney(daily, currency)} <span className="text-sm font-medium text-emerald-100/80">a day</span>
+								</dd>
+							</div>
+							<dd className="text-right text-[11px] text-emerald-100/80">
+								for the next {daysLeft(data)} {daysLeft(data) === 1 ? "day" : "days"}
+								<br />
+								till {formatShortDate(data.periodEnd)}, after dues
+							</dd>
+						</div>
+					)}
 					{data.isCurrent ? (
 						<>
 							<HeroTile label="Still due this month" value={formatMoney(s.duesRemaining, currency)} hint="Bills, EMIs and card dues" />
@@ -217,7 +240,7 @@ function masked(last4?: string) {
 	return last4 ? `•• ${last4}` : undefined;
 }
 
-function BankPanel({ bank, currency }: { bank: BankPosition; currency: string }) {
+function BankPanel({ bank, currency, note }: { bank: BankPosition; currency: string; note?: SectionNote }) {
 	const spendable = bank.accounts.filter((a) => a.liquid);
 	const locked = bank.accounts.filter((a) => !a.liquid);
 	const net = bank.moneyIn - bank.moneyOut;
@@ -227,6 +250,7 @@ function BankPanel({ bank, currency }: { bank: BankPosition; currency: string })
 				<EmptyState icon={<Landmark />} title="No accounts yet" action={<ViewAll to="/accounts" label="Add an account" />} className="py-6" />
 			) : (
 				<>
+					{note && <Note text={note.text} tone={note.tone} />}
 					<SectionTop
 						primary={{ label: "Available now", value: formatMoney(bank.available, currency) }}
 						secondary={{ label: "Locked in deposits", value: formatMoney(bank.locked, currency) }}
@@ -280,7 +304,7 @@ function BankPanel({ bank, currency }: { bank: BankPosition; currency: string })
 	);
 }
 
-function CardsPanel({ cards, currency }: { cards: CardPosition; currency: string }) {
+function CardsPanel({ cards, currency, note }: { cards: CardPosition; currency: string; note?: SectionNote }) {
 	const pct = cards.utilisationPct ?? 0;
 	return (
 		<Panel className="h-full" title={<SectionTitle icon={<CreditCard />} text="Credit cards" />} description="Limit, what you used and what is due" action={<ViewAll to="/accounts" label="Cards" />}>
@@ -288,6 +312,7 @@ function CardsPanel({ cards, currency }: { cards: CardPosition; currency: string
 				<EmptyState icon={<CreditCard />} title="No credit cards" className="py-6" />
 			) : (
 				<>
+					{note && <Note text={note.text} tone={note.tone} />}
 					<SectionTop
 						primary={{ label: "Limit available", value: formatMoney(cards.available, currency) }}
 						secondary={{ label: `Used of ${formatMoney(cards.totalLimit, currency)}`, value: formatMoney(cards.used, currency), tone: pct > 70 ? "bad" : pct > 30 ? "warn" : undefined }}
@@ -365,7 +390,7 @@ function CardsPanel({ cards, currency }: { cards: CardPosition; currency: string
 	);
 }
 
-function BillsPanel({ bills, currency, month }: { bills: BillPosition; currency: string; month: string }) {
+function BillsPanel({ bills, currency, month, note }: { bills: BillPosition; currency: string; month: string; note?: SectionNote }) {
 	return (
 		<Panel className="h-full" title={<SectionTitle icon={<ReceiptText />} text="Bills" />} description={`Due in ${monthLabel(month)}, and anything overdue`} action={<ViewAll to="/bills" label="Bills" />}>
 			{bills.items.length === 0 ? (
@@ -374,6 +399,7 @@ function BillsPanel({ bills, currency, month }: { bills: BillPosition; currency:
 				</EmptyState>
 			) : (
 				<>
+					{note && <Note text={note.text} tone={note.tone} />}
 					<SectionTop
 						primary={{ label: "Still to pay", value: formatMoney(bills.remaining, currency), tone: bills.overdue > 0 ? "bad" : undefined }}
 						secondary={{ label: `Paid of ${formatMoney(bills.due, currency)}`, value: formatMoney(bills.paid, currency) }}
@@ -424,13 +450,14 @@ const LOAN_BADGE: Record<PositionLoan["monthStatus"], string> = {
 	None: "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400",
 };
 
-function LoansPanel({ loans, currency }: { loans: LoanPosition; currency: string }) {
+function LoansPanel({ loans, currency, note }: { loans: LoanPosition; currency: string; note?: SectionNote }) {
 	return (
 		<Panel className="h-full" title={<SectionTitle icon={<Scale />} text="Loans & EMIs" />} description="What you borrowed, repaid and still owe" action={<ViewAll to="/loans" label="Loans" />}>
 			{loans.loans.length === 0 ? (
 				<EmptyState icon={<Scale />} title="No loans" className="py-6" />
 			) : (
 				<>
+					{note && <Note text={note.text} tone={note.tone} />}
 					<SectionTop
 						primary={{ label: "Outstanding", value: formatMoney(loans.outstanding, currency) }}
 						secondary={{ label: `Repaid of ${formatMoney(loans.borrowed, currency)}`, value: `${formatMoney(loans.repaid, currency)}${loans.repaidPct !== undefined ? ` · ${formatPercent(loans.repaidPct)}` : ""}` }}
@@ -486,6 +513,8 @@ function LoansPanel({ loans, currency }: { loans: LoanPosition; currency: string
 		</Panel>
 	);
 }
+
+type SectionNote = { text: string; tone: Tone };
 
 function SectionTitle({ icon, text }: { icon: ReactNode; text: string }) {
 	return (
