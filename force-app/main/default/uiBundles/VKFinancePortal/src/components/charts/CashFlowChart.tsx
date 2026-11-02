@@ -134,7 +134,7 @@ export function CashFlowChart({ data, currency, highlight }: { data: Point[]; cu
 												width={band - 8}
 												height={innerH}
 												rx={8}
-												className={isActive ? "fill-slate-100" : "fill-slate-50"}
+												className={isActive ? "fill-slate-100 dark:fill-slate-800" : "fill-slate-50 dark:fill-slate-800/50"}
 											/>
 										)}
 										<path d={barPath(cx - barW - 1, y(d.income), barW, y(0) - y(d.income))} fill="var(--series-income)" />

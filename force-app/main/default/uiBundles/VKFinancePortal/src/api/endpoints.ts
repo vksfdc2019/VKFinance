@@ -46,6 +46,7 @@ import type {
 } from "./commitmentTypes";
 import type { LayoutWidget, Report, ReportFilters, ReportType, SavedReport } from "./reportTypes";
 import type { MoneyPosition } from "./positionTypes";
+import type { Analytics } from "./analyticsTypes";
 import type { Appearance, FamilyTheme, PersonalTheme } from "@/theme/themes";
 
 type Message = { message: string };
@@ -148,6 +149,8 @@ export const financeApi = {
 	copyBudget: (month: string) => vkf<BudgetView>("POST", `/budgets/${id(month)}/copy-previous`, {}),
 
 	dashboard: (month: string, memberId?: string) => vkf<Dashboard>("GET", `/dashboard${queryString({ month, memberId })}`),
+	analytics: (month: string, months: number, memberId?: string) =>
+		vkf<Analytics>("GET", `/dashboard/analytics${queryString({ month, months, memberId })}`),
 	position: (month: string) => vkf<MoneyPosition>("GET", `/dashboard/position${queryString({ month })}`),
 };
 

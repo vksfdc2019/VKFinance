@@ -37,6 +37,7 @@ const InsightsPage = lazy(() => import("./features/enhancements/InsightsPage"));
 const ArchivePage = lazy(() => import("./features/archive/ArchivePage"));
 const AppearancePage = lazy(() => import("./features/appearance/AppearancePage"));
 const PositionPage = lazy(() => import("./features/position/PositionPage"));
+const AnalyticsPage = lazy(() => import("./features/analytics/AnalyticsPage"));
 
 
 function Root() {
@@ -90,7 +91,10 @@ export const routes: RouteObject[] = [
 							},
 							{
 								element: <RequirePermission permission="DASHBOARD:READ" />,
-								children: [{ path: "/position", element: <PositionPage /> }],
+								children: [
+									{ path: "/position", element: <PositionPage /> },
+									{ path: "/analytics", element: <AnalyticsPage /> },
+								],
 							},
 							{
 								element: <RequirePermission permission="TRANSACTIONS:READ" />,

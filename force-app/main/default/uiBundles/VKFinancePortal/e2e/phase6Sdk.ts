@@ -1,3 +1,4 @@
+import { analyticsFixture } from './analyticsFixtures';
 import type { CreditGroup, CreditOverview } from '../src/api/creditTypes';
 // Deterministic local browser fixtures. Production builds use the real Salesforce SDK.
 const permissions = [
@@ -418,6 +419,8 @@ export async function createDataSDK() {
           items: [],
           totals: { income: 0, expenses: 0, transfers: 0, count: 0 },
         };
+      else if (analyticsFixture(path, new URLSearchParams(url.split('?')[1] ?? '')) !== undefined)
+        data = analyticsFixture(path, new URLSearchParams(url.split('?')[1] ?? ''));
       else {
         status = 404;
         data = {

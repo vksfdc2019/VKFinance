@@ -204,6 +204,17 @@
   --chart-grid: #e1e0d9;
   --chart-axis: #c3c2b7;
   --ink-muted: #898781;
+  /* Analytics, validated as rings and stacks in this order: EMIs, spending, bills, saved. */
+  --viz-emi: #2a78d6;
+  --viz-spend: #eb6834;
+  --viz-bill: #6250d6;
+  --viz-saved: #1baf7a;
+  /* Asset mix, in this order: bank, cash and UPI, deposits, investments. */
+  --viz-asset-1: #2a78d6;
+  --viz-asset-2: #eb6834;
+  --viz-asset-3: #1baf7a;
+  --viz-asset-4: #eda100;
+  --chart-surface: #ffffff;
 }
 
 /* Series colours are bright enough for dark already; the quiet chart ink needs lifting. */
@@ -211,6 +222,16 @@
   --chart-grid: #334155;
   --chart-axis: #475569;
   --ink-muted: #94a3b8;
+  /* Dark steps of the same hues, validated against #0f172a. */
+  --viz-emi: #3987e5;
+  --viz-spend: #d95926;
+  --viz-bill: #9085e9;
+  --viz-saved: #199e70;
+  --viz-asset-1: #3987e5;
+  --viz-asset-2: #d95926;
+  --viz-asset-3: #199e70;
+  --viz-asset-4: #c98500;
+  --chart-surface: #0f172a;
 }
 
 @layer base {
