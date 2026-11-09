@@ -13,6 +13,7 @@ export const ACCOUNT_TYPES = [
 	"Fixed Deposit",
 	"Recurring Deposit",
 	"Investment",
+	"Savings Scheme",
 	"Loan",
 ] as const;
 export type AccountType = (typeof ACCOUNT_TYPES)[number];

@@ -38,6 +38,7 @@ const ArchivePage = lazy(() => import("./features/archive/ArchivePage"));
 const AppearancePage = lazy(() => import("./features/appearance/AppearancePage"));
 const PositionPage = lazy(() => import("./features/position/PositionPage"));
 const AnalyticsPage = lazy(() => import("./features/analytics/AnalyticsPage"));
+const SavingsPage = lazy(() => import("./features/savings/SavingsPage"));
 
 
 function Root() {
@@ -105,7 +106,10 @@ export const routes: RouteObject[] = [
 							},
 							{
 								element: <RequirePermission permission="ACCOUNTS:READ" />,
-								children: [{ path: "/accounts", element: <AccountsPage /> }],
+								children: [
+									{ path: "/accounts", element: <AccountsPage /> },
+									{ path: "/savings", element: <SavingsPage /> },
+								],
 							},
 							{
 								element: <RequirePermission permission="BUDGETS:READ" />,

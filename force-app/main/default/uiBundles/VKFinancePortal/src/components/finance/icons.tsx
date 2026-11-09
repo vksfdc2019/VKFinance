@@ -37,6 +37,7 @@ import {
 	ShoppingBag,
 	Smartphone,
 	Sparkles,
+	Sprout,
 	Stethoscope,
 	Tag,
 	TrendingUp,
@@ -155,6 +156,7 @@ export const ACCOUNT_ICONS: Record<AccountType, LucideIcon> = {
 	"Fixed Deposit": PiggyBank,
 	"Recurring Deposit": CalendarSync,
 	Investment: TrendingUp,
+	"Savings Scheme": Sprout,
 	Loan: HandCoins,
 };
 
@@ -167,6 +169,7 @@ export const DEFAULT_ACCOUNT_COLOR: Record<AccountType, AccountColor> = {
 	"Fixed Deposit": "amber",
 	"Recurring Deposit": "orange",
 	Investment: "indigo",
+	"Savings Scheme": "emerald",
 	Loan: "rose",
 };
 

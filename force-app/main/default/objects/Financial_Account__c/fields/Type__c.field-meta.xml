@@ -54,6 +54,11 @@
                 <default>false</default>
                 <label>Investment</label>
             </value>
+            <value>
+                <fullName>Savings Scheme</fullName>
+                <default>false</default>
+                <label>Savings Scheme</label>
+            </value>
         </valueSetDefinition>
     </valueSet>
 </CustomField>

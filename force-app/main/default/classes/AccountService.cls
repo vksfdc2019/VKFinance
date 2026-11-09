@@ -6,7 +6,7 @@
  */
 public without sharing class AccountService {
     public static final List<String> TYPES = new List<String>{
-        'Savings', 'Current', 'Cash', 'UPI Wallet', 'Credit Card', 'Loan', 'Fixed Deposit', 'Recurring Deposit', 'Investment'
+        'Savings', 'Current', 'Cash', 'UPI Wallet', 'Credit Card', 'Loan', 'Fixed Deposit', 'Recurring Deposit', 'Investment', 'Savings Scheme'
     };
     public static final Set<String> COLORS = new Set<String>{
         'teal', 'emerald', 'sky', 'indigo', 'violet', 'rose', 'amber', 'orange', 'slate', 'zinc'

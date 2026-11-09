@@ -47,6 +47,7 @@ import type {
 import type { LayoutWidget, Report, ReportFilters, ReportType, SavedReport } from "./reportTypes";
 import type { MoneyPosition } from "./positionTypes";
 import type { Analytics } from "./analyticsTypes";
+import type { Policy, PolicyInput, SavingsPortfolio, Scheme, SchemeInput } from "./savingsTypes";
 import type { Appearance, FamilyTheme, PersonalTheme } from "@/theme/themes";
 
 type Message = { message: string };
@@ -194,4 +195,20 @@ export const reportApi = {
 	remove: (reportId: string) => vkf<void>("DELETE", `/reports/saved/${id(reportId)}`),
 	layout: () => vkf<{ widgets: LayoutWidget[] }>("GET", "/reports/layout"),
 	saveLayout: (widgets: LayoutWidget[]) => vkf<{ widgets: LayoutWidget[] }>("PUT", "/reports/layout", { widgets }),
+};
+
+export const savingsApi = {
+	portfolio: () => vkf<SavingsPortfolio>("GET", "/savings"),
+	createScheme: (input: SchemeInput) => vkf<Scheme>("POST", "/savings/schemes", input),
+	updateScheme: (schemeId: string, input: SchemeInput) => vkf<Scheme>("PATCH", `/savings/schemes/${id(schemeId)}`, input),
+	deleteScheme: (schemeId: string) => vkf<void>("DELETE", `/savings/schemes/${id(schemeId)}`),
+	contribute: (schemeId: string, input: { fromAccountId: string; amount: number; date?: string }) =>
+		vkf<Scheme>("POST", `/savings/schemes/${id(schemeId)}/contribute`, input),
+	creditInterest: (schemeId: string, input: { amount: number; date?: string; toAccountId?: string }) =>
+		vkf<Scheme>("POST", `/savings/schemes/${id(schemeId)}/interest`, input),
+	updateValue: (schemeId: string, input: { value: number; date?: string }) => vkf<Scheme>("POST", `/savings/schemes/${id(schemeId)}/value`, input),
+	closeScheme: (schemeId: string, input: { toAccountId?: string; date?: string }) => vkf<Scheme>("POST", `/savings/schemes/${id(schemeId)}/close`, input),
+	createPolicy: (input: PolicyInput) => vkf<Policy>("POST", "/savings/policies", input),
+	updatePolicy: (policyId: string, input: PolicyInput) => vkf<Policy>("PATCH", `/savings/policies/${id(policyId)}`, input),
+	deletePolicy: (policyId: string) => vkf<void>("DELETE", `/savings/policies/${id(policyId)}`),
 };

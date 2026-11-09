@@ -29,7 +29,8 @@ const TYPE_HINTS: Record<AccountType, string> = {
 	"Credit Card": "Card you pay later",
 	"Fixed Deposit": "Bank FD, tax saver",
 	"Recurring Deposit": "Monthly RD",
-	Investment: "MF, stocks, PPF",
+	Investment: "MF, stocks",
+	"Savings Scheme": "PPF, NSC, SSY…",
 	Loan: "Home, car, personal",
 };
 
@@ -206,7 +207,7 @@ export function AccountDialog({
 								<fieldset>
 									<legend className="mb-2 text-sm font-medium">Type</legend>
 									<div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-										{ACCOUNT_TYPES.filter((t) => !account || t !== "Credit Card").map((t) => {
+										{ACCOUNT_TYPES.filter((t) => (!account || t !== "Credit Card") && (t !== "Savings Scheme" || account?.type === "Savings Scheme")).map((t) => {
 											const Icon = ACCOUNT_ICONS[t];
 											return (
 												<button

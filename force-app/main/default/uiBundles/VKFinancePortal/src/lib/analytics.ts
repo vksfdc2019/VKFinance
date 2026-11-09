@@ -19,7 +19,7 @@ export function moneySplit(m: MonthFlow): Slice[] {
 const ASSET_GROUPS: { key: string; label: string; types: AccountType[]; color: string }[] = [
 	{ key: "bank", label: "Savings & current", types: ["Savings", "Current"], color: "var(--viz-asset-1)" },
 	{ key: "cash", label: "Cash & UPI wallets", types: ["Cash", "UPI Wallet"], color: "var(--viz-asset-2)" },
-	{ key: "deposits", label: "FDs & RDs", types: ["Fixed Deposit", "Recurring Deposit"], color: "var(--viz-asset-3)" },
+	{ key: "deposits", label: "FDs, RDs & schemes", types: ["Fixed Deposit", "Recurring Deposit", "Savings Scheme"], color: "var(--viz-asset-3)" },
 	{ key: "investments", label: "Investments", types: ["Investment"], color: "var(--viz-asset-4)" },
 ];
 

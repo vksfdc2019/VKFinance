@@ -19,7 +19,7 @@ import { join, relative, sep } from "node:path";
 
 const ROOT = "src";
 const write = process.argv.includes("--write");
-const SOLID_FILES = new Set(["components/finance/icons.tsx", "features/accounts/AccountCard.tsx"]);
+const SOLID_FILES = new Set(["components/finance/icons.tsx", "features/accounts/AccountCard.tsx", "features/savings/SchemeCard.tsx"]);
 const SKIP_DIRS = new Set(["theme"]);
 
 const NEUTRAL = new Set(["slate", "gray", "zinc", "neutral", "stone"]);
